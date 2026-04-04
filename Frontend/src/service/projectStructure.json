@@ -1,0 +1,3197 @@
+{
+  "path": "/home/fabio/Escritorio/IA/MCP",
+  "name": "MCP",
+  "children": [
+    {
+      "path": "/home/fabio/Escritorio/IA/MCP/.agent",
+      "name": ".agent",
+      "children": [
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/.agent/skills",
+          "name": "skills",
+          "children": [
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/.agent/skills/agent-architect",
+              "name": "agent-architect",
+              "children": [
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/.agent/skills/agent-architect/SKILL.md",
+                  "name": "SKILL.md",
+                  "size": 758
+                }
+              ]
+            },
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/.agent/skills/awesome-skill",
+              "name": "awesome-skill",
+              "children": [
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/.agent/skills/awesome-skill/SKILL.md",
+                  "name": "SKILL.md",
+                  "size": 1023
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/.agent/skills/awesome-skill/scripts",
+                  "name": "scripts",
+                  "children": [
+                    {
+                      "path": "/home/fabio/Escritorio/IA/MCP/.agent/skills/awesome-skill/scripts/awesome_tool.js",
+                      "name": "awesome_tool.js",
+                      "size": 401
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/.agent/skills/business-analyst",
+              "name": "business-analyst",
+              "children": [
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/.agent/skills/business-analyst/SKILL.md",
+                  "name": "SKILL.md",
+                  "size": 942
+                }
+              ]
+            },
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/.agent/skills/claude-d3js-skill",
+              "name": "claude-d3js-skill",
+              "children": [
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/.agent/skills/claude-d3js-skill/SKILL.md",
+                  "name": "SKILL.md",
+                  "size": 766
+                }
+              ]
+            },
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/.agent/skills/data-engineer",
+              "name": "data-engineer",
+              "children": [
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/.agent/skills/data-engineer/SKILL.md",
+                  "name": "SKILL.md",
+                  "size": 862
+                }
+              ]
+            },
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/.agent/skills/node-expert",
+              "name": "node-expert",
+              "children": [
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/.agent/skills/node-expert/SKILL.md",
+                  "name": "SKILL.md",
+                  "size": 832
+                }
+              ]
+            },
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/.agent/skills/prompt-engineer",
+              "name": "prompt-engineer",
+              "children": [
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/.agent/skills/prompt-engineer/SKILL.md",
+                  "name": "SKILL.md",
+                  "size": 832
+                }
+              ]
+            },
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/.agent/skills/repo-map",
+              "name": "repo-map",
+              "children": [
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/.agent/skills/repo-map/SKILL.md",
+                  "name": "SKILL.md",
+                  "size": 778
+                }
+              ]
+            },
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/.agent/skills/sql-pro",
+              "name": "sql-pro",
+              "children": [
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/.agent/skills/sql-pro/SKILL.md",
+                  "name": "SKILL.md",
+                  "size": 782
+                }
+              ]
+            },
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/.agent/skills/ui-ux-designer",
+              "name": "ui-ux-designer",
+              "children": [
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/.agent/skills/ui-ux-designer/SKILL.md",
+                  "name": "SKILL.md",
+                  "size": 710
+                }
+              ]
+            },
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/.agent/skills/web-wizard",
+              "name": "web-wizard",
+              "children": [
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/.agent/skills/web-wizard/SKILL.md",
+                  "name": "SKILL.md",
+                  "size": 752
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/home/fabio/Escritorio/IA/MCP/.gitignore",
+      "name": ".gitignore",
+      "size": 429
+    },
+    {
+      "path": "/home/fabio/Escritorio/IA/MCP/ARCHITECTURE.md",
+      "name": "ARCHITECTURE.md",
+      "size": 2654
+    },
+    {
+      "path": "/home/fabio/Escritorio/IA/MCP/Esp32",
+      "name": "Esp32",
+      "children": [
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/.qodo",
+          "name": ".qodo",
+          "children": [
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/.qodo/agents",
+              "name": "agents"
+            },
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/.qodo/workflows",
+              "name": "workflows"
+            }
+          ]
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32",
+          "name": "ApEsp32",
+          "children": [
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.gitignore",
+              "name": ".gitignore",
+              "size": 5
+            },
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio",
+              "name": ".pio",
+              "children": [
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps",
+                  "name": "libdeps",
+                  "children": [
+                    {
+                      "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev",
+                      "name": "esp32dev",
+                      "children": [
+                        {
+                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson",
+                          "name": "ArduinoJson",
+                          "children": [
+                            {
+                              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/.piopm",
+                              "name": ".piopm",
+                              "size": 163
+                            },
+                            {
+                              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/ArduinoJson.h",
+                              "name": "ArduinoJson.h",
+                              "size": 129
+                            },
+                            {
+                              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/LICENSE.txt",
+                              "name": "LICENSE.txt",
+                              "size": 1117
+                            },
+                            {
+                              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/README.md",
+                              "name": "README.md",
+                              "size": 11111
+                            },
+                            {
+                              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/examples",
+                              "name": "examples",
+                              "children": [
+                                {
+                                  "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/examples/JsonConfigFile",
+                                  "name": "JsonConfigFile",
+                                  "children": [
+                                    {
+                                      "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/examples/JsonConfigFile/JsonConfigFile.ino",
+                                      "name": "JsonConfigFile.ino",
+                                      "size": 4701
+                                    }
+                                  ]
+                                },
+                                {
+                                  "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/examples/JsonFilterExample",
+                                  "name": "JsonFilterExample",
+                                  "children": [
+                                    {
+                                      "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/examples/JsonFilterExample/JsonFilterExample.ino",
+                                      "name": "JsonFilterExample.ino",
+                                      "size": 2575
+                                    }
+                                  ]
+                                },
+                                {
+                                  "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/examples/JsonGeneratorExample",
+                                  "name": "JsonGeneratorExample",
+                                  "children": [
+                                    {
+                                      "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/examples/JsonGeneratorExample/JsonGeneratorExample.ino",
+                                      "name": "JsonGeneratorExample.ino",
+                                      "size": 2164
+                                    }
+                                  ]
+                                },
+                                {
+                                  "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/examples/JsonHttpClient",
+                                  "name": "JsonHttpClient",
+                                  "children": [
+                                    {
+                                      "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/examples/JsonHttpClient/JsonHttpClient.ino",
+                                      "name": "JsonHttpClient.ino",
+                                      "size": 3405
+                                    }
+                                  ]
+                                },
+                                {
+                                  "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/examples/JsonParserExample",
+                                  "name": "JsonParserExample",
+                                  "children": [
+                                    {
+                                      "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/examples/JsonParserExample/JsonParserExample.ino",
+                                      "name": "JsonParserExample.ino",
+                                      "size": 2611
+                                    }
+                                  ]
+                                },
+                                {
+                                  "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/examples/JsonServer",
+                                  "name": "JsonServer",
+                                  "children": [
+                                    {
+                                      "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/examples/JsonServer/JsonServer.ino",
+                                      "name": "JsonServer.ino",
+                                      "size": 3215
+                                    }
+                                  ]
+                                },
+                                {
+                                  "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/examples/JsonUdpBeacon",
+                                  "name": "JsonUdpBeacon",
+                                  "children": [
+                                    {
+                                      "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/examples/JsonUdpBeacon/JsonUdpBeacon.ino",
+                                      "name": "JsonUdpBeacon.ino",
+                                      "size": 2895
+                                    }
+                                  ]
+                                },
+                                {
+                                  "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/examples/MsgPackParser",
+                                  "name": "MsgPackParser",
+                                  "children": [
+                                    {
+                                      "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/examples/MsgPackParser/MsgPackParser.ino",
+                                      "name": "MsgPackParser.ino",
+                                      "size": 2339
+                                    }
+                                  ]
+                                },
+                                {
+                                  "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/examples/ProgmemExample",
+                                  "name": "ProgmemExample",
+                                  "children": [
+                                    {
+                                      "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/examples/ProgmemExample/ProgmemExample.ino",
+                                      "name": "ProgmemExample.ino",
+                                      "size": 2093
+                                    }
+                                  ]
+                                },
+                                {
+                                  "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/examples/StringExample",
+                                  "name": "StringExample",
+                                  "children": [
+                                    {
+                                      "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/examples/StringExample/StringExample.ino",
+                                      "name": "StringExample.ino",
+                                      "size": 2697
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/library.json",
+                              "name": "library.json",
+                              "size": 890
+                            },
+                            {
+                              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/library.properties",
+                              "name": "library.properties",
+                              "size": 669
+                            },
+                            {
+                              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src",
+                              "name": "src",
+                              "children": [
+                                {
+                                  "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson",
+                                  "name": "ArduinoJson",
+                                  "children": [
+                                    {
+                                      "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Array",
+                                      "name": "Array",
+                                      "children": [
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Array/ElementProxy.hpp",
+                                          "name": "ElementProxy.hpp",
+                                          "size": 1595
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Array/JsonArray.hpp",
+                                          "name": "JsonArray.hpp",
+                                          "size": 6141
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Array/JsonArrayConst.hpp",
+                                          "name": "JsonArrayConst.hpp",
+                                          "size": 3763
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Array/JsonArrayImpl.hpp",
+                                          "name": "JsonArrayImpl.hpp",
+                                          "size": 906
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Array/JsonArrayIterator.hpp",
+                                          "name": "JsonArrayIterator.hpp",
+                                          "size": 2519
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Array/Utilities.hpp",
+                                          "name": "Utilities.hpp",
+                                          "size": 3644
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Collection",
+                                      "name": "Collection",
+                                      "children": [
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Collection/CollectionData.hpp",
+                                          "name": "CollectionData.hpp",
+                                          "size": 2207
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Collection/CollectionImpl.hpp",
+                                          "name": "CollectionImpl.hpp",
+                                          "size": 4929
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Configuration.hpp",
+                                      "name": "Configuration.hpp",
+                                      "size": 5819
+                                    },
+                                    {
+                                      "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Deserialization",
+                                      "name": "Deserialization",
+                                      "children": [
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Deserialization/DeserializationError.hpp",
+                                          "name": "DeserializationError.hpp",
+                                          "size": 2959
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Deserialization/DeserializationOptions.hpp",
+                                          "name": "DeserializationOptions.hpp",
+                                          "size": 1004
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Deserialization/Filter.hpp",
+                                          "name": "Filter.hpp",
+                                          "size": 1360
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Deserialization/NestingLimit.hpp",
+                                          "name": "NestingLimit.hpp",
+                                          "size": 703
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Deserialization/Reader.hpp",
+                                          "name": "Reader.hpp",
+                                          "size": 2034
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Deserialization/Readers",
+                                          "name": "Readers",
+                                          "children": [
+                                            {
+                                              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Deserialization/Readers/ArduinoStreamReader.hpp",
+                                              "name": "ArduinoStreamReader.hpp",
+                                              "size": 702
+                                            },
+                                            {
+                                              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Deserialization/Readers/ArduinoStringReader.hpp",
+                                              "name": "ArduinoStringReader.hpp",
+                                              "size": 473
+                                            },
+                                            {
+                                              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Deserialization/Readers/FlashReader.hpp",
+                                              "name": "FlashReader.hpp",
+                                              "size": 1222
+                                            },
+                                            {
+                                              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Deserialization/Readers/IteratorReader.hpp",
+                                              "name": "IteratorReader.hpp",
+                                              "size": 1057
+                                            },
+                                            {
+                                              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Deserialization/Readers/RamReader.hpp",
+                                              "name": "RamReader.hpp",
+                                              "size": 1383
+                                            },
+                                            {
+                                              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Deserialization/Readers/StdStreamReader.hpp",
+                                              "name": "StdStreamReader.hpp",
+                                              "size": 683
+                                            },
+                                            {
+                                              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Deserialization/Readers/VariantReader.hpp",
+                                              "name": "VariantReader.hpp",
+                                              "size": 521
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Deserialization/deserialize.hpp",
+                                          "name": "deserialize.hpp",
+                                          "size": 2628
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Document",
+                                      "name": "Document",
+                                      "children": [
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Document/BasicJsonDocument.hpp",
+                                          "name": "BasicJsonDocument.hpp",
+                                          "size": 4554
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Document/DynamicJsonDocument.hpp",
+                                          "name": "DynamicJsonDocument.hpp",
+                                          "size": 719
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Document/JsonDocument.hpp",
+                                          "name": "JsonDocument.hpp",
+                                          "size": 9971
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Document/StaticJsonDocument.hpp",
+                                          "name": "StaticJsonDocument.hpp",
+                                          "size": 1473
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Json",
+                                      "name": "Json",
+                                      "children": [
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Json/EscapeSequence.hpp",
+                                          "name": "EscapeSequence.hpp",
+                                          "size": 831
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Json/JsonDeserializer.hpp",
+                                          "name": "JsonDeserializer.hpp",
+                                          "size": 16939
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Json/JsonSerializer.hpp",
+                                          "name": "JsonSerializer.hpp",
+                                          "size": 3564
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Json/Latch.hpp",
+                                          "name": "Latch.hpp",
+                                          "size": 1044
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Json/PrettyJsonSerializer.hpp",
+                                          "name": "PrettyJsonSerializer.hpp",
+                                          "size": 2773
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Json/TextFormatter.hpp",
+                                          "name": "TextFormatter.hpp",
+                                          "size": 4145
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Json/Utf16.hpp",
+                                          "name": "Utf16.hpp",
+                                          "size": 1457
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Json/Utf8.hpp",
+                                          "name": "Utf8.hpp",
+                                          "size": 1209
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Memory",
+                                      "name": "Memory",
+                                      "children": [
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Memory/Alignment.hpp",
+                                          "name": "Alignment.hpp",
+                                          "size": 1163
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Memory/MemoryPool.hpp",
+                                          "name": "MemoryPool.hpp",
+                                          "size": 6663
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Misc",
+                                      "name": "Misc",
+                                      "children": [
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Misc/SerializedValue.hpp",
+                                          "name": "SerializedValue.hpp",
+                                          "size": 1379
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/MsgPack",
+                                      "name": "MsgPack",
+                                      "children": [
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/MsgPack/MsgPackDeserializer.hpp",
+                                          "name": "MsgPackDeserializer.hpp",
+                                          "size": 14232
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/MsgPack/MsgPackSerializer.hpp",
+                                          "name": "MsgPackSerializer.hpp",
+                                          "size": 5931
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/MsgPack/endianess.hpp",
+                                          "name": "endianess.hpp",
+                                          "size": 1046
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/MsgPack/ieee754.hpp",
+                                          "name": "ieee754.hpp",
+                                          "size": 491
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Namespace.hpp",
+                                      "name": "Namespace.hpp",
+                                      "size": 1597
+                                    },
+                                    {
+                                      "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Numbers",
+                                      "name": "Numbers",
+                                      "children": [
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Numbers/FloatParts.hpp",
+                                          "name": "FloatParts.hpp",
+                                          "size": 2309
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Numbers/FloatTraits.hpp",
+                                          "name": "FloatTraits.hpp",
+                                          "size": 6715
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Numbers/JsonFloat.hpp",
+                                          "name": "JsonFloat.hpp",
+                                          "size": 354
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Numbers/JsonInteger.hpp",
+                                          "name": "JsonInteger.hpp",
+                                          "size": 827
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Numbers/arithmeticCompare.hpp",
+                                          "name": "arithmeticCompare.hpp",
+                                          "size": 3813
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Numbers/convertNumber.hpp",
+                                          "name": "convertNumber.hpp",
+                                          "size": 4271
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Numbers/parseNumber.hpp",
+                                          "name": "parseNumber.hpp",
+                                          "size": 3642
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Object",
+                                      "name": "Object",
+                                      "children": [
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Object/JsonObject.hpp",
+                                          "name": "JsonObject.hpp",
+                                          "size": 7751
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Object/JsonObjectConst.hpp",
+                                          "name": "JsonObjectConst.hpp",
+                                          "size": 4739
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Object/JsonObjectImpl.hpp",
+                                          "name": "JsonObjectImpl.hpp",
+                                          "size": 2637
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Object/JsonObjectIterator.hpp",
+                                          "name": "JsonObjectIterator.hpp",
+                                          "size": 2504
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Object/JsonPair.hpp",
+                                          "name": "JsonPair.hpp",
+                                          "size": 1562
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Object/MemberProxy.hpp",
+                                          "name": "MemberProxy.hpp",
+                                          "size": 1718
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Polyfills",
+                                      "name": "Polyfills",
+                                      "children": [
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Polyfills/alias_cast.hpp",
+                                          "name": "alias_cast.hpp",
+                                          "size": 529
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Polyfills/assert.hpp",
+                                          "name": "assert.hpp",
+                                          "size": 297
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Polyfills/attributes.hpp",
+                                          "name": "attributes.hpp",
+                                          "size": 751
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Polyfills/ctype.hpp",
+                                          "name": "ctype.hpp",
+                                          "size": 373
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Polyfills/integer.hpp",
+                                          "name": "integer.hpp",
+                                          "size": 474
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Polyfills/limits.hpp",
+                                          "name": "limits.hpp",
+                                          "size": 924
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Polyfills/math.hpp",
+                                          "name": "math.hpp",
+                                          "size": 493
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Polyfills/mpl",
+                                          "name": "mpl",
+                                          "children": [
+                                            {
+                                              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Polyfills/mpl/max.hpp",
+                                              "name": "max.hpp",
+                                              "size": 563
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Polyfills/pgmspace.hpp",
+                                          "name": "pgmspace.hpp",
+                                          "size": 3409
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Polyfills/pgmspace_generic.hpp",
+                                          "name": "pgmspace_generic.hpp",
+                                          "size": 1365
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Polyfills/preprocessor.hpp",
+                                          "name": "preprocessor.hpp",
+                                          "size": 1113
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Polyfills/type_traits",
+                                          "name": "type_traits",
+                                          "children": [
+                                            {
+                                              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Polyfills/type_traits/conditional.hpp",
+                                              "name": "conditional.hpp",
+                                              "size": 454
+                                            },
+                                            {
+                                              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Polyfills/type_traits/declval.hpp",
+                                              "name": "declval.hpp",
+                                              "size": 261
+                                            },
+                                            {
+                                              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Polyfills/type_traits/enable_if.hpp",
+                                              "name": "enable_if.hpp",
+                                              "size": 426
+                                            },
+                                            {
+                                              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Polyfills/type_traits/integral_constant.hpp",
+                                              "name": "integral_constant.hpp",
+                                              "size": 410
+                                            },
+                                            {
+                                              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Polyfills/type_traits/is_array.hpp",
+                                              "name": "is_array.hpp",
+                                              "size": 442
+                                            },
+                                            {
+                                              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Polyfills/type_traits/is_base_of.hpp",
+                                              "name": "is_base_of.hpp",
+                                              "size": 704
+                                            },
+                                            {
+                                              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Polyfills/type_traits/is_class.hpp",
+                                              "name": "is_class.hpp",
+                                              "size": 516
+                                            },
+                                            {
+                                              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Polyfills/type_traits/is_const.hpp",
+                                              "name": "is_const.hpp",
+                                              "size": 408
+                                            },
+                                            {
+                                              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Polyfills/type_traits/is_convertible.hpp",
+                                              "name": "is_convertible.hpp",
+                                              "size": 961
+                                            },
+                                            {
+                                              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Polyfills/type_traits/is_enum.hpp",
+                                              "name": "is_enum.hpp",
+                                              "size": 562
+                                            },
+                                            {
+                                              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Polyfills/type_traits/is_floating_point.hpp",
+                                              "name": "is_floating_point.hpp",
+                                              "size": 492
+                                            },
+                                            {
+                                              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Polyfills/type_traits/is_integral.hpp",
+                                              "name": "is_integral.hpp",
+                                              "size": 1192
+                                            },
+                                            {
+                                              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Polyfills/type_traits/is_pointer.hpp",
+                                              "name": "is_pointer.hpp",
+                                              "size": 338
+                                            },
+                                            {
+                                              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Polyfills/type_traits/is_same.hpp",
+                                              "name": "is_same.hpp",
+                                              "size": 414
+                                            },
+                                            {
+                                              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Polyfills/type_traits/is_signed.hpp",
+                                              "name": "is_signed.hpp",
+                                              "size": 873
+                                            },
+                                            {
+                                              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Polyfills/type_traits/is_unsigned.hpp",
+                                              "name": "is_unsigned.hpp",
+                                              "size": 768
+                                            },
+                                            {
+                                              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Polyfills/type_traits/make_unsigned.hpp",
+                                              "name": "make_unsigned.hpp",
+                                              "size": 1179
+                                            },
+                                            {
+                                              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Polyfills/type_traits/make_void.hpp",
+                                              "name": "make_void.hpp",
+                                              "size": 253
+                                            },
+                                            {
+                                              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Polyfills/type_traits/remove_const.hpp",
+                                              "name": "remove_const.hpp",
+                                              "size": 432
+                                            },
+                                            {
+                                              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Polyfills/type_traits/remove_cv.hpp",
+                                              "name": "remove_cv.hpp",
+                                              "size": 511
+                                            },
+                                            {
+                                              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Polyfills/type_traits/remove_reference.hpp",
+                                              "name": "remove_reference.hpp",
+                                              "size": 440
+                                            },
+                                            {
+                                              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Polyfills/type_traits/type_identity.hpp",
+                                              "name": "type_identity.hpp",
+                                              "size": 286
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Polyfills/type_traits.hpp",
+                                          "name": "type_traits.hpp",
+                                          "size": 853
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Polyfills/utility.hpp",
+                                          "name": "utility.hpp",
+                                          "size": 327
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Serialization",
+                                      "name": "Serialization",
+                                      "children": [
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Serialization/CountingDecorator.hpp",
+                                          "name": "CountingDecorator.hpp",
+                                          "size": 610
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Serialization/Writer.hpp",
+                                          "name": "Writer.hpp",
+                                          "size": 1128
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Serialization/Writers",
+                                          "name": "Writers",
+                                          "children": [
+                                            {
+                                              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Serialization/Writers/ArduinoStringWriter.hpp",
+                                              "name": "ArduinoStringWriter.hpp",
+                                              "size": 994
+                                            },
+                                            {
+                                              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Serialization/Writers/DummyWriter.hpp",
+                                              "name": "DummyWriter.hpp",
+                                              "size": 362
+                                            },
+                                            {
+                                              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Serialization/Writers/PrintWriter.hpp",
+                                              "name": "PrintWriter.hpp",
+                                              "size": 587
+                                            },
+                                            {
+                                              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Serialization/Writers/StaticStringWriter.hpp",
+                                              "name": "StaticStringWriter.hpp",
+                                              "size": 673
+                                            },
+                                            {
+                                              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Serialization/Writers/StdStreamWriter.hpp",
+                                              "name": "StdStreamWriter.hpp",
+                                              "size": 689
+                                            },
+                                            {
+                                              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Serialization/Writers/StdStringWriter.hpp",
+                                              "name": "StdStringWriter.hpp",
+                                              "size": 958
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Serialization/measure.hpp",
+                                          "name": "measure.hpp",
+                                          "size": 537
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Serialization/serialize.hpp",
+                                          "name": "serialize.hpp",
+                                          "size": 1925
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/StringStorage",
+                                      "name": "StringStorage",
+                                      "children": [
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/StringStorage/StringCopier.hpp",
+                                          "name": "StringCopier.hpp",
+                                          "size": 1575
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/StringStorage/StringMover.hpp",
+                                          "name": "StringMover.hpp",
+                                          "size": 848
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/StringStorage/StringStorage.hpp",
+                                          "name": "StringStorage.hpp",
+                                          "size": 651
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Strings",
+                                      "name": "Strings",
+                                      "children": [
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Strings/Adapters",
+                                          "name": "Adapters",
+                                          "children": [
+                                            {
+                                              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Strings/Adapters/FlashString.hpp",
+                                              "name": "FlashString.hpp",
+                                              "size": 2249
+                                            },
+                                            {
+                                              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Strings/Adapters/JsonString.hpp",
+                                              "name": "JsonString.hpp",
+                                              "size": 854
+                                            },
+                                            {
+                                              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Strings/Adapters/RamString.hpp",
+                                              "name": "RamString.hpp",
+                                              "size": 3368
+                                            },
+                                            {
+                                              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Strings/Adapters/StringObject.hpp",
+                                              "name": "StringObject.hpp",
+                                              "size": 1320
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Strings/IsString.hpp",
+                                          "name": "IsString.hpp",
+                                          "size": 499
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Strings/JsonString.hpp",
+                                          "name": "JsonString.hpp",
+                                          "size": 2003
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Strings/StoragePolicy.hpp",
+                                          "name": "StoragePolicy.hpp",
+                                          "size": 323
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Strings/StringAdapter.hpp",
+                                          "name": "StringAdapter.hpp",
+                                          "size": 861
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Strings/StringAdapters.hpp",
+                                          "name": "StringAdapters.hpp",
+                                          "size": 2277
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Strings/StringTraits.hpp",
+                                          "name": "StringTraits.hpp",
+                                          "size": 1926
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Variant",
+                                      "name": "Variant",
+                                      "children": [
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Variant/Converter.hpp",
+                                          "name": "Converter.hpp",
+                                          "size": 584
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Variant/ConverterImpl.hpp",
+                                          "name": "ConverterImpl.hpp",
+                                          "size": 8789
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Variant/JsonVariant.hpp",
+                                          "name": "JsonVariant.hpp",
+                                          "size": 1996
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Variant/JsonVariantConst.hpp",
+                                          "name": "JsonVariantConst.hpp",
+                                          "size": 4873
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Variant/SlotFunctions.hpp",
+                                          "name": "SlotFunctions.hpp",
+                                          "size": 998
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Variant/VariantAttorney.hpp",
+                                          "name": "VariantAttorney.hpp",
+                                          "size": 1344
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Variant/VariantCompare.hpp",
+                                          "name": "VariantCompare.hpp",
+                                          "size": 5336
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Variant/VariantContent.hpp",
+                                          "name": "VariantContent.hpp",
+                                          "size": 1132
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Variant/VariantData.hpp",
+                                          "name": "VariantData.hpp",
+                                          "size": 8060
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Variant/VariantFunctions.hpp",
+                                          "name": "VariantFunctions.hpp",
+                                          "size": 3027
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Variant/VariantImpl.hpp",
+                                          "name": "VariantImpl.hpp",
+                                          "size": 5510
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Variant/VariantOperators.hpp",
+                                          "name": "VariantOperators.hpp",
+                                          "size": 5906
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Variant/VariantRefBase.hpp",
+                                          "name": "VariantRefBase.hpp",
+                                          "size": 9631
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Variant/VariantSlot.hpp",
+                                          "name": "VariantSlot.hpp",
+                                          "size": 2833
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Variant/VariantTag.hpp",
+                                          "name": "VariantTag.hpp",
+                                          "size": 318
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Variant/VariantTo.hpp",
+                                          "name": "VariantTo.hpp",
+                                          "size": 698
+                                        },
+                                        {
+                                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Variant/Visitor.hpp",
+                                          "name": "Visitor.hpp",
+                                          "size": 1014
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/compatibility.hpp",
+                                      "name": "compatibility.hpp",
+                                      "size": 963
+                                    },
+                                    {
+                                      "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/version.hpp",
+                                      "name": "version.hpp",
+                                      "size": 303
+                                    }
+                                  ]
+                                },
+                                {
+                                  "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.h",
+                                  "name": "ArduinoJson.h",
+                                  "size": 297
+                                },
+                                {
+                                  "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.hpp",
+                                  "name": "ArduinoJson.hpp",
+                                  "size": 1867
+                                },
+                                {
+                                  "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/ArduinoJson/src/CMakeLists.txt",
+                                  "name": "CMakeLists.txt",
+                                  "size": 1948
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/PubSubClient",
+                          "name": "PubSubClient",
+                          "children": [
+                            {
+                              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/PubSubClient/.gitignore",
+                              "name": ".gitignore",
+                              "size": 63
+                            },
+                            {
+                              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/PubSubClient/.piopm",
+                              "name": ".piopm",
+                              "size": 164
+                            },
+                            {
+                              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/PubSubClient/.travis.yml",
+                              "name": ".travis.yml",
+                              "size": 96
+                            },
+                            {
+                              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/PubSubClient/CHANGES.txt",
+                              "name": "CHANGES.txt",
+                              "size": 2755
+                            },
+                            {
+                              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/PubSubClient/LICENSE.txt",
+                              "name": "LICENSE.txt",
+                              "size": 1065
+                            },
+                            {
+                              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/PubSubClient/README.md",
+                              "name": "README.md",
+                              "size": 2004
+                            },
+                            {
+                              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/PubSubClient/examples",
+                              "name": "examples",
+                              "children": [
+                                {
+                                  "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/PubSubClient/examples/mqtt_auth",
+                                  "name": "mqtt_auth",
+                                  "children": [
+                                    {
+                                      "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/PubSubClient/examples/mqtt_auth/mqtt_auth.ino",
+                                      "name": "mqtt_auth.ino",
+                                      "size": 1074
+                                    }
+                                  ]
+                                },
+                                {
+                                  "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/PubSubClient/examples/mqtt_basic",
+                                  "name": "mqtt_basic",
+                                  "children": [
+                                    {
+                                      "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/PubSubClient/examples/mqtt_basic/mqtt_basic.ino",
+                                      "name": "mqtt_basic.ino",
+                                      "size": 1967
+                                    }
+                                  ]
+                                },
+                                {
+                                  "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/PubSubClient/examples/mqtt_esp8266",
+                                  "name": "mqtt_esp8266",
+                                  "children": [
+                                    {
+                                      "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/PubSubClient/examples/mqtt_esp8266/mqtt_esp8266.ino",
+                                      "name": "mqtt_esp8266.ino",
+                                      "size": 3827
+                                    }
+                                  ]
+                                },
+                                {
+                                  "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/PubSubClient/examples/mqtt_large_message",
+                                  "name": "mqtt_large_message",
+                                  "children": [
+                                    {
+                                      "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/PubSubClient/examples/mqtt_large_message/mqtt_large_message.ino",
+                                      "name": "mqtt_large_message.ino",
+                                      "size": 5499
+                                    }
+                                  ]
+                                },
+                                {
+                                  "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/PubSubClient/examples/mqtt_publish_in_callback",
+                                  "name": "mqtt_publish_in_callback",
+                                  "children": [
+                                    {
+                                      "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/PubSubClient/examples/mqtt_publish_in_callback/mqtt_publish_in_callback.ino",
+                                      "name": "mqtt_publish_in_callback.ino",
+                                      "size": 1565
+                                    }
+                                  ]
+                                },
+                                {
+                                  "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/PubSubClient/examples/mqtt_reconnect_nonblocking",
+                                  "name": "mqtt_reconnect_nonblocking",
+                                  "children": [
+                                    {
+                                      "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/PubSubClient/examples/mqtt_reconnect_nonblocking/mqtt_reconnect_nonblocking.ino",
+                                      "name": "mqtt_reconnect_nonblocking.ino",
+                                      "size": 1425
+                                    }
+                                  ]
+                                },
+                                {
+                                  "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/PubSubClient/examples/mqtt_stream",
+                                  "name": "mqtt_stream",
+                                  "children": [
+                                    {
+                                      "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/PubSubClient/examples/mqtt_stream/mqtt_stream.ino",
+                                      "name": "mqtt_stream.ino",
+                                      "size": 1220
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/PubSubClient/keywords.txt",
+                              "name": "keywords.txt",
+                              "size": 834
+                            },
+                            {
+                              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/PubSubClient/library.json",
+                              "name": "library.json",
+                              "size": 798
+                            },
+                            {
+                              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/PubSubClient/library.properties",
+                              "name": "library.properties",
+                              "size": 602
+                            },
+                            {
+                              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/PubSubClient/src",
+                              "name": "src",
+                              "children": [
+                                {
+                                  "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/PubSubClient/src/PubSubClient.cpp",
+                                  "name": "PubSubClient.cpp",
+                                  "size": 24002
+                                },
+                                {
+                                  "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/PubSubClient/src/PubSubClient.h",
+                                  "name": "PubSubClient.h",
+                                  "size": 7689
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.pio/libdeps/esp32dev/integrity.dat",
+                          "name": "integrity.dat",
+                          "size": 57
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.qodo",
+              "name": ".qodo",
+              "children": [
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.qodo/agents",
+                  "name": "agents"
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.qodo/workflows",
+                  "name": "workflows"
+                }
+              ]
+            },
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.vscode",
+              "name": ".vscode",
+              "children": [
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.vscode/c_cpp_properties.json",
+                  "name": "c_cpp_properties.json",
+                  "size": 59414
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.vscode/extensions.json",
+                  "name": "extensions.json",
+                  "size": 274
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.vscode/launch.json",
+                  "name": "launch.json",
+                  "size": 1820
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/.vscode/tasks.json",
+                  "name": "tasks.json",
+                  "size": 902
+                }
+              ]
+            },
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/default_ota.csv",
+              "name": "default_ota.csv",
+              "size": 263
+            },
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/include",
+              "name": "include",
+              "children": [
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/include/README",
+                  "name": "README",
+                  "size": 1386
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/include/mcp_LedBlink.hpp",
+                  "name": "mcp_LedBlink.hpp",
+                  "size": 2584
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/include/mcp_espnow.hpp",
+                  "name": "mcp_espnow.hpp",
+                  "size": 2230
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/include/mcp_functions.hpp",
+                  "name": "mcp_functions.hpp",
+                  "size": 8439
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/include/mcp_header.hpp",
+                  "name": "mcp_header.hpp",
+                  "size": 5566
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/include/mcp_mqtt.hpp",
+                  "name": "mcp_mqtt.hpp",
+                  "size": 17238
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/include/mcp_settings.hpp",
+                  "name": "mcp_settings.hpp",
+                  "size": 12121
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/include/mcp_tasks.hpp",
+                  "name": "mcp_tasks.hpp",
+                  "size": 2016
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/include/mcp_wifi.hpp",
+                  "name": "mcp_wifi.hpp",
+                  "size": 8484
+                }
+              ]
+            },
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/lib",
+              "name": "lib",
+              "children": [
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/lib/README",
+                  "name": "README",
+                  "size": 1037
+                }
+              ]
+            },
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/platformio.ini",
+              "name": "platformio.ini",
+              "size": 3982
+            },
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/src",
+              "name": "src",
+              "children": [
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/src/data",
+                  "name": "data"
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/src/main.cpp",
+                  "name": "main.cpp",
+                  "size": 1385
+                }
+              ]
+            },
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/test",
+              "name": "test",
+              "children": [
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Esp32/ApEsp32/test/README",
+                  "name": "README",
+                  "size": 518
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/home/fabio/Escritorio/IA/MCP/Plc",
+      "name": "Plc",
+      "children": [
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Plc/.browserslistrc",
+          "name": ".browserslistrc",
+          "size": 181
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Plc/.editorconfig",
+          "name": ".editorconfig",
+          "size": 262
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Plc/.env.example",
+          "name": ".env.example",
+          "size": 285
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Plc/.eslintrc.js",
+          "name": ".eslintrc.js",
+          "size": 1104
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Plc/.gitattributes",
+          "name": ".gitattributes",
+          "size": 43
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Plc/.gitignore",
+          "name": ".gitignore",
+          "size": 478
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Plc/.prettierignore",
+          "name": ".prettierignore",
+          "size": 7
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Plc/.prettierrc.js",
+          "name": ".prettierrc.js",
+          "size": 115
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Plc/.qodo",
+          "name": ".qodo",
+          "children": [
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Plc/.qodo/agents",
+              "name": "agents"
+            },
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Plc/.qodo/workflows",
+              "name": "workflows"
+            }
+          ]
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Plc/.vscode",
+          "name": ".vscode",
+          "children": [
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Plc/.vscode/settings.json",
+              "name": "settings.json",
+              "size": 34
+            }
+          ]
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Plc/LICENSE",
+          "name": "LICENSE",
+          "size": 128
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Plc/README.md",
+          "name": "README.md",
+          "size": 1201
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Plc/index.html",
+          "name": "index.html",
+          "size": 1336
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Plc/manifest.json",
+          "name": "manifest.json",
+          "size": 0
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Plc/package.json",
+          "name": "package.json",
+          "size": 3402
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Plc/postcss.config.js",
+          "name": "postcss.config.js",
+          "size": 61
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Plc/public",
+          "name": "public",
+          "children": [
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Plc/public/favicon.ico",
+              "name": "favicon.ico",
+              "size": 1150
+            }
+          ]
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Plc/salida.mbtiles",
+          "name": "salida.mbtiles",
+          "size": 0
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Plc/src",
+          "name": "src",
+          "children": [
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/App.js",
+              "name": "App.js",
+              "size": 1411
+            },
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/_nav.js",
+              "name": "_nav.js",
+              "size": 1115
+            },
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/api",
+              "name": "api",
+              "children": [
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/api/index.js",
+                  "name": "index.js",
+                  "size": 39
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/api/iotApi.js",
+                  "name": "iotApi.js",
+                  "size": 553
+                }
+              ]
+            },
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/assets",
+              "name": "assets"
+            },
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/components",
+              "name": "components",
+              "children": [
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/components/AppBreadcrumb.js",
+                  "name": "AppBreadcrumb.js",
+                  "size": 1519
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/components/AppContent.js",
+                  "name": "AppContent.js",
+                  "size": 879
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/components/AppFooter.js",
+                  "name": "AppFooter.js",
+                  "size": 815
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/components/AppHeader.js",
+                  "name": "AppHeader.js",
+                  "size": 8439
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/components/AppSidebar.css",
+                  "name": "AppSidebar.css",
+                  "size": 2259
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/components/AppSidebar.js",
+                  "name": "AppSidebar.js",
+                  "size": 2318
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/components/AppSidebarNav.js",
+                  "name": "AppSidebarNav.js",
+                  "size": 1883
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/components/analisis",
+                  "name": "analisis",
+                  "children": [
+                    {
+                      "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/components/analisis/AnalisisTable.jsx",
+                      "name": "AnalisisTable.jsx",
+                      "size": 9617
+                    },
+                    {
+                      "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/components/analisis/DateRangeSelector.jsx",
+                      "name": "DateRangeSelector.jsx",
+                      "size": 2401
+                    },
+                    {
+                      "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/components/analisis/DeviceControlMap.jsx",
+                      "name": "DeviceControlMap.jsx",
+                      "size": 9268
+                    },
+                    {
+                      "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/components/analisis/DeviceDataForceGraph.jsx",
+                      "name": "DeviceDataForceGraph.jsx",
+                      "size": 27376
+                    },
+                    {
+                      "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/components/analisis/DeviceManagement.jsx",
+                      "name": "DeviceManagement.jsx",
+                      "size": 14475
+                    },
+                    {
+                      "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/components/analisis/LiveTrainingMonitor.jsx",
+                      "name": "LiveTrainingMonitor.jsx",
+                      "size": 4782
+                    },
+                    {
+                      "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/components/analisis/ModelEvolutionChart.jsx",
+                      "name": "ModelEvolutionChart.jsx",
+                      "size": 2190
+                    },
+                    {
+                      "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/components/analisis/ProjectTidyTree.jsx",
+                      "name": "ProjectTidyTree.jsx",
+                      "size": 19253
+                    },
+                    {
+                      "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/components/analisis/Reporte.jsx",
+                      "name": "Reporte.jsx",
+                      "size": 8116
+                    },
+                    {
+                      "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/components/analisis/SystemArchitecture.jsx",
+                      "name": "SystemArchitecture.jsx",
+                      "size": 7949
+                    },
+                    {
+                      "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/components/analisis/TrainingConfigPanel.jsx",
+                      "name": "TrainingConfigPanel.jsx",
+                      "size": 5639
+                    },
+                    {
+                      "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/components/analisis/VegaChartRenderer.jsx",
+                      "name": "VegaChartRenderer.jsx",
+                      "size": 1506
+                    },
+                    {
+                      "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/components/analisis/architecture_config.json",
+                      "name": "architecture_config.json",
+                      "size": 2670
+                    }
+                  ]
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/components/asistente",
+                  "name": "asistente",
+                  "children": [
+                    {
+                      "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/components/asistente/AsistenteBlock.jsx",
+                      "name": "AsistenteBlock.jsx",
+                      "size": 5616
+                    }
+                  ]
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/components/control",
+                  "name": "control",
+                  "children": [
+                    {
+                      "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/components/control/Control.jsx",
+                      "name": "Control.jsx",
+                      "size": 9819
+                    }
+                  ]
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/components/graficos",
+                  "name": "graficos",
+                  "children": [
+                    {
+                      "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/components/graficos/AdcRealtimeChartVega.jsx",
+                      "name": "AdcRealtimeChartVega.jsx",
+                      "size": 2801
+                    },
+                    {
+                      "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/components/graficos/BeeswarmChart.jsx",
+                      "name": "BeeswarmChart.jsx",
+                      "size": 3992
+                    },
+                    {
+                      "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/components/graficos/DeviceCharts.jsx",
+                      "name": "DeviceCharts.jsx",
+                      "size": 15707
+                    },
+                    {
+                      "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/components/graficos/PerformanceBubbleChart.jsx",
+                      "name": "PerformanceBubbleChart.jsx",
+                      "size": 7510
+                    },
+                    {
+                      "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/components/graficos/VegaChart.jsx",
+                      "name": "VegaChart.jsx",
+                      "size": 1615
+                    }
+                  ]
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/components/header",
+                  "name": "header",
+                  "children": [
+                    {
+                      "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/components/header/AppHeaderDropdown.js",
+                      "name": "AppHeaderDropdown.js",
+                      "size": 1802
+                    },
+                    {
+                      "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/components/header/index.js",
+                      "name": "index.js",
+                      "size": 82
+                    }
+                  ]
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/components/help",
+                  "name": "help",
+                  "children": [
+                    {
+                      "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/components/help/AgentGuideHelper.jsx",
+                      "name": "AgentGuideHelper.jsx",
+                      "size": 9825
+                    },
+                    {
+                      "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/components/help/helps.js",
+                      "name": "helps.js",
+                      "size": 1269
+                    }
+                  ]
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/components/index.css",
+                  "name": "index.css",
+                  "size": 947
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/components/index.js",
+                  "name": "index.js",
+                  "size": 551
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/components/loaders",
+                  "name": "loaders",
+                  "children": [
+                    {
+                      "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/components/loaders/TypingLoader.css",
+                      "name": "TypingLoader.css",
+                      "size": 1040
+                    },
+                    {
+                      "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/components/loaders/TypingLoader.jsx",
+                      "name": "TypingLoader.jsx",
+                      "size": 362
+                    }
+                  ]
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/components/monitor",
+                  "name": "monitor",
+                  "children": [
+                    {
+                      "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/components/monitor/SensorTable.jsx",
+                      "name": "SensorTable.jsx",
+                      "size": 2251
+                    }
+                  ]
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/components/sidebar",
+                  "name": "sidebar"
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/components/tablas",
+                  "name": "tablas",
+                  "children": [
+                    {
+                      "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/components/tablas/TableHOC.jsx",
+                      "name": "TableHOC.jsx",
+                      "size": 10619
+                    }
+                  ]
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/components/tarjeta",
+                  "name": "tarjeta",
+                  "children": [
+                    {
+                      "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/components/tarjeta/GptMessage.jsx",
+                      "name": "GptMessage.jsx",
+                      "size": 6406
+                    },
+                    {
+                      "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/components/tarjeta/MyMessage.jsx",
+                      "name": "MyMessage.jsx",
+                      "size": 543
+                    },
+                    {
+                      "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/components/tarjeta/Tarjetainformacion.css",
+                      "name": "Tarjetainformacion.css",
+                      "size": 140
+                    },
+                    {
+                      "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/components/tarjeta/TextMessageBox.jsx",
+                      "name": "TextMessageBox.jsx",
+                      "size": 5952
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/context",
+              "name": "context",
+              "children": [
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/context/MqttContext.js",
+                  "name": "MqttContext.js",
+                  "size": 3209
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/context/SocketContext.js",
+                  "name": "SocketContext.js",
+                  "size": 687
+                }
+              ]
+            },
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/helpers",
+              "name": "helpers",
+              "children": [
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/helpers/getEnvVariables.js",
+                  "name": "getEnvVariables.js",
+                  "size": 174
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/helpers/index.js",
+                  "name": "index.js",
+                  "size": 71
+                }
+              ]
+            },
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/hook",
+              "name": "hook",
+              "children": [
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/hook/analysis",
+                  "name": "analysis",
+                  "children": [
+                    {
+                      "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/hook/analysis/useAnalysis.js",
+                      "name": "useAnalysis.js",
+                      "size": 4745
+                    }
+                  ]
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/hook/control",
+                  "name": "control",
+                  "children": [
+                    {
+                      "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/hook/control/useControl.js",
+                      "name": "useControl.js",
+                      "size": 781
+                    }
+                  ]
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/hook/index.js",
+                  "name": "index.js",
+                  "size": 316
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/hook/inteligencia",
+                  "name": "inteligencia",
+                  "children": [
+                    {
+                      "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/hook/inteligencia/useInteligencia.js",
+                      "name": "useInteligencia.js",
+                      "size": 817
+                    }
+                  ]
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/hook/mqtt",
+                  "name": "mqtt",
+                  "children": [
+                    {
+                      "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/hook/mqtt/useMqtt.js",
+                      "name": "useMqtt.js",
+                      "size": 3647
+                    }
+                  ]
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/hook/socket",
+                  "name": "socket",
+                  "children": [
+                    {
+                      "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/hook/socket/useSocket.js",
+                      "name": "useSocket.js",
+                      "size": 649
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/i18n.js",
+              "name": "i18n.js",
+              "size": 1298
+            },
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/index.js",
+              "name": "index.js",
+              "size": 507
+            },
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/layout",
+              "name": "layout",
+              "children": [
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/layout/DefaultLayout.js",
+                  "name": "DefaultLayout.js",
+                  "size": 499
+                }
+              ]
+            },
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/routes.js",
+              "name": "routes.js",
+              "size": 1562
+            },
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/scss",
+              "name": "scss",
+              "children": [
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/scss/_custom.scss",
+                  "name": "_custom.scss",
+                  "size": 33
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/scss/_theme.scss",
+                  "name": "_theme.scss",
+                  "size": 1304
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/scss/_variables.scss",
+                  "name": "_variables.scss",
+                  "size": 146
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/scss/examples.scss",
+                  "name": "examples.scss",
+                  "size": 1860
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/scss/style.scss",
+                  "name": "style.scss",
+                  "size": 367
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/scss/vendors",
+                  "name": "vendors",
+                  "children": [
+                    {
+                      "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/scss/vendors/_calendar.scss",
+                      "name": "_calendar.scss",
+                      "size": 389
+                    },
+                    {
+                      "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/scss/vendors/_simplebar.scss",
+                      "name": "_simplebar.scss",
+                      "size": 177
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/service",
+              "name": "service",
+              "children": [
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/service/charts",
+                  "name": "charts",
+                  "children": [
+                    {
+                      "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/service/charts/DeviceChartsService.js",
+                      "name": "DeviceChartsService.js",
+                      "size": 5093
+                    }
+                  ]
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/service/control",
+                  "name": "control",
+                  "children": [
+                    {
+                      "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/service/control/control.service.js",
+                      "name": "control.service.js",
+                      "size": 6489
+                    }
+                  ]
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/service/inteligencia",
+                  "name": "inteligencia",
+                  "children": [
+                    {
+                      "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/service/inteligencia/inteligencia.service.js",
+                      "name": "inteligencia.service.js",
+                      "size": 901
+                    }
+                  ]
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/service/projectStructure.json",
+                  "name": "projectStructure.json",
+                  "size": 160701
+                }
+              ]
+            },
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/store",
+              "name": "store",
+              "children": [
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/store/control",
+                  "name": "control",
+                  "children": [
+                    {
+                      "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/store/control/control.store.js",
+                      "name": "control.store.js",
+                      "size": 1680
+                    }
+                  ]
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/store/index.js",
+                  "name": "index.js",
+                  "size": 92
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/store/inteligencia",
+                  "name": "inteligencia",
+                  "children": [
+                    {
+                      "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/store/inteligencia/inteligencia.store.js",
+                      "name": "inteligencia.store.js",
+                      "size": 988
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/store.js",
+              "name": "store.js",
+              "size": 380
+            },
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/views",
+              "name": "views",
+              "children": [
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/views/analitica",
+                  "name": "analitica",
+                  "children": [
+                    {
+                      "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/views/analitica/Analitica.jsx",
+                      "name": "Analitica.jsx",
+                      "size": 4942
+                    },
+                    {
+                      "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/views/analitica/Historial.jsx",
+                      "name": "Historial.jsx",
+                      "size": 1752
+                    },
+                    {
+                      "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/views/analitica/ProjectCommunicationSankey.jsx",
+                      "name": "ProjectCommunicationSankey.jsx",
+                      "size": 8045
+                    },
+                    {
+                      "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/views/analitica/Training.jsx",
+                      "name": "Training.jsx",
+                      "size": 4928
+                    }
+                  ]
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/views/asistente",
+                  "name": "asistente",
+                  "children": [
+                    {
+                      "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/views/asistente/Asistente.jsx",
+                      "name": "Asistente.jsx",
+                      "size": 391
+                    }
+                  ]
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/views/control",
+                  "name": "control",
+                  "children": [
+                    {
+                      "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/views/control/Ajustes.jsx",
+                      "name": "Ajustes.jsx",
+                      "size": 1215
+                    },
+                    {
+                      "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/views/control/Control.jsx",
+                      "name": "Control.jsx",
+                      "size": 397
+                    },
+                    {
+                      "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/views/control/Dispositivos.jsx",
+                      "name": "Dispositivos.jsx",
+                      "size": 289
+                    }
+                  ]
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/views/mediciones",
+                  "name": "mediciones",
+                  "children": [
+                    {
+                      "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/views/mediciones/principal.jsx",
+                      "name": "principal.jsx",
+                      "size": 286
+                    }
+                  ]
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/views/theme",
+                  "name": "theme",
+                  "children": [
+                    {
+                      "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/views/theme/colors",
+                      "name": "colors",
+                      "children": [
+                        {
+                          "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/views/theme/colors/Colors.js",
+                          "name": "Colors.js",
+                          "size": 2512
+                        }
+                      ]
+                    },
+                    {
+                      "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/views/theme/typography",
+                      "name": "typography",
+                      "children": [
+                        {
+                          "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/views/theme/typography/Typography.js",
+                          "name": "Typography.js",
+                          "size": 8035
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Plc/src/views/widgets",
+                  "name": "widgets"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Plc/vite.config.mjs",
+          "name": "vite.config.mjs",
+          "size": 1866
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Plc/vite.log",
+          "name": "vite.log",
+          "size": 3218
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Plc/yarn-error.log",
+          "name": "yarn-error.log",
+          "size": 402945
+        }
+      ]
+    },
+    {
+      "path": "/home/fabio/Escritorio/IA/MCP/README.md",
+      "name": "README.md",
+      "size": 2717
+    },
+    {
+      "path": "/home/fabio/Escritorio/IA/MCP/Servidor",
+      "name": "Servidor",
+      "children": [
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Servidor/.env.example",
+          "name": ".env.example",
+          "size": 936
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Servidor/.gitignore",
+          "name": ".gitignore",
+          "size": 26
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Servidor/.qodo",
+          "name": ".qodo",
+          "children": [
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Servidor/.qodo/agents",
+              "name": "agents"
+            },
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Servidor/.qodo/workflows",
+              "name": "workflows"
+            }
+          ]
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Servidor/DOCUMENTACION_GENERAL.md",
+          "name": "DOCUMENTACION_GENERAL.md",
+          "size": 2921
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Servidor/README.md",
+          "name": "README.md",
+          "size": 2143
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Servidor/analysis_danfo.js",
+          "name": "analysis_danfo.js",
+          "size": 4949
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Servidor/app.js",
+          "name": "app.js",
+          "size": 442
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Servidor/assets",
+          "name": "assets",
+          "children": [
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Servidor/assets/no-image.jpg",
+              "name": "no-image.jpg",
+              "size": 11265
+            }
+          ]
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Servidor/certs",
+          "name": "certs",
+          "children": [
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Servidor/certs/ca.crt",
+              "name": "ca.crt",
+              "size": 1452
+            },
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Servidor/certs/server.crt",
+              "name": "server.crt",
+              "size": 1277
+            },
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Servidor/certs/server.key",
+              "name": "server.key",
+              "size": 1704
+            }
+          ]
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Servidor/check_db_state.js",
+          "name": "check_db_state.js",
+          "size": 567
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Servidor/check_table.js",
+          "name": "check_table.js",
+          "size": 784
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Servidor/check_tables.js",
+          "name": "check_tables.js",
+          "size": 1143
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Servidor/cleanup_test_models.js",
+          "name": "cleanup_test_models.js",
+          "size": 1912
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Servidor/config",
+          "name": "config",
+          "children": [
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Servidor/config/dotenv-config.js",
+              "name": "dotenv-config.js",
+              "size": 296
+            },
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Servidor/config/mcpConfig.js",
+              "name": "mcpConfig.js",
+              "size": 679
+            }
+          ]
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Servidor/constants",
+          "name": "constants",
+          "children": [
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Servidor/constants/projectStructure.json",
+              "name": "projectStructure.json",
+              "size": 160701
+            },
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Servidor/constants/schema.js",
+              "name": "schema.js",
+              "size": 1882
+            }
+          ]
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Servidor/controllers",
+          "name": "controllers",
+          "children": [
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Servidor/controllers/ChatController.js",
+              "name": "ChatController.js",
+              "size": 4577
+            },
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Servidor/controllers/DataController.js",
+              "name": "DataController.js",
+              "size": 16440
+            }
+          ]
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Servidor/database",
+          "name": "database",
+          "children": [
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Servidor/database/config.js",
+              "name": "config.js",
+              "size": 745
+            }
+          ]
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Servidor/debug_danfo.js",
+          "name": "debug_danfo.js",
+          "size": 257
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Servidor/debug_data.js",
+          "name": "debug_data.js",
+          "size": 1964
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Servidor/fix_column_type.js",
+          "name": "fix_column_type.js",
+          "size": 1581
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Servidor/helpers",
+          "name": "helpers",
+          "children": [
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Servidor/helpers/analysisHelper.js",
+              "name": "analysisHelper.js",
+              "size": 6956
+            }
+          ]
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Servidor/import_existing_models.js",
+          "name": "import_existing_models.js",
+          "size": 2723
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Servidor/inspect_logs.js",
+          "name": "inspect_logs.js",
+          "size": 574
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Servidor/lib",
+          "name": "lib",
+          "children": [
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Servidor/lib/server.js",
+              "name": "server.js",
+              "size": 4355
+            }
+          ]
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Servidor/manual_test.js",
+          "name": "manual_test.js",
+          "size": 1474
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Servidor/middlewares",
+          "name": "middlewares"
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Servidor/models",
+          "name": "models",
+          "children": [
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Servidor/models/DatosModel.js",
+              "name": "DatosModel.js",
+              "size": 4755
+            },
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Servidor/models/DeviceModel.js",
+              "name": "DeviceModel.js",
+              "size": 5727
+            },
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Servidor/models/ModeloEntrenado.js",
+              "name": "ModeloEntrenado.js",
+              "size": 6207
+            }
+          ]
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Servidor/mqtt",
+          "name": "mqtt",
+          "children": [
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Servidor/mqtt/conectMqtt.js",
+              "name": "conectMqtt.js",
+              "size": 4561
+            }
+          ]
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Servidor/nodemon.json",
+          "name": "nodemon.json",
+          "size": 144
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Servidor/outputs",
+          "name": "outputs"
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Servidor/package.json",
+          "name": "package.json",
+          "size": 1138
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Servidor/package.json.backup",
+          "name": "package.json.backup",
+          "size": 819
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public",
+          "name": "public",
+          "children": [
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/Medidor.glb",
+              "name": "Medidor.glb",
+              "size": 1478688
+            },
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets",
+              "name": "assets",
+              "children": [
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/09ab0626-bb45-4650-acc8-0182d693df02-BeQQ1X_f.woff2",
+                  "name": "09ab0626-bb45-4650-acc8-0182d693df02-BeQQ1X_f.woff2",
+                  "size": 32404
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/09ab0626-bb45-4650-acc8-0182d693df02-arabic-BSq1tCUT.woff2",
+                  "name": "09ab0626-bb45-4650-acc8-0182d693df02-arabic-BSq1tCUT.woff2",
+                  "size": 18240
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/09ab0626-bb45-4650-acc8-0182d693df02-cyrillic-CqwMzsPk.woff2",
+                  "name": "09ab0626-bb45-4650-acc8-0182d693df02-cyrillic-CqwMzsPk.woff2",
+                  "size": 23840
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/09ab0626-bb45-4650-acc8-0182d693df02-ext-CrNe3KHy.woff2",
+                  "name": "09ab0626-bb45-4650-acc8-0182d693df02-ext-CrNe3KHy.woff2",
+                  "size": 18460
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/09ab0626-bb45-4650-acc8-0182d693df02-georgian-K3ojRBvX.woff2",
+                  "name": "09ab0626-bb45-4650-acc8-0182d693df02-georgian-K3ojRBvX.woff2",
+                  "size": 12252
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/09ab0626-bb45-4650-acc8-0182d693df02-greek-B_XuJTAZ.woff2",
+                  "name": "09ab0626-bb45-4650-acc8-0182d693df02-greek-B_XuJTAZ.woff2",
+                  "size": 7140
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/09ab0626-bb45-4650-acc8-0182d693df02-hebrew-MIL9x_nF.woff2",
+                  "name": "09ab0626-bb45-4650-acc8-0182d693df02-hebrew-MIL9x_nF.woff2",
+                  "size": 6288
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/09ab0626-bb45-4650-acc8-0182d693df02-math-lIkApr1P.woff2",
+                  "name": "09ab0626-bb45-4650-acc8-0182d693df02-math-lIkApr1P.woff2",
+                  "size": 11636
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/09ab0626-bb45-4650-acc8-0182d693df02-thai-Bzm7xvwp.woff2",
+                  "name": "09ab0626-bb45-4650-acc8-0182d693df02-thai-Bzm7xvwp.woff2",
+                  "size": 13224
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/09ab0626-bb45-4650-acc8-0182d693df02-vietnamese-bXDpdbzz.woff2",
+                  "name": "09ab0626-bb45-4650-acc8-0182d693df02-vietnamese-bXDpdbzz.woff2",
+                  "size": 38008
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/0c8a5d21-8a14-4451-8145-695071809cb7-0VhhKiIj.woff2",
+                  "name": "0c8a5d21-8a14-4451-8145-695071809cb7-0VhhKiIj.woff2",
+                  "size": 32656
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/0c8a5d21-8a14-4451-8145-695071809cb7-arabic-CFkBSarF.woff2",
+                  "name": "0c8a5d21-8a14-4451-8145-695071809cb7-arabic-CFkBSarF.woff2",
+                  "size": 18068
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/0c8a5d21-8a14-4451-8145-695071809cb7-cyrillic-2_3luF0M.woff2",
+                  "name": "0c8a5d21-8a14-4451-8145-695071809cb7-cyrillic-2_3luF0M.woff2",
+                  "size": 23748
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/0c8a5d21-8a14-4451-8145-695071809cb7-ext-ZIUWLV_l.woff2",
+                  "name": "0c8a5d21-8a14-4451-8145-695071809cb7-ext-ZIUWLV_l.woff2",
+                  "size": 18484
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/0c8a5d21-8a14-4451-8145-695071809cb7-georgian-DxEPV1YF.woff2",
+                  "name": "0c8a5d21-8a14-4451-8145-695071809cb7-georgian-DxEPV1YF.woff2",
+                  "size": 11740
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/0c8a5d21-8a14-4451-8145-695071809cb7-greek-WY7WHFrm.woff2",
+                  "name": "0c8a5d21-8a14-4451-8145-695071809cb7-greek-WY7WHFrm.woff2",
+                  "size": 7180
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/0c8a5d21-8a14-4451-8145-695071809cb7-hebrew-Cz9TkiS-.woff2",
+                  "name": "0c8a5d21-8a14-4451-8145-695071809cb7-hebrew-Cz9TkiS-.woff2",
+                  "size": 6376
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/0c8a5d21-8a14-4451-8145-695071809cb7-math-Vhad558A.woff2",
+                  "name": "0c8a5d21-8a14-4451-8145-695071809cb7-math-Vhad558A.woff2",
+                  "size": 11916
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/0c8a5d21-8a14-4451-8145-695071809cb7-thai-tllTIX2k.woff2",
+                  "name": "0c8a5d21-8a14-4451-8145-695071809cb7-thai-tllTIX2k.woff2",
+                  "size": 13132
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/0c8a5d21-8a14-4451-8145-695071809cb7-vietnamese-Dv4zYZ2L.woff2",
+                  "name": "0c8a5d21-8a14-4451-8145-695071809cb7-vietnamese-Dv4zYZ2L.woff2",
+                  "size": 38056
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/12f4c786-0bef-4a48-b7c0-eebaa7591688-Coi0fa6j.woff2",
+                  "name": "12f4c786-0bef-4a48-b7c0-eebaa7591688-Coi0fa6j.woff2",
+                  "size": 32492
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/12f4c786-0bef-4a48-b7c0-eebaa7591688-arabic-CsDfqCdG.woff2",
+                  "name": "12f4c786-0bef-4a48-b7c0-eebaa7591688-arabic-CsDfqCdG.woff2",
+                  "size": 17964
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/12f4c786-0bef-4a48-b7c0-eebaa7591688-cyrillic-DNRszQOD.woff2",
+                  "name": "12f4c786-0bef-4a48-b7c0-eebaa7591688-cyrillic-DNRszQOD.woff2",
+                  "size": 22772
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/12f4c786-0bef-4a48-b7c0-eebaa7591688-ext-7n5CqxL7.woff2",
+                  "name": "12f4c786-0bef-4a48-b7c0-eebaa7591688-ext-7n5CqxL7.woff2",
+                  "size": 18860
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/12f4c786-0bef-4a48-b7c0-eebaa7591688-georgian-Dm7_Errf.woff2",
+                  "name": "12f4c786-0bef-4a48-b7c0-eebaa7591688-georgian-Dm7_Errf.woff2",
+                  "size": 11832
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/12f4c786-0bef-4a48-b7c0-eebaa7591688-greek-CausCqqg.woff2",
+                  "name": "12f4c786-0bef-4a48-b7c0-eebaa7591688-greek-CausCqqg.woff2",
+                  "size": 7108
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/12f4c786-0bef-4a48-b7c0-eebaa7591688-hebrew-CcMqJEql.woff2",
+                  "name": "12f4c786-0bef-4a48-b7c0-eebaa7591688-hebrew-CcMqJEql.woff2",
+                  "size": 6612
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/12f4c786-0bef-4a48-b7c0-eebaa7591688-math-VowRATwI.woff2",
+                  "name": "12f4c786-0bef-4a48-b7c0-eebaa7591688-math-VowRATwI.woff2",
+                  "size": 11996
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/12f4c786-0bef-4a48-b7c0-eebaa7591688-thai-BIwtsGXD.woff2",
+                  "name": "12f4c786-0bef-4a48-b7c0-eebaa7591688-thai-BIwtsGXD.woff2",
+                  "size": 12260
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/12f4c786-0bef-4a48-b7c0-eebaa7591688-vietnamese-DWeOXKdi.woff2",
+                  "name": "12f4c786-0bef-4a48-b7c0-eebaa7591688-vietnamese-DWeOXKdi.woff2",
+                  "size": 37968
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/3ae1e25e-3aa6-4061-a016-a079159f9d65-CccJlW6N.woff2",
+                  "name": "3ae1e25e-3aa6-4061-a016-a079159f9d65-CccJlW6N.woff2",
+                  "size": 115056
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/41331c3c-3759-4462-8695-33c9a21b6a5b-egzEe5Uy.woff2",
+                  "name": "41331c3c-3759-4462-8695-33c9a21b6a5b-egzEe5Uy.woff2",
+                  "size": 105924
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/94aa531e-7746-4df0-bb6e-349891f2eda5-DAQswxTR.woff2",
+                  "name": "94aa531e-7746-4df0-bb6e-349891f2eda5-DAQswxTR.woff2",
+                  "size": 111180
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/CalciteWebCoreIcons-B_0Jnq6z.svg",
+                  "name": "CalciteWebCoreIcons-B_0Jnq6z.svg",
+                  "size": 110048
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/CalciteWebCoreIcons-D9GbE-gE.ttf",
+                  "name": "CalciteWebCoreIcons-D9GbE-gE.ttf",
+                  "size": 37176
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/CalciteWebCoreIcons-p0hGLA1J.woff",
+                  "name": "CalciteWebCoreIcons-p0hGLA1J.woff",
+                  "size": 37252
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/DefaultLayout-B0SNof27.css",
+                  "name": "DefaultLayout-B0SNof27.css",
+                  "size": 4163
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/DefaultLayout-BmqXCPcW.css",
+                  "name": "DefaultLayout-BmqXCPcW.css",
+                  "size": 2958
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/DefaultLayout-D6FuX8Xk.js",
+                  "name": "DefaultLayout-D6FuX8Xk.js",
+                  "size": 246400
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/DefaultLayout-DKcBY0R3.js",
+                  "name": "DefaultLayout-DKcBY0R3.js",
+                  "size": 407851
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/Mediciones-Dq2OPKK4.js",
+                  "name": "Mediciones-Dq2OPKK4.js",
+                  "size": 207
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/b8b15cdf-85d1-4120-8daa-48863d803939-BUuJstda.woff2",
+                  "name": "b8b15cdf-85d1-4120-8daa-48863d803939-BUuJstda.woff2",
+                  "size": 33412
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/b8b15cdf-85d1-4120-8daa-48863d803939-arabic-DREZC0GR.woff2",
+                  "name": "b8b15cdf-85d1-4120-8daa-48863d803939-arabic-DREZC0GR.woff2",
+                  "size": 17976
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/b8b15cdf-85d1-4120-8daa-48863d803939-cyrillic-CsPLnRLo.woff2",
+                  "name": "b8b15cdf-85d1-4120-8daa-48863d803939-cyrillic-CsPLnRLo.woff2",
+                  "size": 24060
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/b8b15cdf-85d1-4120-8daa-48863d803939-ext-Bem3XA3V.woff2",
+                  "name": "b8b15cdf-85d1-4120-8daa-48863d803939-ext-Bem3XA3V.woff2",
+                  "size": 18840
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/b8b15cdf-85d1-4120-8daa-48863d803939-georgian-DQYdUyS6.woff2",
+                  "name": "b8b15cdf-85d1-4120-8daa-48863d803939-georgian-DQYdUyS6.woff2",
+                  "size": 12116
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/b8b15cdf-85d1-4120-8daa-48863d803939-greek-BbxfPdAl.woff2",
+                  "name": "b8b15cdf-85d1-4120-8daa-48863d803939-greek-BbxfPdAl.woff2",
+                  "size": 7164
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/b8b15cdf-85d1-4120-8daa-48863d803939-hebrew-7nGTaaLY.woff2",
+                  "name": "b8b15cdf-85d1-4120-8daa-48863d803939-hebrew-7nGTaaLY.woff2",
+                  "size": 6312
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/b8b15cdf-85d1-4120-8daa-48863d803939-math-CjJO_J9U.woff2",
+                  "name": "b8b15cdf-85d1-4120-8daa-48863d803939-math-CjJO_J9U.woff2",
+                  "size": 11912
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/b8b15cdf-85d1-4120-8daa-48863d803939-thai-C81xO0ss.woff2",
+                  "name": "b8b15cdf-85d1-4120-8daa-48863d803939-thai-C81xO0ss.woff2",
+                  "size": 12872
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/b8b15cdf-85d1-4120-8daa-48863d803939-vietnamese-ebkwrOfo.woff2",
+                  "name": "b8b15cdf-85d1-4120-8daa-48863d803939-vietnamese-ebkwrOfo.woff2",
+                  "size": 39352
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/b9c5b839-db56-4419-8fcb-6ab661babb1d-cyrillic-BblJ-_rD.woff2",
+                  "name": "b9c5b839-db56-4419-8fcb-6ab661babb1d-cyrillic-BblJ-_rD.woff2",
+                  "size": 27712
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/b9c5b839-db56-4419-8fcb-6ab661babb1d-ext-94Ghj3da.woff2",
+                  "name": "b9c5b839-db56-4419-8fcb-6ab661babb1d-ext-94Ghj3da.woff2",
+                  "size": 18652
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/b9c5b839-db56-4419-8fcb-6ab661babb1d-greek-Dk1iFglY.woff2",
+                  "name": "b9c5b839-db56-4419-8fcb-6ab661babb1d-greek-Dk1iFglY.woff2",
+                  "size": 7312
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/b9c5b839-db56-4419-8fcb-6ab661babb1d-hebrew-NCOHbXrA.woff2",
+                  "name": "b9c5b839-db56-4419-8fcb-6ab661babb1d-hebrew-NCOHbXrA.woff2",
+                  "size": 7088
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/b9c5b839-db56-4419-8fcb-6ab661babb1d-math-DhSGGw4r.woff2",
+                  "name": "b9c5b839-db56-4419-8fcb-6ab661babb1d-math-DhSGGw4r.woff2",
+                  "size": 11168
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/b9c5b839-db56-4419-8fcb-6ab661babb1d-ph0M7193.woff2",
+                  "name": "b9c5b839-db56-4419-8fcb-6ab661babb1d-ph0M7193.woff2",
+                  "size": 34208
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/b9c5b839-db56-4419-8fcb-6ab661babb1d-vietnamese-Dzp9U02O.woff2",
+                  "name": "b9c5b839-db56-4419-8fcb-6ab661babb1d-vietnamese-Dzp9U02O.woff2",
+                  "size": 37428
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/index-CnQMXXUD.css",
+                  "name": "index-CnQMXXUD.css",
+                  "size": 724429
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/index-DaLA8Z0f.css",
+                  "name": "index-DaLA8Z0f.css",
+                  "size": 388841
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/index-wtN_TLUB.js",
+                  "name": "index-wtN_TLUB.js",
+                  "size": 474971
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/index-zEGmIL8p.js",
+                  "name": "index-zEGmIL8p.js",
+                  "size": 510725
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/loading-throb-ygSoXYWG.gif",
+                  "name": "loading-throb-ygSoXYWG.gif",
+                  "size": 5307
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/manifest-B_SY1GJM.json",
+                  "name": "manifest-B_SY1GJM.json",
+                  "size": 0
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/assets/principal-CEX4S-Ze.js",
+                  "name": "principal-CEX4S-Ze.js",
+                  "size": 934663
+                }
+              ]
+            },
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/favicon.ico",
+              "name": "favicon.ico",
+              "size": 1150
+            },
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Servidor/public/index.html",
+              "name": "index.html",
+              "size": 1378
+            }
+          ]
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Servidor/register_device.js",
+          "name": "register_device.js",
+          "size": 891
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Servidor/response.json",
+          "name": "response.json",
+          "size": 1162
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Servidor/response_real.json",
+          "name": "response_real.json",
+          "size": 0
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Servidor/response_real_final.json",
+          "name": "response_real_final.json",
+          "size": 876
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Servidor/response_real_fixed.json",
+          "name": "response_real_fixed.json",
+          "size": 946
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Servidor/routers",
+          "name": "routers",
+          "children": [
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Servidor/routers/chat.js",
+              "name": "chat.js",
+              "size": 317
+            },
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Servidor/routers/data.js",
+              "name": "data.js",
+              "size": 1414
+            }
+          ]
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Servidor/schemas",
+          "name": "schemas",
+          "children": [
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Servidor/schemas/agentResponseSchema.js",
+              "name": "agentResponseSchema.js",
+              "size": 2047
+            }
+          ]
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Servidor/scripts",
+          "name": "scripts",
+          "children": [
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Servidor/scripts/updateProjectStructure.js",
+              "name": "updateProjectStructure.js",
+              "size": 3411
+            }
+          ]
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Servidor/server.log",
+          "name": "server.log",
+          "size": 30668
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Servidor/server8082.log",
+          "name": "server8082.log",
+          "size": 2713
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Servidor/services",
+          "name": "services",
+          "children": [
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Servidor/services/CacheService.js",
+              "name": "CacheService.js",
+              "size": 1977
+            },
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Servidor/services/McpService.js",
+              "name": "McpService.js",
+              "size": 10628
+            },
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Servidor/services/MultiAgentArchitecture.js",
+              "name": "MultiAgentArchitecture.js",
+              "size": 21830
+            },
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Servidor/services/MultiAgentService.js",
+              "name": "MultiAgentService.js",
+              "size": 1615
+            },
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Servidor/services/RuntimeAnalysisEngine.js",
+              "name": "RuntimeAnalysisEngine.js",
+              "size": 2308
+            },
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Servidor/services/SocketService.js",
+              "name": "SocketService.js",
+              "size": 1724
+            },
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Servidor/services/SvmService.js",
+              "name": "SvmService.js",
+              "size": 11693
+            },
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Servidor/services/agentes",
+              "name": "agentes",
+              "children": [
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/services/agentes/env.js",
+                  "name": "env.js",
+                  "size": 876
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/services/agentes/modelFactory.js",
+                  "name": "modelFactory.js",
+                  "size": 2396
+                }
+              ]
+            },
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Servidor/services/enterprise",
+              "name": "enterprise",
+              "children": [
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/services/enterprise/OutputValidator.js",
+                  "name": "OutputValidator.js",
+                  "size": 1940
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/services/enterprise/ResponseNormalizer.js",
+                  "name": "ResponseNormalizer.js",
+                  "size": 1558
+                }
+              ]
+            },
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Servidor/services/models",
+              "name": "models"
+            }
+          ]
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Servidor/synthetic_response.json",
+          "name": "synthetic_response.json",
+          "size": 419
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Servidor/test_ai_connectivity.js",
+          "name": "test_ai_connectivity.js",
+          "size": 546
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Servidor/test_architecture_pipeline.js",
+          "name": "test_architecture_pipeline.js",
+          "size": 1434
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Servidor/test_comparison_prompt.js",
+          "name": "test_comparison_prompt.js",
+          "size": 1181
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Servidor/test_full_flow.js",
+          "name": "test_full_flow.js",
+          "size": 697
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Servidor/test_planta1_analysis.js",
+          "name": "test_planta1_analysis.js",
+          "size": 1021
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Servidor/trained_models",
+          "name": "trained_models",
+          "children": [
+            {
+              "path": "/home/fabio/Escritorio/IA/MCP/Servidor/trained_models/ESP32DDEF49C0F4A8_1771121458819",
+              "name": "ESP32DDEF49C0F4A8_1771121458819",
+              "children": [
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/trained_models/ESP32DDEF49C0F4A8_1771121458819/model.json",
+                  "name": "model.json",
+                  "size": 2566
+                },
+                {
+                  "path": "/home/fabio/Escritorio/IA/MCP/Servidor/trained_models/ESP32DDEF49C0F4A8_1771121458819/weights.bin",
+                  "name": "weights.bin",
+                  "size": 22184
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Servidor/update-env.sh",
+          "name": "update-env.sh",
+          "size": 974
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Servidor/verify_chart.js",
+          "name": "verify_chart.js",
+          "size": 2862
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Servidor/verify_danfo_e2e.js",
+          "name": "verify_danfo_e2e.js",
+          "size": 1447
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/Servidor/verify_model_paths.js",
+          "name": "verify_model_paths.js",
+          "size": 2208
+        }
+      ]
+    },
+    {
+      "path": "/home/fabio/Escritorio/IA/MCP/add_column_seleccionado.js",
+      "name": "add_column_seleccionado.js",
+      "size": 1442
+    },
+    {
+      "path": "/home/fabio/Escritorio/IA/MCP/check_fix.js",
+      "name": "check_fix.js",
+      "size": 772
+    },
+    {
+      "path": "/home/fabio/Escritorio/IA/MCP/cleanup_models.js",
+      "name": "cleanup_models.js",
+      "size": 2500
+    },
+    {
+      "path": "/home/fabio/Escritorio/IA/MCP/clear_table.js",
+      "name": "clear_table.js",
+      "size": 561
+    },
+    {
+      "path": "/home/fabio/Escritorio/IA/MCP/debug_data_availability.js",
+      "name": "debug_data_availability.js",
+      "size": 1039
+    },
+    {
+      "path": "/home/fabio/Escritorio/IA/MCP/debug_db.js",
+      "name": "debug_db.js",
+      "size": 2456
+    },
+    {
+      "path": "/home/fabio/Escritorio/IA/MCP/debug_devices.js",
+      "name": "debug_devices.js",
+      "size": 515
+    },
+    {
+      "path": "/home/fabio/Escritorio/IA/MCP/drop_column_seleccionado.js",
+      "name": "drop_column_seleccionado.js",
+      "size": 1108
+    },
+    {
+      "path": "/home/fabio/Escritorio/IA/MCP/generate_tree_data.js",
+      "name": "generate_tree_data.js",
+      "size": 1139
+    },
+    {
+      "path": "/home/fabio/Escritorio/IA/MCP/scripts",
+      "name": "scripts",
+      "children": [
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/scripts/generate_structure.js",
+          "name": "generate_structure.js",
+          "size": 1899
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/scripts/test_agent_skills.js",
+          "name": "test_agent_skills.js",
+          "size": 1849
+        },
+        {
+          "path": "/home/fabio/Escritorio/IA/MCP/scripts/update_project_structure.js",
+          "name": "update_project_structure.js",
+          "size": 1479
+        }
+      ]
+    },
+    {
+      "path": "/home/fabio/Escritorio/IA/MCP/test_anomalias.js",
+      "name": "test_anomalias.js",
+      "size": 2381
+    },
+    {
+      "path": "/home/fabio/Escritorio/IA/MCP/test_deletion.js",
+      "name": "test_deletion.js",
+      "size": 1756
+    },
+    {
+      "path": "/home/fabio/Escritorio/IA/MCP/test_save_model.js",
+      "name": "test_save_model.js",
+      "size": 1802
+    },
+    {
+      "path": "/home/fabio/Escritorio/IA/MCP/update_model_uid.js",
+      "name": "update_model_uid.js",
+      "size": 1029
+    }
+  ]
+}

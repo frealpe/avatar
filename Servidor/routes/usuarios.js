@@ -1,0 +1,42 @@
+const { Router } = require('express');
+
+// Importación de los controladores para las rutas de usuarios
+const { usuariosGet,
+        usuariosPut,
+        usuariosPost,
+        usuariosDelete,
+        usuariosPatch } = require('../controllers/usuarios');
+
+const router = Router();
+
+/**
+ * @route GET /
+ * Obtiene una lista de usuarios.
+ */
+router.get('/', usuariosGet );
+
+/**
+ * @route PUT /:id
+ * Actualiza un usuario existente por su ID.
+ */
+router.put('/:id', usuariosPut );
+
+/**
+ * @route POST /
+ * Crea un nuevo usuario.
+ */
+router.post('/', usuariosPost );
+
+/**
+ * @route DELETE /
+ * Elimina un usuario.
+ */
+router.delete('/', usuariosDelete );
+
+/**
+ * @route PATCH /
+ * Realiza una actualización parcial de un usuario.
+ */
+router.patch('/', usuariosPatch );
+
+module.exports = router;
