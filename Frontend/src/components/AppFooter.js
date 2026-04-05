@@ -3,22 +3,12 @@ import { CFooter } from '@coreui/react-pro'
 
 const AppFooter = () => {
   return (
-    <CFooter className="px-4 py-0 d-flex align-items-center" style={{ height: '25px', minHeight: '25px' }}>
+    <CFooter className="px-4 py-0 d-flex align-items-center" style={{ height: '25px', minHeight: '25px', backgroundColor: 'transparent', border: 'none', color: '#a9abaf' }}>
       <div>
-        <a href="https://www.unicauca.edu.co/" target="_blank" rel="noopener noreferrer">
-          Unicauca
-        </a>
-        <span className="ms-1">&copy; {new Date().getFullYear()}</span>
+        <span className="ms-1">&copy; {new Date().getFullYear()} ETHÉREAL Systems</span>
       </div>
       <div className="ms-auto">
-        <span className="me-1">Automática Industrial</span>
-        <a
-          href="https://fiet.unicauca.edu.co/deic/"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Departamento de Electrónica, Instrumentación y Control
-        </a>
+        <span className="me-1">Powered by Modavatar V-TryOn</span>
       </div>
     </CFooter>
   )

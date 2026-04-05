@@ -5,10 +5,7 @@ const dbConnection = async () => {
         // En un entorno de producción, esto debería obtenerse de process.env.MONGODB_CNN
         const dbUrl = process.env.MONGODB_CNN || 'mongodb://127.0.0.1:27017/modavatar_db';
         
-        await mongoose.connect(dbUrl, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true
-        });
+        await mongoose.connect(dbUrl);
 
         console.log('✅ Base de datos online conectada exitosamente (Modavatar DB)');
 

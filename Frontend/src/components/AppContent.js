@@ -21,7 +21,8 @@ const AppContent = () => {
               )
             )
           })}
-          <Route path="/" element={<Navigate to="mediciones" replace />} />
+          <Route path="/" element={<Navigate to="avatar/probador" replace />} />
+          <Route path="*" element={<Navigate to="avatar/probador" replace />} />
         </Routes>
       </Suspense>
     </CContainer>

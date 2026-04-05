@@ -12,20 +12,21 @@ const catalogoMock = [
 
 /**
  * @route POST /api/avatar/generate
- * Recibe una imagen (idealmente en multer object form data o base64).
+ * Recibe una imagen.
  * Pasa la imagen al pipeline Anny IA y guarda los shape params en Mongo.
  */
 router.post('/generate', async (req, res) => {
     try {
         const { imageBase64, userId = 'mobile_user_01' } = req.body;
+        const io = req.app.get('io');
 
-        // Simulamos la obtención de parámetros corporales usando la "cámara"
-        const params = await AnnyPipeline.processImageToAnnyParams(imageBase64 || 'default_stream');
+        // Procesamos con el pipeline real (que ahora emite sockets)
+        const params = await AnnyPipeline.processImageToAnnyParams(imageBase64 || 'default_stream', io);
 
-        // Instanciar y guardar en MondoDB
+        // Instanciar y guardar en MongoDB
         const nuevoAvatar = new Avatar({
             userId,
-            modelType: 'Anny_01',
+            modelType: params.modelType || 'Anny_01',
             measurements: params.measurements,
             shapeParams: params.shapeParams,
             poseParams: params.poseParams,
@@ -36,7 +37,7 @@ router.post('/generate', async (req, res) => {
 
         res.status(201).json({
             ok: true,
-            msg: "Avatar generado con el modelo Anny y guardado.",
+            msg: "Avatar generado con el modelo Anny y sincronizado vía Sockets.",
             avatar: nuevoAvatar
         });
 

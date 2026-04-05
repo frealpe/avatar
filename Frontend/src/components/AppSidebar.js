@@ -1,110 +1,46 @@
-import React, { useContext, useEffect, useState } from 'react'
-import { NavLink } from 'react-router-dom'
+import React from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import CIcon from '@coreui/icons-react'
-import { cilSpeedometer, cilSignalCellular4 } from '@coreui/icons'
-
-import {
-  CCloseButton,
-  CSidebar,
-  CSidebarBrand,
-  CSidebarFooter,
-  CSidebarHeader,
-  CSidebarToggler,
-} from '@coreui/react-pro'
-import { AppSidebarNav } from './AppSidebarNav'
-import { SocketContext } from '../context/SocketContext'
-
-
-// sidebar nav config
 import navigation from '../_nav'
 
-
-import './AppSidebar.css'
-
 const AppSidebar = () => {
-  const dispatch = useDispatch()
-  const unfoldable = useSelector((state) => state.sidebarUnfoldable)
-  const sidebarShow = useSelector((state) => state.sidebarShow)
-  const { socket } = useContext(SocketContext)
-  const [masterStatus, setMasterStatus] = useState({ online: false, rssi: -100, uptime: '00:00:00' })
+    const dispatch = useDispatch()
 
-  useEffect(() => {
-    if (!socket) return
+    return (
+        <aside className="w-72 h-full bg-[#0b0e11] border-r border-[#45484c]/10 flex flex-col p-8 z-50 overflow-y-auto custom-scrollbar">
+            <div className="mb-8">
+                <span className="text-2xl font-black tracking-[-0.04em] text-[#00F2FF] drop-shadow-[0_0_12px_rgba(0,242,255,0.5)] font-['Space_Grotesk'] uppercase">ETHÉREAL</span>
+            </div>
 
-    const handler = (data) => {
-      if (data.topic?.includes('master') && data.topic?.includes('status')) {
-        setMasterStatus({
-          online: data.data?.status === 'online',
-          rssi: data.data?.rssi || -60, // Fallback if RSSI not in payload yet
-          uptime: data.data?.uptime || '00:00:00'
-        })
-      }
-    }
+            <nav className="flex flex-col gap-2 mb-8">
+                {navigation.map(item => (
+                    <div key={item.name} className={`flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer transition-all ${item.name === 'My Avatar' ? 'bg-[#101417] text-[#00F2FF] shadow-[inset_0_0_15px_rgba(0,242,255,0.05)]' : 'text-[#a9abaf] hover:bg-[#101417]/30 hover:text-white'}`}>
+                        <span className="material-symbols-outlined text-lg">{item.materialIcon}</span>
+                        <span className="text-sm font-semibold tracking-wide">{item.name}</span>
+                    </div>
+                ))}
+            </nav>
 
-    socket.on('mqtt:message', handler)
-    return () => socket.off('mqtt:message', handler)
-  }, [socket])
+            <div className="mb-10 p-4 rounded-2xl bg-[#101417]/50 border border-[#45484c]/10">
+                <div className="flex items-center gap-4 mb-4">
+                    <div className="w-12 h-12 rounded-full bg-[#1c2024] flex items-center justify-center overflow-hidden border border-[#00F2FF]/30">
+                        <span className="material-symbols-outlined text-[#00F2FF]">person</span>
+                    </div>
+                    <div>
+                        <h4 className="text-[12px] font-bold text-white font-['Space_Grotesk']">Anny Model 01</h4>
+                        <p className="text-[10px] text-[#a9abaf]">Precision: 98.4%</p>
+                    </div>
+                </div>
+                <div className="px-3 py-1 bg-[#00F2FF]/10 text-[#00F2FF] text-[8px] font-bold tracking-widest rounded-full border border-[#00F2FF]/20 inline-block uppercase text-center w-full">
+                    V-Try On Ready
+                </div>
+            </div>
 
-  const getSignalColor = (rssi) => {
-    if (rssi > -60) return 'success'
-    if (rssi > -80) return 'warning'
-    return 'danger'
-  }
-
-  return (
-    <CSidebar
-      className="custom-sidebar border-end"
-      // style={{ height: '50vh' }} 
-      colorScheme="light"
-      position="fixed"
-      unfoldable={unfoldable}
-      visible={sidebarShow}
-      onVisibleChange={(visible) => {
-        dispatch({ type: 'set', sidebarShow: visible })
-      }}
-    >
-      <CSidebarHeader className="border-bottom">
-        <CSidebarBrand as={NavLink} to="/dashboard" className="text-decoration-none">
-           <div className="sidebar-brand-full">
-             <CIcon icon={cilSpeedometer} height={24} className="me-2" />
-             <div>
-               <div>Controlador Vuelo</div>
-             </div>
-           </div>
-        </CSidebarBrand>
-        <CCloseButton
-          className="d-lg-none"
-          onClick={() => dispatch({ type: 'set', sidebarShow: false })}
-        />
-      </CSidebarHeader>
-      
-      <AppSidebarNav items={navigation} />
-
-      <div className="sidebar-footer-custom">
-        <div className="footer-status-row">
-          <span>Master Gateway</span>
-          <div className={`status-dot ${masterStatus.online ? 'bg-success' : 'bg-danger'}`}></div>
-        </div>
-        <div className="uptime-counter d-flex align-items-center justify-content-between">
-          <span>Signal: {masterStatus.rssi} dBm</span>
-          <CIcon icon={cilSignalCellular4} className={`text-${getSignalColor(masterStatus.rssi)}`} />
-        </div>
-        <div className="uptime-bar">
-          <div 
-            className={`uptime-progress bg-${getSignalColor(masterStatus.rssi)}`} 
-            style={{ width: `${Math.max(0, 100 + masterStatus.rssi)}%` }}
-          ></div>
-        </div>
-      </div>
-
-      <CSidebarFooter className="border-top d-none d-lg-flex">
-        <CSidebarToggler
-          onClick={() => dispatch({ type: 'set', sidebarUnfoldable: !unfoldable })}
-        />
-      </CSidebarFooter>
-    </CSidebar>
-  )
+            <div className="mt-auto space-y-3">
+                <button className="w-full py-3 rounded-xl border border-[#45484c]/20 text-[10px] uppercase tracking-widest font-bold text-[#a9abaf] hover:bg-[#101417] transition-all">Historial de escaneo</button>
+                <button className="w-full py-3 rounded-xl border border-[#ff716c]/20 text-[10px] uppercase tracking-widest font-bold text-[#ff716c] hover:bg-[#ff716c]/5 transition-all">Eliminar avatar</button>
+            </div>
+        </aside>
+    )
 }
 
-export default React.memo(AppSidebar)
+export default AppSidebar

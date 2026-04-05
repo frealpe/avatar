@@ -2,7 +2,9 @@ import React, { useState, useRef } from "react";
 import CIcon from "@coreui/icons-react";
 import { cilCloudUpload, cilSend } from "@coreui/icons";
 import { CButton } from "@coreui/react-pro";
-import { procesarXML } from "../help/helps";
+
+// Dummy function to replace the deleted help/helps
+const procesarXML = async (text) => { return text; };
 
 function TextMessageBox({ onSendMessage, placeholder, disableCorrections = false }) {
   const [message, setMessage] = useState("");

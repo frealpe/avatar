@@ -1,6 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const { dbConnection } = require('../database/config');
+const { Server: SocketServer } = require('socket.io');
+const http = require('http');
 
 /**
  * Clase que representa el servidor de la aplicación.
@@ -14,6 +16,13 @@ class Server {
          * @type {express.Application}
          */
         this.app  = express();
+        
+        // Configurar servidor HTTP y Socket.IO
+        this.server = http.createServer(this.app);
+        this.io = new SocketServer(this.server, {
+            cors: { origin: "*" }
+        });
+        this.app.set('io', this.io);
 
         /**
          * Puerto en el que correrá el servidor.
@@ -35,6 +44,9 @@ class Server {
 
         // Rutas de mi aplicación
         this.routes();
+
+        // Sockets
+        this.sockets();
     }
 
     async conectarDB() {
@@ -66,10 +78,22 @@ class Server {
     }
 
     /**
-     * Inicia el servidor y lo pone a escuchar en el puerto especificado.
+     * Configuración de eventos de Socket.io
+     */
+    sockets() {
+        this.io.on('connection', (socket) => {
+            console.log('Cliente socket conectado:', socket.id);
+            socket.on('disconnect', () => {
+                console.log('Cliente socket desconectado:', socket.id);
+            });
+        });
+    }
+
+    /**
+     * Inicia el servidor HTTP y lo pone a escuchar en el puerto especificado.
      */
     listen() {
-        this.app.listen( this.port, () => {
+        this.server.listen( this.port, () => {
             console.log('Servidor corriendo en puerto', this.port );
         });
     }
