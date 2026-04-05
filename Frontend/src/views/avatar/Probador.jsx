@@ -3,7 +3,7 @@ import { CCard, CCardBody, CCol, CRow, CButton, CBadge } from '@coreui/react-pro
 import { useSelector } from 'react-redux';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
-import axios from 'axios';
+import iotApi from '../../service/iotApi';
 
 // Componente Malla Anny (HMR Proxy) adaptativo
 function AnnyHumanBody({ measurements, isTryingOn }) {
@@ -64,9 +64,9 @@ const ProbadorAvatar = () => {
     useEffect(() => {
         const fetchCatalog = async () => {
             try {
-                const res = await axios.get('http://localhost:8080/api/avatar/catalog');
-                if (res.data && res.data.ok) {
-                    setPrendas(res.data.data);
+                const data = await iotApi.getClothesCatalog();
+                if (data && data.ok) {
+                    setPrendas(data.data);
                 }
             } catch (e) {
                 console.error("Error fetching catalog", e);
@@ -81,10 +81,7 @@ const ProbadorAvatar = () => {
 
         try {
             // Enviar al Backend (simular cloth simulation)
-            await axios.post('http://localhost:8080/api/avatar/tryon', {
-                avatarId: avatarData._id || 'mock',
-                prendaId: selectedItem
-            });
+            await iotApi.tryOnClothes(avatarData._id || 'mock', selectedItem);
             setWornClothId(selectedItem);
         } catch (e) {
             console.error(e);

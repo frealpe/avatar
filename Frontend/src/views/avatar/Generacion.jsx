@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { CCard, CCardBody, CCol, CRow, CButton, CSpinner } from '@coreui/react-pro';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import axios from 'axios';
+import iotApi from '../../service/iotApi';
 
 const GeneracionAvatar = () => {
     const navigate = useNavigate();
@@ -15,10 +15,10 @@ const GeneracionAvatar = () => {
         const fetchOrGenerate = async () => {
             try {
                 // Asumiendo que el usuario se escaneó en web, generamos un mock Anny post request
-                const response = await axios.post('http://localhost:8080/api/avatar/generate', { imageBase64: 'web_session_dummy' });
+                const data = await iotApi.generateAvatar('web_session_dummy', 'web_user');
 
-                if (response.data.ok) {
-                    const newAvatar = response.data.avatar;
+                if (data.ok) {
+                    const newAvatar = data.avatar;
                     setAvatarData(newAvatar);
                     dispatch({ type: 'SET_AVATAR', payload: newAvatar });
                 }

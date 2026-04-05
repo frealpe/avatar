@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { Canvas, useFrame } from '@react-three/fiber';
+import { BACKEND_URL } from '../config';
 
 // Malla HMR Anny (Simulada proceduralmente mediante agrupaciones para demostrar respuesta a escala)
 function AnnyHumanBody({ measurements, isTryingOn }) {
@@ -61,9 +62,28 @@ function AnnyHumanBody({ measurements, isTryingOn }) {
 
 export default function AvatarCanvas({ avatarData }) {
     const [clothIndex, setClothIndex] = useState(0);
+    const [isSimulating, setIsSimulating] = useState(false);
 
-    const handleTryOn = () => {
-        setClothIndex((prev) => (prev === 0 ? 1 : 0)); // Toggle Try-On
+    const handleTryOn = async () => {
+        if (clothIndex === 0) {
+            setIsSimulating(true);
+            try {
+                // Simulate Virtual Try-On API Call
+                const response = await fetch(`${BACKEND_URL}/try-on`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ avatarId: avatarData?._id || 'mock', prendaId: 1 })
+                });
+                const data = await response.json();
+                if (data.ok) setClothIndex(1);
+            } catch (error) {
+                console.error("Error doing try-on", error);
+            } finally {
+                setIsSimulating(false);
+            }
+        } else {
+            setClothIndex(0);
+        }
     };
 
     return (
@@ -92,10 +112,10 @@ export default function AvatarCanvas({ avatarData }) {
             <View style={styles.footerWrap}>
                 <View style={styles.metricsPanel}>
                     <Text style={styles.metricText}>ALTURA: {avatarData?.measurements?.height} cm</Text>
-                    <Text style={styles.metricText}>ÚLTIMA PRENDA: {clothIndex > 0 ? "V-TRY ON (Activo)" : "Ninguna"}</Text>
+                    <Text style={styles.metricText}>ESTADO: {isSimulating ? "Simulando tela..." : (clothIndex > 0 ? "V-TRY ON (Activo)" : "Ninguna Prenda")}</Text>
                 </View>
-                <TouchableOpacity style={styles.actionBtn} onPress={handleTryOn}>
-                    <Text style={styles.actionBtnTxt}>{clothIndex > 0 ? "QUITAR PRENDA" : "PROBAR ROPA"}</Text>
+                <TouchableOpacity style={styles.actionBtn} onPress={handleTryOn} disabled={isSimulating}>
+                    <Text style={styles.actionBtnTxt}>{isSimulating ? "PROCESANDO..." : (clothIndex > 0 ? "QUITAR PRENDA" : "PROBAR ROPA")}</Text>
                 </TouchableOpacity>
             </View>
         </View>

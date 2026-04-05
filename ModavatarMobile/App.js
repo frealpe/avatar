@@ -2,10 +2,7 @@ import { useState } from 'react';
 import { StyleSheet, Text, View, ActivityIndicator } from 'react-native';
 import Scanner from './components/Scanner';
 import AvatarCanvas from './components/AvatarCanvas';
-
-// Dirección IP local del servidor de desarrollo Node.js
-// En emulador de Android AVD se puede usar 10.0.2.2 o la IP WiFi en dispositivos físicos.
-const BACKEND_URL = 'http://192.168.0.10:8080/api/avatar';
+import { BACKEND_URL } from './config';
 
 export default function App() {
   const [step, setStep] = useState('scan'); // scan, processing, render
@@ -15,7 +12,7 @@ export default function App() {
     setStep('processing');
     
     try {
-      // 1. Enviar foto capturada al backend Node.js
+      // 1. Enviar foto capturada al backend Node.js que ejecuta el Pipeline IA (Anny)
       const response = await fetch(`${BACKEND_URL}/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -25,7 +22,7 @@ export default function App() {
       const data = await response.json();
 
       if (data.ok) {
-        // Guardamos los datos de la inferencia (Anny params)
+        // Guardamos los datos de la inferencia (Anny params y malla 3D)
         setAvatarData(data.avatar);
         setStep('render');
       } else {

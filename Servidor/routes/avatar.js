@@ -47,18 +47,53 @@ router.post('/generate', async (req, res) => {
 });
 
 /**
- * @route GET /api/avatar/catalog
+ * @route POST /api/avatar/upload
+ * Sube un archivo de modelo 3D.
+ */
+router.post('/upload', async (req, res) => {
+    // Implementación mock para almacenamiento de modelos
+    res.status(200).json({
+        ok: true,
+        msg: "Modelo subido correctamente."
+    });
+});
+
+/**
+ * @route GET /api/avatar/clothes
  * Devuelve catálogo disponible para probar.
  */
+router.get('/clothes', (req, res) => {
+    res.json({ ok: true, data: catalogoMock });
+});
+
+// Alias for backwards compatibility
 router.get('/catalog', (req, res) => {
     res.json({ ok: true, data: catalogoMock });
 });
 
 /**
- * @route POST /api/avatar/tryon
+ * @route GET /api/avatar/:id
+ * Devuelve un avatar por ID.
+ */
+router.get('/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const avatar = await Avatar.findById(id);
+        if (!avatar) {
+            return res.status(404).json({ ok: false, msg: 'Avatar no encontrado' });
+        }
+        res.json({ ok: true, avatar });
+    } catch (error) {
+        res.status(500).json({ ok: false, msg: 'Error interno obteniendo avatar' });
+    }
+});
+
+/**
+ * @route POST /api/avatar/try-on
  * Interpola las mallas (Virtual Try On) con Anny.
  */
-router.post('/tryon', async (req, res) => {
+router.post('/try-on', async (req, res) => {
     const { avatarId, prendaId } = req.body;
     
     // Aquí el backend podría despachar un Job pesado para Cloth Simulation
@@ -71,6 +106,24 @@ router.post('/tryon', async (req, res) => {
             resultConfig: {
                 clothScale: 1.05,
                 deformMatrix: "..." // Matrices generadas por la IA para ThreeJS
+            }
+        });
+    }, 2500);
+});
+
+// Alias for backwards compatibility
+router.post('/tryon', async (req, res) => {
+    const { avatarId, prendaId } = req.body;
+
+    console.log(`👕 Solicitud de Try-On para el avatar [${avatarId}] usando prenda [${prendaId}]`);
+
+    setTimeout(() => {
+        res.json({
+            ok: true,
+            msg: "Simulación de ropa sobre malla completada",
+            resultConfig: {
+                clothScale: 1.05,
+                deformMatrix: "..."
             }
         });
     }, 2500);
