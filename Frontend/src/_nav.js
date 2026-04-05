@@ -5,39 +5,27 @@ import { CNavItem } from '@coreui/react-pro'
 const _nav = [
   {
     component: CNavItem,
-    name: 'Monitor',
-    to: '/monitor',
+    name: '--- ETHÉREAL ---',
+    to: '#',
+    disabled: true,
+  },
+  {
+    component: CNavItem,
+    name: 'Avatar 3D Home',
+    to: '/avatar',
     icon: <CIcon icon={cilMonitor} customClassName="nav-icon" />,
   },
   {
     component: CNavItem,
-    name: 'Trayectorias',
-    to: '/trayectorias',
-    icon: <CIcon icon={cilGrid} customClassName="nav-icon" />,
-  },
-  {
-    component: CNavItem,
-    name: 'Dispositivos',
-    to: '/dispositivos',
-    icon: <CIcon icon={cilDevices} customClassName="nav-icon" />,
-  },
-  {
-    component: CNavItem,
-    name: 'IA Agente',
-    to: '/agente',
-    icon: <CIcon icon={cilGrid} customClassName="nav-icon" />,
-  },
-  {
-    component: CNavItem,
-    name: 'Analítica',
-    to: '/analitica',
-    icon: <CIcon icon={cilChartLine} customClassName="nav-icon" />,
-  },
-  {
-    component: CNavItem,
-    name: 'Mediciones',
-    to: '/mediciones',
+    name: 'Scanner 3D',
+    to: '/avatar/escaneo',
     icon: <CIcon icon={cilSpeedometer} customClassName="nav-icon" />,
+  },
+  {
+    component: CNavItem,
+    name: 'Probador Virtual',
+    to: '/avatar/probador',
+    icon: <CIcon icon={cilGrid} customClassName="nav-icon" />,
   },
 ]
 

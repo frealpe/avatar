@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const { dbConnection } = require('../database/config');
 
 /**
  * Clase que representa el servidor de la aplicación.
@@ -26,11 +27,18 @@ class Server {
          */
         this.usuariosPath = '/api/usuarios';
 
+        // Conectar a base de datos
+        this.conectarDB();
+
         // Middlewares: Funciones que añaden funcionalidad al web server
         this.middlewares();
 
         // Rutas de mi aplicación
         this.routes();
+    }
+
+    async conectarDB() {
+        await dbConnection();
     }
 
     /**
@@ -54,6 +62,7 @@ class Server {
      */
     routes() {
         this.app.use( this.usuariosPath, require('../routes/usuarios'));
+        this.app.use( '/api/avatar', require('../routes/avatar'));
     }
 
     /**
