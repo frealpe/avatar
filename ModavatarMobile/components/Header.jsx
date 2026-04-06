@@ -2,10 +2,10 @@ import React from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-export default function Header() {
+export default function Header({ onMenuPress }) {
     return (
         <View style={styles.container}>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={onMenuPress}>
                 <Ionicons name="menu" size={28} color="#00F2FF" />
             </TouchableOpacity>
 
