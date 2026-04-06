@@ -10,11 +10,13 @@
     "postinstall": "patch-package"
   },
   "dependencies": {
+    "@expo/vector-icons": "~14.0.4",
     "@react-three/fiber": "^8.17.10",
     "expo": "~52.0.25",
     "expo-asset": "~11.0.5",
     "expo-camera": "~16.0.12",
     "expo-gl": "~15.0.3",
+    "expo-linear-gradient": "~14.0.2",
     "expo-status-bar": "~2.0.1",
     "expo-three": "^7.0.0",
     "onnxruntime-react-native": "^1.20.1",
