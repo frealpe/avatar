@@ -22,7 +22,7 @@ export default function BottomNavigation({ currentTab, onTabPress }) {
                         onPress={() => onTabPress(tab.id)}
                     >
                         <Ionicons
-                            name={isActive ? tab.icon : `${tab.icon}-outline`}
+                            name={isActive ? tab.icon : (tab.icon.endsWith('-outline') ? tab.icon : `${tab.icon}-outline`)}
                             size={24}
                             color={isActive ? '#00F2FF' : '#a9abaf'}
                         />
