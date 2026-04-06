@@ -5,10 +5,10 @@ import HeroCard from './HeroCard';
 import AvatarCarousel from './AvatarCarousel';
 import ClothingCatalog from './ClothingCatalog';
 
-export default function HomeScreen({ onScanPress }) {
+export default function HomeScreen({ onScanPress, onMenuPress }) {
     return (
         <View style={styles.container}>
-            <Header />
+            <Header onMenuPress={onMenuPress} />
             <ScrollView
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={styles.scrollContent}

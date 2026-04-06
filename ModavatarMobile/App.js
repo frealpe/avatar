@@ -4,11 +4,14 @@ import Scanner from './components/Scanner';
 import AvatarCanvas from './components/AvatarCanvas';
 import HomeScreen from './components/HomeScreen';
 import BottomNavigation from './components/BottomNavigation';
+import ProbadorScreen from './components/ProbadorScreen';
+import DrawerMenu from './components/DrawerMenu';
 import { BACKEND_URL } from './config';
 
 export default function App() {
-  const [step, setStep] = useState('home'); // home, scan, processing, render
+  const [step, setStep] = useState('home'); // home, scan, processing, render, probador
   const [avatarData, setAvatarData] = useState(null);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const handleCapture = async (photo) => {
     setStep('processing');
@@ -56,9 +59,10 @@ export default function App() {
   return (
     <View style={styles.container}>
       <View style={styles.content}>
-        {step === 'home' && <HomeScreen onScanPress={() => setStep('scan')} />}
+        {step === 'home' && <HomeScreen onScanPress={() => setStep('scan')} onMenuPress={() => setIsDrawerOpen(true)} />}
         {step === 'scan' && <Scanner onCapture={handleCapture} />}
         {step === 'render' && <AvatarCanvas avatarData={avatarData} />}
+        {step === 'probador' && <ProbadorScreen />}
       </View>
 
       {/* Show Bottom Navigation only on specific screens if desired, or always */}
@@ -68,6 +72,12 @@ export default function App() {
             onTabPress={handleTabPress}
          />
       )}
+
+      <DrawerMenu
+        isOpen={isDrawerOpen}
+        onClose={() => setIsDrawerOpen(false)}
+        onNavigate={(newStep) => setStep(newStep)}
+      />
     </View>
   );
 }

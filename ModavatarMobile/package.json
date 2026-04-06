@@ -15,6 +15,7 @@
     "expo": "~52.0.25",
     "expo-asset": "~11.0.5",
     "expo-camera": "~16.0.12",
+    "expo-font": "^55.0.6",
     "expo-gl": "~15.0.3",
     "expo-linear-gradient": "~14.0.2",
     "expo-status-bar": "~2.0.1",
@@ -22,6 +23,7 @@
     "onnxruntime-react-native": "^1.20.1",
     "react": "18.3.1",
     "react-native": "0.76.6",
+    "react-native-webview": "^13.16.1",
     "three": "^0.166.1"
   },
   "private": true,

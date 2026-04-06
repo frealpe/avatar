@@ -1,0 +1,122 @@
+import React, { useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Animated, Dimensions, TouchableWithoutFeedback } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+
+const { width, height } = Dimensions.get('window');
+const DRAWER_WIDTH = width * 0.75;
+
+export default function DrawerMenu({ isOpen, onClose, onNavigate }) {
+    const slideAnim = useRef(new Animated.Value(-DRAWER_WIDTH)).current;
+    const opacityAnim = useRef(new Animated.Value(0)).current;
+
+    useEffect(() => {
+        if (isOpen) {
+            // Instantly make it opaque before sliding in
+            opacityAnim.setValue(1);
+        }
+
+        Animated.timing(slideAnim, {
+            toValue: isOpen ? 0 : -DRAWER_WIDTH,
+            duration: 300,
+            useNativeDriver: true,
+        }).start(({ finished }) => {
+            if (!isOpen && finished) {
+                // Hide completely only after slide out is done
+                opacityAnim.setValue(0);
+            }
+        });
+    }, [isOpen]);
+
+    return (
+        <Animated.View style={[styles.overlayContainer, { opacity: opacityAnim }]} pointerEvents={isOpen ? 'auto' : 'none'}>
+            <TouchableWithoutFeedback onPress={onClose}>
+                <View style={styles.backdrop} />
+            </TouchableWithoutFeedback>
+            <Animated.View style={[styles.drawer, { transform: [{ translateX: slideAnim }] }]}>
+                <View style={styles.header}>
+                    <Text style={styles.headerText}>ETHÉREAL</Text>
+                    <TouchableOpacity onPress={onClose}>
+                        <Ionicons name="close" size={28} color="#00F2FF" />
+                    </TouchableOpacity>
+                </View>
+
+                <View style={styles.menuItems}>
+                    <TouchableOpacity style={styles.menuItem} onPress={() => {
+                        onClose();
+                        onNavigate('probador');
+                    }}>
+                        <Ionicons name="shirt-outline" size={24} color="#00F2FF" />
+                        <Text style={styles.menuText}>Probador Virtual</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity style={styles.menuItem} onPress={() => {
+                        onClose();
+                        onNavigate('home');
+                    }}>
+                        <Ionicons name="home-outline" size={24} color="#00F2FF" />
+                        <Text style={styles.menuText}>Inicio</Text>
+                    </TouchableOpacity>
+                </View>
+            </Animated.View>
+        </View>
+    );
+}
+
+const styles = StyleSheet.create({
+    overlayContainer: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: width,
+        height: height,
+        zIndex: 100,
+        elevation: 100, // For Android
+    },
+    backdrop: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: width,
+        height: height,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+    },
+    drawer: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: DRAWER_WIDTH,
+        height: height,
+        backgroundColor: '#161a1e',
+        borderRightWidth: 1,
+        borderColor: '#00F2FF',
+        padding: 20,
+    },
+    header: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginTop: 40,
+        marginBottom: 30,
+    },
+    headerText: {
+        color: '#00F2FF',
+        fontSize: 20,
+        fontWeight: 'bold',
+        letterSpacing: 2,
+    },
+    menuItems: {
+        flex: 1,
+    },
+    menuItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 15,
+        borderBottomWidth: 1,
+        borderBottomColor: '#22262b',
+    },
+    menuText: {
+        color: '#f8f9fe',
+        fontSize: 18,
+        marginLeft: 15,
+    }
+});
