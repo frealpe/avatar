@@ -2,10 +2,12 @@ import { useState } from 'react';
 import { StyleSheet, Text, View, ActivityIndicator } from 'react-native';
 import Scanner from './components/Scanner';
 import AvatarCanvas from './components/AvatarCanvas';
+import HomeScreen from './components/HomeScreen';
+import BottomNavigation from './components/BottomNavigation';
 import { BACKEND_URL } from './config';
 
 export default function App() {
-  const [step, setStep] = useState('scan'); // scan, processing, render
+  const [step, setStep] = useState('home'); // home, scan, processing, render
   const [avatarData, setAvatarData] = useState(null);
 
   const handleCapture = async (photo) => {
@@ -35,6 +37,12 @@ export default function App() {
     }
   };
 
+  const handleTabPress = (tabId) => {
+    if (tabId === 'home') setStep('home');
+    if (tabId === 'scan') setStep('scan');
+    // Implement other tabs as needed later
+  };
+
   if (step === 'processing') {
     return (
       <View style={styles.center}>
@@ -47,14 +55,26 @@ export default function App() {
 
   return (
     <View style={styles.container}>
-      {step === 'scan' && <Scanner onCapture={handleCapture} />}
-      {step === 'render' && <AvatarCanvas avatarData={avatarData} />}
+      <View style={styles.content}>
+        {step === 'home' && <HomeScreen onScanPress={() => setStep('scan')} />}
+        {step === 'scan' && <Scanner onCapture={handleCapture} />}
+        {step === 'render' && <AvatarCanvas avatarData={avatarData} />}
+      </View>
+
+      {/* Show Bottom Navigation only on specific screens if desired, or always */}
+      {(step === 'home' || step === 'scan' || step === 'render') && (
+         <BottomNavigation
+            currentTab={step === 'home' ? 'home' : (step === 'scan' || step === 'render' ? 'scan' : 'home')}
+            onTabPress={handleTabPress}
+         />
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0b0e11' },
+  content: { flex: 1 },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#0b0e11' },
   textHighlight: { color: '#00F2FF', marginTop: 20, fontFamily: 'monospace', fontWeight: 'bold' },
   textSubtitle: { color: '#a9abaf', marginTop: 5, fontSize: 12 }
