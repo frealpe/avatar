@@ -6,11 +6,13 @@
     "start": "expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "@react-three/fiber": "^8.17.10",
     "expo": "~52.0.25",
+    "expo-asset": "~11.0.5",
     "expo-camera": "~16.0.12",
     "expo-gl": "~15.0.3",
     "expo-status-bar": "~2.0.1",
@@ -20,5 +22,8 @@
     "react-native": "0.76.6",
     "three": "^0.166.1"
   },
-  "private": true
+  "private": true,
+  "devDependencies": {
+    "patch-package": "^8.0.1"
+  }
 }
