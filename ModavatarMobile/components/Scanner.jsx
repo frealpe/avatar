@@ -1,8 +1,9 @@
 import { Camera, CameraView } from 'expo-camera';
 import { useState, useEffect, useRef } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
-export default function Scanner({ onCapture }) {
+export default function Scanner({ onCapture, onBack }) {
     const [hasPermission, setHasPermission] = useState(null);
     const cameraRef = useRef(null);
 
@@ -54,6 +55,15 @@ export default function Scanner({ onCapture }) {
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#0b0e11' },
     camera: { flex: 1 },
+    backButton: {
+        position: 'absolute',
+        top: 50,
+        left: 20,
+        zIndex: 10,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        padding: 10,
+        borderRadius: 25,
+    },
     overlayContainer: {
         flex: 1,
         alignItems: 'center',

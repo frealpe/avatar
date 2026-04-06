@@ -62,9 +62,9 @@ export default function App() {
     <View style={styles.container}>
       <View style={styles.content}>
         {step === 'home' && <HomeScreen onScanPress={() => setStep('scan')} onMenuPress={() => setIsDrawerOpen(true)} />}
-        {step === 'scan' && <Scanner onCapture={handleCapture} />}
-        {step === 'render' && <AvatarCanvas avatarData={avatarData} />}
-        {step === 'probador' && <ProbadorScreen />}
+        {step === 'scan' && <Scanner onCapture={handleCapture} onBack={() => setStep('home')} />}
+        {step === 'render' && <AvatarCanvas avatarData={avatarData} onBack={() => setStep('home')} />}
+        {step === 'probador' && <ProbadorScreen onBack={() => setStep('home')} />}
         {step === 'create' && <CreateAvatarScreen onBack={() => setStep('home')} onSave={(color) => setStep('home')} />}
       </View>
 

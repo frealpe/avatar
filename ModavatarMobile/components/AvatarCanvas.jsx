@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { Canvas } from '@react-three/fiber';
+import { Ionicons } from '@expo/vector-icons';
 import { BACKEND_URL } from '../config';
 import AnnyHumanBody from './AnnyHumanBody';
 
-export default function AvatarCanvas({ avatarData }) {
+export default function AvatarCanvas({ avatarData, onBack }) {
     const [clothIndex, setClothIndex] = useState(0);
     const [isSimulating, setIsSimulating] = useState(false);
 
@@ -34,8 +35,14 @@ export default function AvatarCanvas({ avatarData }) {
         <View style={styles.container}>
             {/* Top Bar Status */}
             <View style={styles.header}>
-                <Text style={styles.title}>Model: {avatarData?.modelType || 'Anny 3D'}</Text>
-                <Text style={styles.subtitle}>ID: {avatarData?._id?.substring(0, 8)}</Text>
+                <TouchableOpacity onPress={onBack} style={styles.backBtn}>
+                    <Ionicons name="arrow-back" size={24} color="#00F2FF" />
+                </TouchableOpacity>
+                <View>
+                    <Text style={styles.title}>Model: {avatarData?.modelType || 'Anny 3D'}</Text>
+                    <Text style={styles.subtitle}>ID: {avatarData?._id?.substring(0, 8)}</Text>
+                </View>
+                <View style={{ width: 24 }} />
             </View>
 
             {/* Canvas 3D Space */}
