@@ -6,10 +6,11 @@ import HomeScreen from './components/HomeScreen';
 import BottomNavigation from './components/BottomNavigation';
 import ProbadorScreen from './components/ProbadorScreen';
 import DrawerMenu from './components/DrawerMenu';
+import CreateAvatarScreen from './components/CreateAvatarScreen';
 import { BACKEND_URL } from './config';
 
 export default function App() {
-  const [step, setStep] = useState('home'); // home, scan, processing, render, probador
+  const [step, setStep] = useState('home'); // home, scan, processing, render, probador, create
   const [avatarData, setAvatarData] = useState(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
@@ -43,6 +44,7 @@ export default function App() {
   const handleTabPress = (tabId) => {
     if (tabId === 'home') setStep('home');
     if (tabId === 'scan') setStep('scan');
+    if (tabId === 'create') setStep('create');
     // Implement other tabs as needed later
   };
 
@@ -63,12 +65,13 @@ export default function App() {
         {step === 'scan' && <Scanner onCapture={handleCapture} />}
         {step === 'render' && <AvatarCanvas avatarData={avatarData} />}
         {step === 'probador' && <ProbadorScreen />}
+        {step === 'create' && <CreateAvatarScreen onBack={() => setStep('home')} onSave={(color) => setStep('home')} />}
       </View>
 
       {/* Show Bottom Navigation only on specific screens if desired, or always */}
-      {(step === 'home' || step === 'scan' || step === 'render') && (
+      {(step === 'home' || step === 'scan' || step === 'render' || step === 'create') && (
          <BottomNavigation
-            currentTab={step === 'home' ? 'home' : (step === 'scan' || step === 'render' ? 'scan' : 'home')}
+            currentTab={step === 'create' ? 'create' : step === 'home' ? 'home' : (step === 'scan' || step === 'render' ? 'scan' : 'home')}
             onTabPress={handleTabPress}
          />
       )}

@@ -10,6 +10,7 @@
     "postinstall": "patch-package"
   },
   "dependencies": {
+    "@expo/metro-runtime": "~4.0.1",
     "@expo/vector-icons": "~14.0.4",
     "@react-three/fiber": "^8.17.10",
     "expo": "~52.0.25",
@@ -22,7 +23,9 @@
     "expo-three": "^7.0.0",
     "onnxruntime-react-native": "^1.20.1",
     "react": "18.3.1",
+    "react-dom": "18.3.1",
     "react-native": "0.76.9",
+    "react-native-web": "~0.19.13",
     "react-native-webview": "13.12.5",
     "three": "^0.166.1"
   },

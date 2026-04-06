@@ -6,6 +6,7 @@ export default function BottomNavigation({ currentTab, onTabPress }) {
     const tabs = [
         { id: 'home', label: 'HOME', icon: 'home' },
         { id: 'scan', label: 'SCAN', icon: 'scan' },
+        { id: 'create', label: 'CREATE', icon: 'person-add-outline' },
         { id: 'wardrobe', label: 'WARDROBE', icon: 'shirt-outline' }, // closest to clothes hanger
         { id: 'profile', label: 'PROFILE', icon: 'person' },
     ];

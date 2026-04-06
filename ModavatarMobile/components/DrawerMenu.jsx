@@ -43,6 +43,14 @@ export default function DrawerMenu({ isOpen, onClose, onNavigate }) {
                 <View style={styles.menuItems}>
                     <TouchableOpacity style={styles.menuItem} onPress={() => {
                         onClose();
+                        onNavigate('create');
+                    }}>
+                        <Ionicons name="person-add-outline" size={24} color="#00F2FF" />
+                        <Text style={styles.menuText}>Crear Avatar</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity style={styles.menuItem} onPress={() => {
+                        onClose();
                         onNavigate('probador');
                     }}>
                         <Ionicons name="shirt-outline" size={24} color="#00F2FF" />
