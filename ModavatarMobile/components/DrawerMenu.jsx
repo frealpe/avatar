@@ -41,29 +41,28 @@ export default function DrawerMenu({ isOpen, onClose, onNavigate }) {
                 </View>
 
                 <View style={styles.menuItems}>
-                    <TouchableOpacity style={styles.menuItem} onPress={() => {
-                        onClose();
-                        onNavigate('create');
-                    }}>
-                        <Ionicons name="person-add-outline" size={24} color="#00F2FF" />
-                        <Text style={styles.menuText}>Crear Avatar</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity style={styles.menuItem} onPress={() => {
-                        onClose();
-                        onNavigate('probador');
-                    }}>
-                        <Ionicons name="shirt-outline" size={24} color="#00F2FF" />
-                        <Text style={styles.menuText}>Probador Virtual</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity style={styles.menuItem} onPress={() => {
-                        onClose();
-                        onNavigate('home');
-                    }}>
-                        <Ionicons name="home-outline" size={24} color="#00F2FF" />
-                        <Text style={styles.menuText}>Inicio</Text>
-                    </TouchableOpacity>
+                    {[
+                        { id: 'home', label: 'Inicio', icon: 'home-outline' },
+                        { id: 'create', label: 'Crear Avatar', icon: 'person-add-outline' },
+                        { id: 'probador', label: 'Probador Virtual', icon: 'shirt-outline' },
+                        { id: 'my_avatar', label: 'My Avatar', icon: 'person-outline' },
+                        { id: 'measurements', label: 'Measurements', icon: 'body-outline' },
+                        { id: 'collection', label: 'Collection', icon: 'grid-outline' },
+                        { id: 'settings', label: 'Settings', icon: 'settings-outline' },
+                        { id: 'support', label: 'Support', icon: 'help-circle-outline' }
+                    ].map((item) => (
+                        <TouchableOpacity
+                            key={item.id}
+                            style={styles.menuItem}
+                            onPress={() => {
+                                onClose();
+                                onNavigate(item.id);
+                            }}
+                        >
+                            <Ionicons name={item.icon} size={24} color="#00F2FF" />
+                            <Text style={styles.menuText}>{item.label}</Text>
+                        </TouchableOpacity>
+                    ))}
                 </View>
             </Animated.View>
         </Animated.View>
