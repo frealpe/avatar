@@ -318,7 +318,7 @@ const StationPanel = ({
                         </div>
                         <CButton color="success" size="sm" variant="outline"
                             className="w-100 d-flex align-items-center justify-content-center gap-2"
-                            onClick={onSaveTrajectory} disabled={!newTrajectoryName.trim()}>
+                            onClick={onSaveTrajectory} disabled={!newTrajectoryName?.trim()}>
                             <CIcon icon={cilSave} /> Guardar Trayectoria
                         </CButton>
                         <CButton color="warning" size="sm" variant="outline"

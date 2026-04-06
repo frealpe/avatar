@@ -20,9 +20,9 @@ export const useAgent = () => {
     }, [messages]);
 
     const handleSend = async () => {
-        if (!input.trim()) return;
+        if (!input?.trim()) return;
 
-        const userMessage = input.trim();
+        const userMessage = input?.trim();
         setMessages(prev => [...prev, { sender: 'user', text: userMessage }]);
         setInput('');
         setLoading(true);

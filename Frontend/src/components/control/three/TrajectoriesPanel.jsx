@@ -55,9 +55,9 @@ const TrajectoriesPanel = ({
     };
 
     const handleRename = async () => {
-        if (!editTarget || !editName.trim()) return;
+        if (!editTarget || !editName?.trim()) return;
         setRenaming(true);
-        await onRenameTrajectory?.(editTarget._id, editName.trim());
+        await onRenameTrajectory?.(editTarget._id, editName?.trim());
         setRenaming(false);
         setEditTarget(null);
         setEditName('');

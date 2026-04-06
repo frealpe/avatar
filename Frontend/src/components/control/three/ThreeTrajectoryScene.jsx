@@ -325,7 +325,7 @@ const ThreeTrajectoryScene = () => {
 
     const handleSaveTrajectory = async () => {
         if (!helperRef.current) return;
-        const name = newTrajectoryName.trim();
+        const name = newTrajectoryName?.trim();
         if (!name) return;
         const data = helperRef.current.getDroneTrajectories();
         if (!data?.length) { alert('No hay trayectorias generadas.'); return; }

@@ -16,7 +16,7 @@ function TextMessageBox({ onSendMessage, placeholder, disableCorrections = false
     event.preventDefault();
 
     // No enviar si no hay texto ni archivo
-    if (message.trim().length === 0 && !file) return;
+    if (!message?.trim() && !file) return;
 
     try {
       let fileContent = null;
@@ -28,7 +28,7 @@ function TextMessageBox({ onSendMessage, placeholder, disableCorrections = false
         // 🔹 Limpiar BOM si existe
         text = text.replace(/^\uFEFF/, "");
 
-        if (!text || text.trim() === "") {
+        if (!text || text?.trim() === "") {
           alert("El archivo está vacío o no se pudo leer.");
           return;
         }
@@ -49,7 +49,7 @@ function TextMessageBox({ onSendMessage, placeholder, disableCorrections = false
           }
         } else {
           // 🔹 Cualquier otro archivo se toma como texto plano
-          fileContent = text.trim();
+          fileContent = text?.trim();
         }
       }
 
@@ -57,7 +57,7 @@ function TextMessageBox({ onSendMessage, placeholder, disableCorrections = false
 
       // 🔹 Enviar mensaje y/o archivo convertido
       onSendMessage({
-        text: message.trim(),
+        text: message?.trim(),
         file: fileContent,
       });
 
