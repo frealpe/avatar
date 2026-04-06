@@ -58,7 +58,7 @@ export default function DrawerMenu({ isOpen, onClose, onNavigate }) {
                     </TouchableOpacity>
                 </View>
             </Animated.View>
-        </View>
+        </Animated.View>
     );
 }
 
