@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { CCard, CCardBody, CCol, CRow, CButton, CSpinner } from '@coreui/react-pro';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import iotApi from '../../service/iotApi';
 
 const GeneracionAvatar = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const dispatch = useDispatch();
     const [loading, setLoading] = useState(true);
     const [avatarData, setAvatarData] = useState(null);
@@ -14,8 +15,9 @@ const GeneracionAvatar = () => {
     useEffect(() => {
         const fetchOrGenerate = async () => {
             try {
-                // Asumiendo que el usuario se escaneó en web, generamos un mock Anny post request
-                const data = await iotApi.generateAvatar('web_session_dummy', 'web_user');
+                const imageBase64 = location.state?.imageBase64 || 'web_session_dummy';
+                console.log("Enviando imagen real para Inferencia Trellis...");
+                const data = await iotApi.generateAvatar(imageBase64, 'web_user');
 
                 if (data.ok) {
                     const newAvatar = data.avatar;

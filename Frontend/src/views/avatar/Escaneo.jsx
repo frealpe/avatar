@@ -71,6 +71,21 @@ const EscaneoAvatar = () => {
 
     const startScan = () => {
         setScanning(true);
+
+        // Capturar la imagen justo cuando inicia
+        let imageBase64 = null;
+        if (videoRef.current) {
+            const canvas = document.createElement('canvas');
+            canvas.width = videoRef.current.videoWidth;
+            canvas.height = videoRef.current.videoHeight;
+            const ctx = canvas.getContext('2d');
+            // Necesitamos invertirla porque el video tiene transform: scaleX(-1)
+            ctx.translate(canvas.width, 0);
+            ctx.scale(-1, 1);
+            ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+            imageBase64 = canvas.toDataURL('image/jpeg', 0.8);
+        }
+
         let current = 0;
         const interval = setInterval(() => {
             current += 15;
@@ -78,7 +93,7 @@ const EscaneoAvatar = () => {
             if (current >= 100) {
                 clearInterval(interval);
                 setTimeout(() => {
-                    navigate('/avatar/generacion');
+                    navigate('/avatar/generacion', { state: { imageBase64 } });
                 }, 500);
             }
         }, 500);

@@ -1,9 +1,30 @@
-import React, { useState, useEffect, useRef, useContext } from 'react';
+import React, { useState, useEffect, useRef, useContext, Suspense } from 'react';
 import { useSelector } from 'react-redux';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls } from '@react-three/drei';
+import { OrbitControls, useGLTF } from '@react-three/drei';
 import iotApi from '../../service/iotApi';
 import { SocketContext } from '../../context/SocketContext';
+
+function AvatarRealGLB({ url, measurements }) {
+    const { scene } = useGLTF(url);
+    const group = useRef();
+
+    // Scale mesh metrically from sliders
+    const heightScale = measurements ? measurements.height / 170 : 1;
+    const widthScale = measurements ? measurements.chest / 90 : 1;
+
+    useFrame((state) => {
+        if (group.current) {
+            group.current.position.y = (-1 * heightScale) + Math.sin(state.clock.elapsedTime * 2) * 0.05;
+        }
+    });
+
+    return (
+        <group ref={group} position={[0, -1 * heightScale, 0]} scale={[widthScale, heightScale, widthScale]}>
+            <primitive object={scene} />
+        </group>
+    );
+}
 
 // Componente Malla Anny (HMR Proxy) adaptativo
 function AnnyHumanBody({ measurements, isTryingOn }) {
@@ -139,7 +160,15 @@ const ProbadorAvatar = () => {
                             <ambientLight intensity={0.5} />
                             <pointLight position={[10, 10, 10]} intensity={1.5} color="#00F2FF" />
                             <spotLight position={[-10, 10, 5]} intensity={0.5} color="#C47FFF" />
-                            <AnnyHumanBody measurements={liveAvatar.measurements} isTryingOn={wornClothId !== null} />
+
+                            <Suspense fallback={null}>
+                                {liveAvatar.meshUrl ? (
+                                    <AvatarRealGLB url={liveAvatar.meshUrl} measurements={liveAvatar.measurements} />
+                                ) : (
+                                    <AnnyHumanBody measurements={liveAvatar.measurements} isTryingOn={wornClothId !== null} />
+                                )}
+                            </Suspense>
+
                             <OrbitControls enablePan={false} enableZoom={true} />
                         </Canvas>
                     </div>
