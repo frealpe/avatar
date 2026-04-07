@@ -3,7 +3,6 @@ import { StyleSheet, Text, View, ActivityIndicator } from 'react-native';
 import Scanner from './components/Scanner';
 import AvatarCanvas from './components/AvatarCanvas';
 import HomeScreen from './components/HomeScreen';
-import EntryScreen from './components/EntryScreen';
 import BottomNavigation from './components/BottomNavigation';
 import ProbadorScreen from './components/ProbadorScreen';
 import DrawerMenu from './components/DrawerMenu';
@@ -11,7 +10,7 @@ import PlaceholderScreen from './components/PlaceholderScreen';
 import { BACKEND_URL } from './config';
 
 export default function App() {
-  const [step, setStep] = useState('entry'); // entry, home, scan, processing, render, probador
+  const [step, setStep] = useState('scan'); // scan is the entry point now
   const [avatarData, setAvatarData] = useState(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
@@ -63,7 +62,6 @@ export default function App() {
   return (
     <View style={styles.container}>
       <View style={styles.content}>
-        {step === 'entry' && <EntryScreen onNext={() => setStep('home')} />}
         {step === 'home' && <HomeScreen onScanPress={() => setStep('scan')} onMenuPress={() => setIsDrawerOpen(true)} />}
         {step === 'scan' && <Scanner onCapture={handleCapture} onBack={() => setStep('home')} />}
         {step === 'render' && <AvatarCanvas avatarData={avatarData} onBack={() => setStep('home')} />}
@@ -72,7 +70,7 @@ export default function App() {
       </View>
 
       {/* Show Bottom Navigation on all proper screens */}
-      {(step !== 'entry' && step !== 'processing') && (
+      {(step !== 'processing') && (
          <BottomNavigation
             currentTab={
               ['home', 'scan'].includes(step) ? step : 
