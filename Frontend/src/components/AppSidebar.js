@@ -1,11 +1,11 @@
 import React from 'react'
-import { useSelector, useDispatch } from 'react-redux'
+import useStore from '../store'
 import navigation from '../_nav'
 import { NavLink } from 'react-router-dom'
 
 const AppSidebar = () => {
-    const dispatch = useDispatch()
-    const sidebarShow = useSelector((state) => state.sidebarShow)
+    const sidebarShow = useStore((state) => state.sidebarShow)
+    const set = useStore((state) => state.set)
 
     return (
         <>
@@ -13,7 +13,7 @@ const AppSidebar = () => {
             {sidebarShow && (
                 <div 
                     className="fixed inset-0 bg-black/60 z-40 lg:hidden"
-                    onClick={() => dispatch({ type: 'set', sidebarShow: false })}
+                    onClick={() => set({ sidebarShow: false })}
                 ></div>
             )}
 
@@ -27,7 +27,7 @@ const AppSidebar = () => {
                     <NavLink 
                         key={item.name} 
                         to={item.to || '#'}
-                        onClick={() => dispatch({ type: 'set', sidebarShow: false })}
+                        onClick={() => set({ sidebarShow: false })}
                         className={({ isActive }) => `flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer transition-all ${isActive ? 'bg-[#101417] text-[#00F2FF] shadow-[inset_0_0_15px_rgba(0,242,255,0.05)]' : 'text-[#a9abaf] hover:bg-[#101417]/30 hover:text-white'}`}
                     >
                         <span className="material-symbols-outlined text-lg">{item.materialIcon}</span>

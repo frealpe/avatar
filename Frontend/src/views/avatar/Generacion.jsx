@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { CCard, CCardBody, CCol, CRow, CButton, CSpinner } from '@coreui/react-pro';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
+import useStore from '../../store';
 import iotApi from '../../service/iotApi';
 
 const GeneracionAvatar = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const dispatch = useDispatch();
+    const setStoreAvatar = useStore((state) => state.setAvatar);
     const [loading, setLoading] = useState(true);
     const [avatarData, setAvatarData] = useState(null);
 
@@ -22,7 +22,7 @@ const GeneracionAvatar = () => {
                 if (data.ok) {
                     const newAvatar = data.avatar;
                     setAvatarData(newAvatar);
-                    dispatch({ type: 'SET_AVATAR', payload: newAvatar });
+                    setStoreAvatar(newAvatar);
 
                     // Auto navigate when completed
                     setTimeout(() => {
@@ -39,7 +39,7 @@ const GeneracionAvatar = () => {
         };
 
         fetchOrGenerate();
-    }, [dispatch]);
+    }, [setStoreAvatar, location.state?.imageBase64, navigate]);
 
     return (
         <CRow className="justify-content-center">

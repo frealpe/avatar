@@ -1,6 +1,6 @@
 import React, { Suspense, useEffect } from 'react'
 import { HashRouter, Route, Routes } from 'react-router-dom'
-import { useSelector } from 'react-redux'
+import useStore from './store'
 import { CSpinner, useColorModes } from '@coreui/react-pro'
 import './scss/style.scss'
 // We use those styles to show code examples, you should remove them in your application.
@@ -15,7 +15,7 @@ const App = () => {
   const { isColorModeSet, setColorMode } = useColorModes(
     'coreui-pro-react-admin-template-theme-light',
   )
-  const storedTheme = useSelector((state) => state.theme)
+  const storedTheme = useStore((state) => state.theme)
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.href.split('?')[1])

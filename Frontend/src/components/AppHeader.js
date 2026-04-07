@@ -1,10 +1,10 @@
 import React, { useEffect, useRef, useContext } from 'react'
-import { useSelector, useDispatch } from 'react-redux'
+import useStore from '../store'
 import { SocketContext } from '../context/SocketContext'
 
 const AppHeader = () => {
-    const dispatch = useDispatch()
-    const sidebarShow = useSelector((state) => state.sidebarShow)
+    const sidebarShow = useStore((state) => state.sidebarShow)
+    const set = useStore((state) => state.set)
     const { online } = useContext(SocketContext)
 
     return (
@@ -12,7 +12,7 @@ const AppHeader = () => {
             <div className="flex items-center gap-4">
                 <span 
                     className="material-symbols-outlined text-[#00F2FF] cursor-pointer hover:scale-110 transition-transform"
-                    onClick={() => dispatch({ type: 'set', sidebarShow: !sidebarShow })}
+                    onClick={() => set({ sidebarShow: !sidebarShow })}
                 >
                     menu
                 </span>
