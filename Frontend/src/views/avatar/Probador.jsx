@@ -60,9 +60,19 @@ const ProbadorAvatar = () => {
     // Sincronización segura con Redux (solo si el ID cambia)
     useEffect(() => {
         if (avatarData && avatarData._id !== liveAvatar?._id) {
-            setLiveAvatar(avatarData);
+            setLiveAvatar(JSON.parse(JSON.stringify(avatarData))); // Deep copy so we can edit
         }
     }, [avatarData?._id]);
+
+    const handleMeasurementChange = (key, val) => {
+        setLiveAvatar(prev => ({
+            ...prev,
+            measurements: {
+                ...prev.measurements,
+                [key]: parseFloat(val)
+            }
+        }));
+    };
 
     useEffect(() => {
         if (!socket) return;
@@ -170,24 +180,39 @@ const ProbadorAvatar = () => {
 
                     <div className="flex-1 mt-10 space-y-10">
                         {[
-                            { label: 'Height (cm)', value: 178.5, percent: 65 },
-                            { label: 'Weight (kg)', value: 64.2, percent: 45 },
-                            { label: 'Chest Circumference', value: 88.0, percent: 55 },
-                            { label: 'Waist Width', value: 62.5, percent: 75 }
-                        ].map(param => (
-                            <div key={param.label} className="space-y-4">
-                                <div className="flex justify-between items-end">
-                                    <label className="text-[11px] font-bold text-[#a9abaf] uppercase tracking-widest">{param.label}</label>
-                                    <div className="px-3 py-1 rounded-md bg-[#1c2024] border border-[#45484c]/40">
-                                        <span className="text-xs font-bold text-[#00F2FF] font-mono">{param.value}</span>
+                            { label: 'Height (cm)', key: 'height', min: 140, max: 210 },
+                            { label: 'Weight (kg)', key: 'weight', min: 40, max: 120 },
+                            { label: 'Chest Circumference', key: 'chest', min: 70, max: 130 },
+                            { label: 'Waist Width', key: 'waist', min: 50, max: 110 }
+                        ].map(param => {
+                            const val = liveAvatar.measurements?.[param.key] || param.min;
+                            // Clamp percentage between 0 and 100
+                            const percent = Math.min(Math.max(((val - param.min) / (param.max - param.min)) * 100, 0), 100);
+
+                            return (
+                                <div key={param.label} className="space-y-4">
+                                    <div className="flex justify-between items-end">
+                                        <label className="text-[11px] font-bold text-[#a9abaf] uppercase tracking-widest">{param.label}</label>
+                                        <div className="px-3 py-1 rounded-md bg-[#1c2024] border border-[#45484c]/40">
+                                            <span className="text-xs font-bold text-[#00F2FF] font-mono">{val.toFixed(1)}</span>
+                                        </div>
+                                    </div>
+                                    <div className="relative h-4 w-full flex items-center">
+                                        <div className="absolute inset-x-0 h-1.5 w-full bg-[#22262b] rounded-full pointer-events-none">
+                                            <div className="absolute top-0 left-0 h-full bg-gradient-to-r from-[#8C00E5] to-[#00F2FF] rounded-full" style={{ width: `${percent}%` }}></div>
+                                            <div className="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-[#00F2FF] shadow-[0_0_10px_rgba(0,242,255,0.8)] border-2 border-white pointer-events-none" style={{ left: `calc(${percent}% - 8px)` }}></div>
+                                        </div>
+                                        <input
+                                            type="range"
+                                            min={param.min} max={param.max} step="0.1"
+                                            value={val}
+                                            onChange={(e) => handleMeasurementChange(param.key, e.target.value)}
+                                            className="opacity-0 w-full h-full cursor-pointer absolute inset-0 z-10"
+                                        />
                                     </div>
                                 </div>
-                                <div className="relative h-1.5 w-full bg-[#22262b] rounded-full">
-                                    <div className="absolute top-0 left-0 h-full bg-gradient-to-r from-[#8C00E5] to-[#00F2FF] rounded-full" style={{ width: `${param.percent}%` }}></div>
-                                    <div className="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-[#00F2FF] shadow-[0_0_10px_rgba(0,242,255,0.8)] border-2 border-white cursor-pointer" style={{ left: `calc(${param.percent}% - 8px)` }}></div>
-                                </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
 
                     <div className="mt-auto p-6 rounded-2xl bg-[#0b0e11]/60 border border-[#45484c]/20 flex gap-4 items-start">

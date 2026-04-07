@@ -5,8 +5,8 @@ import routes from '../routes'
 
 const AppContent = () => {
   return (
-    <CContainer className="px-1" fluid>
-      <Suspense fallback={<CSpinner color="primary" />}>
+    <CContainer className="px-0 h-full d-flex flex-column" fluid style={{ flex: 1, minHeight: 'calc(100vh - 80px)' }}>
+      <Suspense fallback={<div className="h-full flex items-center justify-center"><CSpinner color="primary" /></div>}>
         <Routes>
           {routes.map((route, idx) => {
             return (
