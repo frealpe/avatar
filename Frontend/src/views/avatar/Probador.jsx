@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useContext, Suspense } from 'react';
-import { useSelector } from 'react-redux';
+import useStore from '../../store';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, useGLTF } from '@react-three/drei';
 import iotApi from '../../service/iotApi';
@@ -67,7 +67,7 @@ const DEFAULT_AVATAR = {
 };
 
 const ProbadorAvatar = () => {
-    const avatarData = useSelector(state => state.avatarData) || DEFAULT_AVATAR;
+    const avatarData = useStore(state => state.avatarData) || DEFAULT_AVATAR;
 
     const { socket } = useContext(SocketContext);
 

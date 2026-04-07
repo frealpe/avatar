@@ -1,22 +1,16 @@
-import { legacy_createStore as createStore } from 'redux'
+import { create } from 'zustand'
 
-const initialState = {
+const useStore = create((set) => ({
   sidebarShow: false,
   asideShow: false,
   theme: 'light',
   avatarData: null, // Para guardar el avatar proveniente de la inferencia Anny
-}
 
-const changeState = (state = initialState, { type, payload, ...rest }) => {
-  switch (type) {
-    case 'set':
-      return { ...state, ...rest }
-    case 'SET_AVATAR':
-      return { ...state, avatarData: payload }
-    default:
-      return state
-  }
-}
+  // Equivalente al dispatch({ type: 'set', ...rest })
+  set: (payload) => set((state) => ({ ...state, ...payload })),
 
-const store = createStore(changeState)
-export default store
+  // Equivalente al dispatch({ type: 'SET_AVATAR', payload })
+  setAvatar: (payload) => set((state) => ({ ...state, avatarData: payload })),
+}))
+
+export default useStore
