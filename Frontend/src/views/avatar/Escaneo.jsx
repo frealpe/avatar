@@ -8,6 +8,7 @@ const EscaneoAvatar = () => {
     const [progress, setProgress] = useState(0);
     const [devices, setDevices] = useState([]);
     const [selectedDeviceId, setSelectedDeviceId] = useState('');
+    const [cameraError, setCameraError] = useState('');
     const videoRef = useRef(null);
     const streamRef = useRef(null);
 
@@ -24,8 +25,10 @@ const EscaneoAvatar = () => {
                 if (videoDevices.length > 0 && !selectedDeviceId) {
                     setSelectedDeviceId(videoDevices[0].deviceId);
                 }
+                setCameraError('');
             } catch (err) {
                 console.error("Error enumerating devices: ", err);
+                setCameraError("Permiso de cámara denegado o no soportado en esta red (usa localhost o HTTPS).");
             }
         };
         getDevices();
@@ -56,8 +59,10 @@ const EscaneoAvatar = () => {
                 if (videoRef.current) {
                     videoRef.current.srcObject = stream;
                 }
+                setCameraError('');
             } catch (err) {
                 console.error("Error starting camera stream: ", err);
+                setCameraError("No se pudo iniciar la cámara. Verifica los permisos.");
             }
         };
 
@@ -142,6 +147,12 @@ const EscaneoAvatar = () => {
                                     transition: 'opacity 0.5s'
                                 }}
                             />
+
+                            {cameraError && (
+                                <div style={{ position: 'absolute', zIndex: 20, textAlign: 'center', padding: '20px', backgroundColor: 'rgba(11,14,17,0.8)', color: '#ff716c', borderRadius: '10px' }}>
+                                    <p className="mb-0"><strong>Error:</strong> {cameraError}</p>
+                                </div>
+                            )}
 
                             {/* Fake Silhouette Overlay */}
                             <div style={{
