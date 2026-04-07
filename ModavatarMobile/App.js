@@ -7,11 +7,10 @@ import EntryScreen from './components/EntryScreen';
 import BottomNavigation from './components/BottomNavigation';
 import ProbadorScreen from './components/ProbadorScreen';
 import DrawerMenu from './components/DrawerMenu';
-import CreateAvatarScreen from './components/CreateAvatarScreen';
 import { BACKEND_URL } from './config';
 
 export default function App() {
-  const [step, setStep] = useState('entry'); // entry, home, scan, processing, render, probador, create
+  const [step, setStep] = useState('entry'); // entry, home, scan, processing, render, probador
   const [avatarData, setAvatarData] = useState(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
@@ -46,7 +45,6 @@ export default function App() {
   const handleTabPress = (tabId) => {
     if (tabId === 'home') setStep('home');
     if (tabId === 'scan') setStep('scan');
-    if (tabId === 'create') setStep('create');
     // Implement other tabs as needed later
   };
 
@@ -68,13 +66,12 @@ export default function App() {
         {step === 'scan' && <Scanner onCapture={handleCapture} onBack={() => setStep('home')} />}
         {step === 'render' && <AvatarCanvas avatarData={avatarData} onBack={() => setStep('home')} />}
         {step === 'probador' && <ProbadorScreen onBack={() => setStep('home')} />}
-        {step === 'create' && <CreateAvatarScreen onBack={() => setStep('home')} onSave={(color) => setStep('home')} />}
       </View>
 
       {/* Show Bottom Navigation only on specific screens if desired, or always */}
-      {(step === 'home' || step === 'scan' || step === 'render' || step === 'create') && (
+      {(step === 'home' || step === 'scan' || step === 'render') && (
          <BottomNavigation
-            currentTab={step === 'create' ? 'create' : step === 'home' ? 'home' : (step === 'scan' || step === 'render' ? 'scan' : 'home')}
+            currentTab={step === 'home' ? 'home' : (step === 'scan' || step === 'render' ? 'scan' : 'home')}
             onTabPress={handleTabPress}
          />
       )}
