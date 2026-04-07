@@ -1,0 +1,13 @@
+diff --git a/node_modules/react-native/Libraries/Network/XMLHttpRequest.js b/node_modules/react-native/Libraries/Network/XMLHttpRequest.js
+index 458f078..ae67c34 100644
+--- a/node_modules/react-native/Libraries/Network/XMLHttpRequest.js
++++ b/node_modules/react-native/Libraries/Network/XMLHttpRequest.js
+@@ -252,7 +252,7 @@ class XMLHttpRequest extends (EventTarget(...XHR_EVENTS): typeof EventTarget) {
+         } else {
+           throw new Error(
+             'Invalid response for blob - expecting object, was ' +
+-              `${typeof this._response}: ${this._response.trim()}`,
++              `${typeof this._response}: ${this._response?.trim ? this._response.trim() : this._response}`,
+           );
+         }
+         break;
