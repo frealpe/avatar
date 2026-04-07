@@ -57,10 +57,21 @@ class Gradio3DProcessor {
         
         try {
             // Using submit instead of predict for better queue handling
-            const job = this.client.submit(apiEndpoint, {
-                image: processedInput,
-                ...extraParams
-            });
+            // Determine structure based on endpoint
+            let payload;
+            if (apiEndpoint === '/preprocess_image') {
+                payload = { image: processedInput };
+            } else if (apiEndpoint === '/image_to_3d') {
+                payload = { image: processedInput, ...extraParams };
+            } else if (apiEndpoint === '/extract_glb') {
+                // Not an image keyword.
+                // Just pass as an array of arguments or spread if object
+                payload = [processedInput, extraParams.mesh_simplify || 0.95, extraParams.texture_size || 1024];
+            } else {
+                payload = { image: processedInput, ...extraParams };
+            }
+
+            const job = this.client.submit(apiEndpoint, payload);
 
             let lastStatus = "";
             for await (const msg of job) {
