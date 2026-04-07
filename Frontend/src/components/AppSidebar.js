@@ -1,22 +1,38 @@
 import React from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import navigation from '../_nav'
+import { NavLink } from 'react-router-dom'
 
 const AppSidebar = () => {
     const dispatch = useDispatch()
+    const sidebarShow = useSelector((state) => state.sidebarShow)
 
     return (
-        <aside className="w-72 h-full bg-[#0b0e11] border-r border-[#45484c]/10 flex flex-col p-8 z-50 overflow-y-auto custom-scrollbar">
+        <>
+            {/* Overlay Mobile */}
+            {sidebarShow && (
+                <div 
+                    className="fixed inset-0 bg-black/60 z-40 lg:hidden"
+                    onClick={() => dispatch({ type: 'set', sidebarShow: false })}
+                ></div>
+            )}
+
+            <aside className={`fixed lg:relative top-0 left-0 w-72 h-full bg-[#0b0e11] border-r border-[#45484c]/10 flex flex-col p-8 z-50 overflow-y-auto custom-scrollbar transition-transform duration-300 ${sidebarShow ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
             <div className="mb-8">
                 <span className="text-2xl font-black tracking-[-0.04em] text-[#00F2FF] drop-shadow-[0_0_12px_rgba(0,242,255,0.5)] font-['Space_Grotesk'] uppercase">ETHÉREAL</span>
             </div>
 
             <nav className="flex flex-col gap-2 mb-8">
                 {navigation.map(item => (
-                    <div key={item.name} className={`flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer transition-all ${item.name === 'My Avatar' ? 'bg-[#101417] text-[#00F2FF] shadow-[inset_0_0_15px_rgba(0,242,255,0.05)]' : 'text-[#a9abaf] hover:bg-[#101417]/30 hover:text-white'}`}>
+                    <NavLink 
+                        key={item.name} 
+                        to={item.to || '#'}
+                        onClick={() => dispatch({ type: 'set', sidebarShow: false })}
+                        className={({ isActive }) => `flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer transition-all ${isActive ? 'bg-[#101417] text-[#00F2FF] shadow-[inset_0_0_15px_rgba(0,242,255,0.05)]' : 'text-[#a9abaf] hover:bg-[#101417]/30 hover:text-white'}`}
+                    >
                         <span className="material-symbols-outlined text-lg">{item.materialIcon}</span>
                         <span className="text-sm font-semibold tracking-wide">{item.name}</span>
-                    </div>
+                    </NavLink>
                 ))}
             </nav>
 
@@ -40,6 +56,7 @@ const AppSidebar = () => {
                 <button className="w-full py-3 rounded-xl border border-[#ff716c]/20 text-[10px] uppercase tracking-widest font-bold text-[#ff716c] hover:bg-[#ff716c]/5 transition-all">Eliminar avatar</button>
             </div>
         </aside>
+        </>
     )
 }
 
