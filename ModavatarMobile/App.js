@@ -7,6 +7,7 @@ import EntryScreen from './components/EntryScreen';
 import BottomNavigation from './components/BottomNavigation';
 import ProbadorScreen from './components/ProbadorScreen';
 import DrawerMenu from './components/DrawerMenu';
+import PlaceholderScreen from './components/PlaceholderScreen';
 import { BACKEND_URL } from './config';
 
 export default function App() {
@@ -45,7 +46,8 @@ export default function App() {
   const handleTabPress = (tabId) => {
     if (tabId === 'home') setStep('home');
     if (tabId === 'scan') setStep('scan');
-    // Implement other tabs as needed later
+    if (tabId === 'wardrobe') setStep('probador');
+    if (tabId === 'profile') setStep('my_avatar');
   };
 
   if (step === 'processing') {
@@ -66,12 +68,17 @@ export default function App() {
         {step === 'scan' && <Scanner onCapture={handleCapture} onBack={() => setStep('home')} />}
         {step === 'render' && <AvatarCanvas avatarData={avatarData} onBack={() => setStep('home')} />}
         {step === 'probador' && <ProbadorScreen onBack={() => setStep('home')} />}
+        {['settings', 'collection', 'measurements', 'my_avatar', 'support'].includes(step) && <PlaceholderScreen stepName={step} onBack={() => setStep('home')} />}
       </View>
 
-      {/* Show Bottom Navigation only on specific screens if desired, or always */}
-      {(step === 'home' || step === 'scan' || step === 'render') && (
+      {/* Show Bottom Navigation on all proper screens */}
+      {(step !== 'entry' && step !== 'processing') && (
          <BottomNavigation
-            currentTab={step === 'home' ? 'home' : (step === 'scan' || step === 'render' ? 'scan' : 'home')}
+            currentTab={
+              ['home', 'scan'].includes(step) ? step : 
+              step === 'probador' ? 'wardrobe' : 
+              step === 'my_avatar' ? 'profile' : 'home'
+            }
             onTabPress={handleTabPress}
          />
       )}
