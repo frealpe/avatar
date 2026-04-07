@@ -28,6 +28,11 @@ export default function Scanner({ onCapture, onBack }) {
         <View style={styles.container}>
             <CameraView style={styles.camera} facing="back" ref={cameraRef}>
 
+                {/* Back Button */}
+                <TouchableOpacity onPress={onBack} style={styles.backButton}>
+                    <Ionicons name="arrow-back" size={28} color="#FFFFFF" />
+                </TouchableOpacity>
+
                 {/* Overlay Guide for Body Scan */}
                 <View style={styles.overlayContainer}>
                     <Text style={styles.instructionText}>Alinea tu cuerpo con la silueta</Text>

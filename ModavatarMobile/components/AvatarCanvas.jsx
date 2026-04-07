@@ -75,7 +75,19 @@ export default function AvatarCanvas({ avatarData, onBack }) {
 
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#0b0e11' },
-    header: { padding: 20, paddingTop: 50, backgroundColor: 'rgba(22, 26, 30, 0.8)', borderBottomWidth: 1, borderBottomColor: '#22262b' },
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: 20,
+        paddingTop: 50,
+        backgroundColor: 'rgba(22, 26, 30, 0.8)',
+        borderBottomWidth: 1,
+        borderBottomColor: '#22262b'
+    },
+    backBtn: {
+        paddingRight: 10,
+    },
     title: { color: '#00F2FF', fontFamily: 'monospace', fontWeight: 'bold', fontSize: 18 },
     subtitle: { color: '#a9abaf', fontSize: 12 },
     canvasContainer: { flex: 1 },
