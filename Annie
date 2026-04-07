@@ -1,2 +1,7 @@
 python -m anny.examples.interactive_demo
 
+conda activate trellis_env
+
+pip install gradio typer click==8.3.2
+
+python -m anny.examples.interactive_demo

@@ -40,6 +40,7 @@ export default function App() {
       console.error('Error enviando la foto al servidor:', error);
       setStep('scan');
     }
+    
   };
 
   const handleTabPress = (tabId) => {
