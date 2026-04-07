@@ -23,6 +23,13 @@ const GeneracionAvatar = () => {
                     const newAvatar = data.avatar;
                     setAvatarData(newAvatar);
                     dispatch({ type: 'SET_AVATAR', payload: newAvatar });
+
+                    // Auto navigate when completed
+                    setTimeout(() => {
+                        navigate('/avatar/probador');
+                    }, 1500);
+                } else {
+                    console.error("Backend did not return ok:", data);
                 }
             } catch (e) {
                 console.error("Error generating avatar", e);
@@ -50,7 +57,7 @@ const GeneracionAvatar = () => {
                             <div className="py-5">
                                 <CSpinner style={{ width: '4rem', height: '4rem', color: '#00f1fe' }} />
                                 <h5 className="mt-4 text-white">Extrayendo Feature Maps de Anny...</h5>
-                                <p style={{ color: '#a9abaf' }}>Conectando con Backend Express</p>
+                                <p style={{ color: '#a9abaf' }}>Conectando con Servidor de IA (Trellis). Podría tardar 1 a 2 minutos.</p>
                             </div>
                         ) : (
                             <>

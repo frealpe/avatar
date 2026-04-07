@@ -97,6 +97,9 @@ class Server {
         this.server.listen( this.port, () => {
             console.log('Servidor corriendo en puerto', this.port );
         });
+        
+        // Increase global timeouts for AI Gradio Inference
+        this.server.timeout = 300000; // 5 minutes
     }
 
 }
