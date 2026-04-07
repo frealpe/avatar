@@ -120,7 +120,7 @@ const ProbadorAvatar = () => {
                 {/* Viewport Section */}
                 <section className="flex-1 relative blueprint-grid">
                     <div className="absolute top-10 left-10 z-20">
-                        <span className="text-[8px] text-[#a9abaf] uppercase tracking-[0.4em] font-['Space_Grotesk']">Viewport</span>
+                        <span className="text-[8px] text-[#a9abaf] uppercase tracking-[0.4em] font-['Space_Grotesk']">Área de Visualización</span>
                         <h2 className="text-5xl font-black text-white/10 tracking-tighter uppercase pointer-events-none mt-2">Anny_m</h2>
                     </div>
 
@@ -131,7 +131,7 @@ const ProbadorAvatar = () => {
                             <div className="absolute h-full w-[1px] bg-[#45484c]/20"></div>
                             <div className="w-3 h-3 rounded-full bg-[#00F2FF] shadow-[0_0_15px_rgba(0,242,255,0.8)]"></div>
                         </div>
-                        <p className="text-[7px] text-[#00F2FF] text-right mt-2 uppercase tracking-widest font-['Space_Grotesk']">Pos: Z-Axis</p>
+                        <p className="text-[7px] text-[#00F2FF] text-right mt-2 uppercase tracking-widest font-['Space_Grotesk']">Pos: Eje-Z</p>
                     </div>
 
                     <div className="absolute inset-0 z-0">
@@ -147,7 +147,7 @@ const ProbadorAvatar = () => {
                     {/* Bottom Overlays */}
                     <div className="absolute bottom-10 left-10 flex gap-10 items-end z-20">
                         <div>
-                            <span className="text-[8px] text-[#00F2FF] uppercase tracking-[0.2em] font-['Space_Grotesk'] font-bold">Orientation</span>
+                            <span className="text-[8px] text-[#00F2FF] uppercase tracking-[0.2em] font-['Space_Grotesk'] font-bold">Orientación</span>
                             <div className="flex gap-2 mt-3">
                                 <div className="w-10 h-10 rounded-lg bg-[#101417]/80 border border-[#45484c]/30 flex items-center justify-center cursor-pointer hover:bg-[#00F2FF]/10 transition-all">
                                     <span className="material-symbols-outlined text-sm text-white">3d_rotation</span>
@@ -158,7 +158,7 @@ const ProbadorAvatar = () => {
                             </div>
                         </div>
                         <div>
-                            <span className="text-[8px] text-[#a9abaf] uppercase tracking-[0.2em] font-['Space_Grotesk'] font-bold">Stress Points</span>
+                            <span className="text-[8px] text-[#a9abaf] uppercase tracking-[0.2em] font-['Space_Grotesk'] font-bold">Puntos de Tensión</span>
                             <div className="flex gap-3 mt-3">
                                 <div className="w-4 h-4 rounded-full bg-[#C47FFF] shadow-[0_0_10px_rgba(196,127,255,0.6)]"></div>
                                 <div className="w-4 h-4 rounded-full bg-[#45484c]/50 border border-[#45484c]/20"></div>
@@ -172,18 +172,18 @@ const ProbadorAvatar = () => {
                 <aside className="w-[420px] h-full bg-[#101417]/40 backdrop-blur-3xl border-l border-[#45484c]/10 p-10 flex flex-col">
                     <div className="flex justify-between items-start mb-2">
                         <div className="space-y-1">
-                            <h3 className="font-['Space_Grotesk'] text-xl font-black text-white uppercase tracking-tight">Body Parameters</h3>
-                            <p className="text-[8px] uppercase text-[#a9abaf] tracking-[0.2em] font-bold">Metric Adjustment</p>
+                            <h3 className="font-['Space_Grotesk'] text-xl font-black text-white uppercase tracking-tight">Parámetros Corporales</h3>
+                            <p className="text-[8px] uppercase text-[#a9abaf] tracking-[0.2em] font-bold">Ajuste Métrico</p>
                         </div>
-                        <span className="text-[9px] uppercase tracking-widest text-[#00F2FF] font-black cursor-pointer hover:underline">Reset All</span>
+                        <span className="text-[9px] uppercase tracking-widest text-[#00F2FF] font-black cursor-pointer hover:underline">Restablecer</span>
                     </div>
 
                     <div className="flex-1 mt-10 space-y-10">
                         {[
-                            { label: 'Height (cm)', key: 'height', min: 140, max: 210 },
-                            { label: 'Weight (kg)', key: 'weight', min: 40, max: 120 },
-                            { label: 'Chest Circumference', key: 'chest', min: 70, max: 130 },
-                            { label: 'Waist Width', key: 'waist', min: 50, max: 110 }
+                            { label: 'Altura (cm)', key: 'height', min: 140, max: 210 },
+                            { label: 'Peso (kg)', key: 'weight', min: 40, max: 120 },
+                            { label: 'Circunferencia Pecho', key: 'chest', min: 70, max: 130 },
+                            { label: 'Ancho Cintura', key: 'waist', min: 50, max: 110 }
                         ].map(param => {
                             const val = liveAvatar.measurements?.[param.key] || param.min;
                             // Clamp percentage between 0 and 100
@@ -218,7 +218,7 @@ const ProbadorAvatar = () => {
                     <div className="mt-auto p-6 rounded-2xl bg-[#0b0e11]/60 border border-[#45484c]/20 flex gap-4 items-start">
                         <span className="material-symbols-outlined text-[#00F2FF] text-lg">info</span>
                         <p className="text-[10px] text-[#a9abaf] leading-relaxed">
-                            Changes in weight will automatically adjust mass distribution across limbs to ensure anatomical accuracy.
+                            Los cambios de peso ajustarán automáticamente la distribución de la masa en las extremidades para garantizar la precisión anatómica.
                         </p>
                     </div>
                 </aside>
@@ -227,7 +227,7 @@ const ProbadorAvatar = () => {
             {/* Footer: Collection Carousel */}
             <footer className="h-64 bg-[#0b0e11] border-t border-[#45484c]/10 p-8 z-40">
                 <div className="flex justify-between items-center mb-6 px-2">
-                    <h4 className="text-[10px] font-black text-white uppercase tracking-[0.4em] font-['Space_Grotesk']">Current Collection: Neo-Refraction 2024</h4>
+                    <h4 className="text-[10px] font-black text-white uppercase tracking-[0.4em] font-['Space_Grotesk']">Colección Actual: Neo-Refraction 2024</h4>
                     <div className="flex gap-4">
                         <span className="material-symbols-outlined text-sm text-[#a9abaf] cursor-pointer hover:text-white">west</span>
                         <span className="material-symbols-outlined text-sm text-white cursor-pointer">east</span>

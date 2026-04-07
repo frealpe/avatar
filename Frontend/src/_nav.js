@@ -5,42 +5,42 @@ import { CNavItem } from '@coreui/react-pro'
 const _nav = [
   {
     component: CNavItem,
-    name: 'My Avatar',
+    name: 'Mi Avatar',
     to: '/avatar/probador',
     icon: <CIcon icon={cilUser} customClassName="nav-icon" />,
     materialIcon: 'person'
   },
   {
     component: CNavItem,
-    name: 'Scanner 3D',
+    name: 'Escáner 3D',
     to: '/avatar/escaneo',
     icon: <CIcon icon={cil3d} customClassName="nav-icon" />,
     materialIcon: 'view_in_ar'
   },
   {
     component: CNavItem,
-    name: 'Measurements',
+    name: 'Medidas',
     to: '/avatar/medidas',
     icon: <CIcon icon={cilObjectGroup} customClassName="nav-icon" />,
     materialIcon: 'straighten'
   },
   {
     component: CNavItem,
-    name: 'Collection',
+    name: 'Colección',
     to: '/avatar/biblioteca',
     icon: <CIcon icon={cilCart} customClassName="nav-icon" />,
     materialIcon: 'style'
   },
   {
     component: CNavItem,
-    name: 'Settings',
+    name: 'Ajustes',
     to: '/settings',
     icon: <CIcon icon={cilSettings} customClassName="nav-icon" />,
     materialIcon: 'settings'
   },
   {
     component: CNavItem,
-    name: 'Support',
+    name: 'Soporte',
     to: '/support',
     icon: <CIcon icon={cilLifeRing} customClassName="nav-icon" />,
     materialIcon: 'help_outline'

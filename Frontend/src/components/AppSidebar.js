@@ -42,12 +42,12 @@ const AppSidebar = () => {
                         <span className="material-symbols-outlined text-[#00F2FF]">person</span>
                     </div>
                     <div>
-                        <h4 className="text-[12px] font-bold text-white font-['Space_Grotesk']">Anny Model 01</h4>
-                        <p className="text-[10px] text-[#a9abaf]">Precision: 98.4%</p>
+                        <h4 className="text-[12px] font-bold text-white font-['Space_Grotesk']">Modelo Anny 01</h4>
+                        <p className="text-[10px] text-[#a9abaf]">Precisión: 98.4%</p>
                     </div>
                 </div>
                 <div className="px-3 py-1 bg-[#00F2FF]/10 text-[#00F2FF] text-[8px] font-bold tracking-widest rounded-full border border-[#00F2FF]/20 inline-block uppercase text-center w-full">
-                    V-Try On Ready
+                    Probador Virtual Listo
                 </div>
             </div>
 
