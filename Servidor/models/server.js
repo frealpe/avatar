@@ -62,7 +62,8 @@ class Server {
         this.app.use( cors() );
 
         // Lectura y parseo del body: Permite leer JSON en las peticiones
-        this.app.use( express.json() );
+        this.app.use( express.json({ limit: '50mb' }) );
+        this.app.use( express.urlencoded({ limit: '50mb', extended: true }) );
 
         // Directorio Público: Define la carpeta para archivos estáticos
         this.app.use( express.static('public') );

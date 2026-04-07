@@ -11,6 +11,10 @@ const AvatarSchema = Schema({
         required: true,
         default: 'Anny_01'
     },
+    meshUrl: {
+        type: String,
+        default: null
+    },
     // Parámetros físicos (Anny Base Params)
     measurements: {
         height: { type: Number, required: true }, // en cm

@@ -27,6 +27,7 @@ router.post('/generate', async (req, res) => {
         const nuevoAvatar = new Avatar({
             userId,
             modelType: params.modelType || 'Anny_01',
+            meshUrl: params.meshUrl,
             measurements: params.measurements,
             shapeParams: params.shapeParams,
             poseParams: params.poseParams,
