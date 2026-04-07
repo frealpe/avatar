@@ -1,11 +1,68 @@
-import React, { useState } from 'react';
-import { CCard, CCardBody, CCol, CRow, CButton, CProgress } from '@coreui/react-pro';
+import React, { useState, useEffect, useRef } from 'react';
+import { CCard, CCardBody, CCol, CRow, CButton, CProgress, CFormSelect } from '@coreui/react-pro';
 import { useNavigate } from 'react-router-dom';
 
 const EscaneoAvatar = () => {
     const navigate = useNavigate();
     const [scanning, setScanning] = useState(false);
     const [progress, setProgress] = useState(0);
+    const [devices, setDevices] = useState([]);
+    const [selectedDeviceId, setSelectedDeviceId] = useState('');
+    const videoRef = useRef(null);
+    const streamRef = useRef(null);
+
+    // Enumerar dispositivos de video disponibles
+    useEffect(() => {
+        const getDevices = async () => {
+            try {
+                // Solicitar permisos inicialmente para obtener los nombres reales de las cámaras
+                await navigator.mediaDevices.getUserMedia({ video: true });
+                const deviceList = await navigator.mediaDevices.enumerateDevices();
+                const videoDevices = deviceList.filter(device => device.kind === 'videoinput');
+
+                setDevices(videoDevices);
+                if (videoDevices.length > 0 && !selectedDeviceId) {
+                    setSelectedDeviceId(videoDevices[0].deviceId);
+                }
+            } catch (err) {
+                console.error("Error enumerating devices: ", err);
+            }
+        };
+        getDevices();
+
+        // Cleanup al desmontar
+        return () => {
+            if (streamRef.current) {
+                streamRef.current.getTracks().forEach(track => track.stop());
+            }
+        };
+    }, []);
+
+    // Iniciar stream de video cuando se selecciona una cámara
+    useEffect(() => {
+        const startStream = async () => {
+            if (!selectedDeviceId) return;
+
+            // Detener el streaming actual si existe
+            if (streamRef.current) {
+                streamRef.current.getTracks().forEach(track => track.stop());
+            }
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { deviceId: { exact: selectedDeviceId } }
+                });
+                streamRef.current = stream;
+                if (videoRef.current) {
+                    videoRef.current.srcObject = stream;
+                }
+            } catch (err) {
+                console.error("Error starting camera stream: ", err);
+            }
+        };
+
+        startStream();
+    }, [selectedDeviceId]);
 
     const startScan = () => {
         setScanning(true);
@@ -35,6 +92,23 @@ const EscaneoAvatar = () => {
 
                     <CCardBody style={{ padding: '2rem' }}>
 
+                        {/* Camera Selector (only show if multiple cameras available) */}
+                        {devices.length > 1 && (
+                            <div className="mb-3">
+                                <CFormSelect
+                                    value={selectedDeviceId}
+                                    onChange={(e) => setSelectedDeviceId(e.target.value)}
+                                    style={{ backgroundColor: '#101417', color: '#00F1FE', border: '1px solid #22262b' }}
+                                >
+                                    {devices.map((device, index) => (
+                                        <option key={device.deviceId} value={device.deviceId}>
+                                            {device.label || `Cámara ${index + 1}`}
+                                        </option>
+                                    ))}
+                                </CFormSelect>
+                            </div>
+                        )}
+
                         {/* Viewfinder / Camera Simulation */}
                         <div
                             style={{
@@ -50,6 +124,25 @@ const EscaneoAvatar = () => {
                                 overflow: 'hidden'
                             }}
                         >
+                            {/* Live Video Feed */}
+                            <video
+                                ref={videoRef}
+                                autoPlay
+                                playsInline
+                                muted
+                                style={{
+                                    position: 'absolute',
+                                    top: 0,
+                                    left: 0,
+                                    width: '100%',
+                                    height: '100%',
+                                    objectFit: 'cover',
+                                    transform: 'scaleX(-1)', // Mirror effect
+                                    opacity: scanning ? 0.3 : 1, // Dim when scanning
+                                    transition: 'opacity 0.5s'
+                                }}
+                            />
+
                             {/* Fake Silhouette Overlay */}
                             <div style={{
                                 position: 'absolute',
