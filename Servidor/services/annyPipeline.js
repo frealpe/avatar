@@ -33,19 +33,19 @@ class AnnyPipeline {
                 const preprocessedData = await processor.generate3D(tempImagePath, "/preprocess_image");
                 const segmentedImage = preprocessedData[0];
 
-                console.log('🤖 [IA] Gradio: Generando representación 3D...');
+                console.log('🤖 [IA] Gradio: Generando representación 3D (Modo Rápido)...');
                 const stage1Result = await processor.generate3D(segmentedImage, "/image_to_3d", {
                     seed: 0,
                     ss_guidance_strength: 7.5,
-                    ss_sampling_steps: 12,
+                    ss_sampling_steps: 4, // [Optimizado] Antes 12. Menos iteraciones de difusión.
                     slat_guidance_strength: 3.0,
-                    slat_sampling_steps: 12
+                    slat_sampling_steps: 4 // [Optimizado] Antes 12. Reducción exponencial de tiempo.
                 });
 
-                console.log('🤖 [IA] Gradio: Extrayendo GLB mesh...');
+                console.log('🤖 [IA] Gradio: Extrayendo GLB mesh (Compresión Web)...');
                 const finalResult = await processor.generate3D(stage1Result[0], "/extract_glb", {
-                    mesh_simplify: 0.95,
-                    texture_size: 1024
+                    mesh_simplify: 0.85, // [Optimizado] Digeere los polígonos un 10% más para carga rápida
+                    texture_size: 512  // [Optimizado] Texturas en SD en lugar de HD resuelven el encoding más veloz
                 });
 
                 if (finalResult && finalResult.length > 0) {

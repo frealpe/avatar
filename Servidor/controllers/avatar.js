@@ -11,7 +11,8 @@ const generateAvatar = async (req, res) => {
         const { imageBase64, userId = 'mobile_user_01', talla = 'M', patronValName = 'patron_base.val' } = req.body;
         const io = req.app.get('io');
 
-        console.log('🚀 [IA UNIFICADA] Iniciando procesamiento paralelo (3D Trellis + 2D LLaVA)...');
+        const startTime = Date.now();
+        console.log('🚀 [IA UNIFICADA] Iniciando procesamiento paralelo...');
 
         // 1. Promesa A: Procesamiento de Avatar 3D (Pipeline Trellis Nativo)
         const meshPromise = AnnyPipeline.processImageToAnnyParams(imageBase64 || 'default_stream', io);
@@ -114,10 +115,17 @@ const generateAvatar = async (req, res) => {
 
         await nuevoAvatar.save();
 
+        const totalTime = (Date.now() - startTime) / 1000;
+
         res.status(201).json({
             ok: true,
             msg: "Mega-Pipeline de IA desplegado. Modelos unificados.",
-            avatar: nuevoAvatar
+            avatar: nuevoAvatar,
+            telemetry: {
+                totalExecutionTime: `${totalTime.toFixed(2)}s`,
+                modelsUsed: ['Trellis-Diffusion', 'LLaVA-v1.5', 'Seamly2D-CLI', 'Blender-Cycles'],
+                timestamp: new Date()
+            }
         });
 
     } catch (error) {

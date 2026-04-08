@@ -17,12 +17,20 @@ const ollama = new Ollama({
  */
 function fileToBase64(input) {
     try {
-        if (fs.existsSync(input)) {
+        if (typeof input === 'string' && fs.existsSync(input)) {
             return Buffer.from(fs.readFileSync(input)).toString("base64");
         }
     } catch (e) {
-        // Ignorar error de fs y asumir que es base64
+        // Ignorar error de fs
     }
+    
+    // Si es un string base64 con cabecera (data:image/...), la limpiamos de forma agresiva
+    if (typeof input === 'string' && input.startsWith('data:image')) {
+        const cleaned = input.replace(/^data:image\/\w+;base64,/, "");
+        console.log(`[OLLAMA DEBUG] Imagen Base64 detectada. Longitud: ${cleaned.length}. Inicio: ${cleaned.substring(0, 30)}...`);
+        return cleaned;
+    }
+    
     return input;
 }
 
