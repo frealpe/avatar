@@ -28,8 +28,9 @@ class AnnyPipeline {
                 fs.writeFileSync(tempImagePath, buffer);
 
                 // Run Gradio pipeline
-                const processor = new Gradio3DProcessor("microsoft/TRELLIS", process.env.HF_TOKEN);
-                console.log('🤖 [IA] Gradio: Invocando TRELLIS /preprocess_image...');
+                const trellisSpace = process.env.TRELLIS_API_URL || "microsoft/TRELLIS";
+                const processor = new Gradio3DProcessor(trellisSpace, process.env.HF_TOKEN);
+                console.log(`🤖 [IA] Gradio: Invocando TRELLIS (${trellisSpace}) /preprocess_image...`);
                 const preprocessedData = await processor.generate3D(tempImagePath, "/preprocess_image");
                 const segmentedImage = preprocessedData[0];
 

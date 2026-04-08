@@ -48,7 +48,8 @@ async function analizarImagen(imagen, prompt) {
             model: modelVision,
             prompt: prompt,
             images: [imageB64],
-            stream: false
+            stream: false,
+            options: { num_gpu: 99 }
         });
         return response.response.trim();
     } catch (error) {
@@ -69,7 +70,8 @@ async function generarParametros(descripcion, prompt) {
             model: modelText,
             prompt: prompt,
             format: 'json',
-            stream: false
+            stream: false,
+            options: { num_gpu: 99 }
         });
         return response.response.trim();
     } catch (error) {
