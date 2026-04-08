@@ -61,6 +61,67 @@ const exportarSVG = async (req, res) => {
     }
 };
 
+const { avatarQueue } = require('../helpers/queue');
+
+const modificarParametrosIA = async (req, res) => {
+    const { prompt, garmentParams, patronValName = 'patron_base.val' } = req.body;
+
+    if (!prompt || !garmentParams) {
+        return res.status(400).json({ error: 'Se requiere un prompt y los garmentParams actuales.' });
+    }
+
+    try {
+        console.log(`[API] Solicitud de Text-to-Fit: "${prompt}"`);
+
+        // Generar un prompt para el LLM para que modifique los parametros
+        const systemPrompt = `Eres un asistente experto en patronaje. El usuario quiere modificar una prenda con el siguiente prompt: "${prompt}".
+
+Los parámetros actuales de la prenda son:
+${JSON.stringify(garmentParams, null, 2)}
+
+Devuelve ÚNICAMENTE un objeto JSON con los parámetros actualizados. No incluyas explicaciones, ni bloques de código markdown, solo el JSON puro.`;
+
+        // Simulamos la llamada a Llama3 para obtener los nuevos parametros (reutilizando la logica en vision_parser)
+        const { generarParametros } = require('../services/vision_parser');
+
+        let parametrosModificadosRaw;
+        try {
+            parametrosModificadosRaw = await generarParametros("Usuario quiere modificar patrón", systemPrompt);
+        } catch (llmError) {
+            console.error("[API] Error en LLM al modificar parametros:", llmError);
+            return res.status(500).json({ error: 'Error procesando el prompt con IA.' });
+        }
+
+        let nuevosParametros;
+        try {
+             let cleanedRaw = parametrosModificadosRaw.replace(/```json/g, "").replace(/```/g, "").trim();
+             nuevosParametros = JSON.parse(cleanedRaw);
+        } catch (parseError) {
+             console.error("[API] Error parseando respuesta del LLM:", parametrosModificadosRaw);
+             return res.status(500).json({ error: 'La IA no devolvió un formato JSON válido.' });
+        }
+
+        console.log(`[API] Nuevos parámetros calculados:`, nuevosParametros);
+
+        // Añadir a la cola para regenerar la prenda con los nuevos parámetros (Simulado)
+        // En un flujo real enviaríamos a un worker dedicado de patrones, aquí simulamos una respuesta rapida.
+
+        res.json({
+            ok: true,
+            msg: 'Parámetros actualizados según el prompt',
+            nuevosParametros: nuevosParametros
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            ok: false,
+            error: error.message
+        });
+    }
+};
+
 module.exports = {
-    exportarSVG
+    exportarSVG,
+    modificarParametrosIA
 };

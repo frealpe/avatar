@@ -51,6 +51,21 @@ const iotApi = {
             console.error('Error trying on clothes', error);
             throw error;
         }
+    },
+
+    // Modificar parámetros de prenda vía texto (Text-to-Fit)
+    modifyFitWithText: async (prompt, garmentParams) => {
+        try {
+            const response = await fetch(`${API_URL}/api/patterns/text-to-fit`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ prompt, garmentParams })
+            });
+            return await response.json();
+        } catch (error) {
+            console.error('Error Modify Fit:', error);
+            throw error;
+        }
     }
 };
 

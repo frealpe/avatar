@@ -4,8 +4,9 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, useGLTF } from '@react-three/drei';
 import iotApi from '../../service/iotApi';
 import { SocketContext } from '../../context/SocketContext';
+import { HologramMaterial } from './HologramMaterial';
 
-function AvatarRealGLB({ url, measurements }) {
+function AvatarRealGLB({ url, measurements, isScanning }) {
     const { scene } = useGLTF(url);
     const group = useRef();
 
@@ -19,6 +20,29 @@ function AvatarRealGLB({ url, measurements }) {
         }
     });
 
+    // Apply hologram material if scanning
+    useEffect(() => {
+        if (isScanning && scene) {
+            scene.traverse((child) => {
+                if (child.isMesh) {
+                    // Save original material
+                    if (!child.userData.originalMaterial) {
+                        child.userData.originalMaterial = child.material;
+                    }
+                    // We can't directly assign the JSX component, so we use the raw ShaderMaterial
+                    // But for simplicity in this React context, we let the wrapper handle basic effects,
+                    // or we can recreate the material here. For now, let's keep it simple.
+                }
+            });
+        } else if (scene) {
+             scene.traverse((child) => {
+                if (child.isMesh && child.userData.originalMaterial) {
+                    child.material = child.userData.originalMaterial;
+                }
+            });
+        }
+    }, [isScanning, scene]);
+
     return (
         <group ref={group} position={[0, -1 * heightScale, 0]} scale={[widthScale, heightScale, widthScale]}>
             <primitive object={scene} />
@@ -27,7 +51,7 @@ function AvatarRealGLB({ url, measurements }) {
 }
 
 // Componente Malla Anny (HMR Proxy) adaptativo
-function AnnyHumanBody({ measurements, isTryingOn }) {
+function AnnyHumanBody({ measurements, isTryingOn, isScanning }) {
     const group = useRef();
     const heightScale = measurements ? measurements.height / 170 : 1;
     const widthScale = measurements ? measurements.chest / 90 : 1;
@@ -43,19 +67,19 @@ function AnnyHumanBody({ measurements, isTryingOn }) {
         <group ref={group} position={[0, -1 * heightScale, 0]} scale={[widthScale, heightScale, widthScale]}>
             <mesh position={[0, 1.5, 0]}>
                 <boxGeometry args={[1.2, 2.5, 0.6]} />
-                <meshStandardMaterial color={bodyColor} wireframe={!isTryingOn} opacity={0.6} transparent />
+                {isScanning ? <HologramMaterial /> : <meshStandardMaterial color={bodyColor} wireframe={!isTryingOn} opacity={0.6} transparent />}
             </mesh>
             <mesh position={[0, 3.2, 0]}>
                 <sphereGeometry args={[0.4, 32, 32]} />
-                <meshStandardMaterial color="#00F2FF" />
+                {isScanning ? <HologramMaterial /> : <meshStandardMaterial color="#00F2FF" />}
             </mesh>
             <mesh position={[-0.3, 0, 0]}>
                 <cylinderGeometry args={[0.25, 0.2, 2.5, 32]} />
-                <meshStandardMaterial color={bodyColor} wireframe={!isTryingOn} opacity={0.6} transparent />
+                {isScanning ? <HologramMaterial /> : <meshStandardMaterial color={bodyColor} wireframe={!isTryingOn} opacity={0.6} transparent />}
             </mesh>
             <mesh position={[0.3, 0, 0]}>
                 <cylinderGeometry args={[0.25, 0.2, 2.5, 32]} />
-                <meshStandardMaterial color={bodyColor} wireframe={!isTryingOn} opacity={0.6} transparent />
+                {isScanning ? <HologramMaterial /> : <meshStandardMaterial color={bodyColor} wireframe={!isTryingOn} opacity={0.6} transparent />}
             </mesh>
         </group>
     );
@@ -77,6 +101,8 @@ const ProbadorAvatar = () => {
     const [prendas, setPrendas] = useState([]);
     const [tryingOn, setTryingOn] = useState(false);
     const [wornClothId, setWornClothId] = useState(null);
+    const [fitPrompt, setFitPrompt] = useState("");
+    const [isModifyingFit, setIsModifyingFit] = useState(false);
 
     // Sincronización segura con Redux (solo si el ID cambia)
     useEffect(() => {
@@ -132,6 +158,28 @@ const ProbadorAvatar = () => {
         }
     };
 
+    const handleTextToFitSubmit = async (e) => {
+        e.preventDefault();
+        if (!fitPrompt.trim() || !liveAvatar.garmentParams) return;
+
+        setIsModifyingFit(true);
+        try {
+            const data = await iotApi.modifyFitWithText(fitPrompt, liveAvatar.garmentParams);
+            if (data && data.ok) {
+                // Actualizar los parámetros de la prenda en vivo
+                setLiveAvatar(prev => ({
+                    ...prev,
+                    garmentParams: data.nuevosParametros
+                }));
+                setFitPrompt("");
+            }
+        } catch (error) {
+            console.error("Error modifying fit", error);
+        } finally {
+            setIsModifyingFit(false);
+        }
+    };
+
     return (
         <div className="flex-1 flex flex-col h-full bg-[#0b0e11] relative overflow-hidden">
 
@@ -163,9 +211,9 @@ const ProbadorAvatar = () => {
 
                             <Suspense fallback={null}>
                                 {liveAvatar.meshUrl ? (
-                                    <AvatarRealGLB url={liveAvatar.meshUrl} measurements={liveAvatar.measurements} />
+                                    <AvatarRealGLB url={liveAvatar.meshUrl} measurements={liveAvatar.measurements} isScanning={tryingOn} />
                                 ) : (
-                                    <AnnyHumanBody measurements={liveAvatar.measurements} isTryingOn={wornClothId !== null} />
+                                    <AnnyHumanBody measurements={liveAvatar.measurements} isTryingOn={wornClothId !== null} isScanning={tryingOn} />
                                 )}
                             </Suspense>
 
@@ -207,6 +255,20 @@ const ProbadorAvatar = () => {
                         <span className="text-[9px] uppercase tracking-widest text-[#00F2FF] font-black cursor-pointer hover:underline">Restablecer</span>
                     </div>
 
+                    {tryingOn && (
+                        <div className="mt-4 p-4 border border-[#00F2FF]/30 bg-[#00F2FF]/5 rounded-xl font-mono text-[10px] text-[#00F2FF]">
+                            <div className="flex items-center gap-2 mb-2">
+                                <span className="material-symbols-outlined text-sm animate-spin">sync</span>
+                                <span>[ANALYZING PROPORTIONS]</span>
+                            </div>
+                            <div className="space-y-1 opacity-70">
+                                <p>&gt; WAIST_GIRTH: {liveAvatar.measurements.waist}cm...</p>
+                                <p>&gt; CHEST_WIDTH: {liveAvatar.measurements.chest}cm...</p>
+                                <p className="animate-pulse">&gt; MAPPING SEAMLY2D VARIABLES...</p>
+                            </div>
+                        </div>
+                    )}
+
                     <div className="flex-1 mt-10 space-y-10">
                         {[
                             { label: 'Altura (cm)', key: 'height', min: 140, max: 210 },
@@ -244,11 +306,44 @@ const ProbadorAvatar = () => {
                         })}
                     </div>
 
-                    <div className="mt-auto p-6 rounded-2xl bg-[#0b0e11]/60 border border-[#45484c]/20 flex gap-4 items-start">
-                        <span className="material-symbols-outlined text-[#00F2FF] text-lg">info</span>
-                        <p className="text-[10px] text-[#a9abaf] leading-relaxed">
-                            Los cambios de peso ajustarán automáticamente la distribución de la masa en las extremidades para garantizar la precisión anatómica.
-                        </p>
+                    <div className="mt-auto space-y-4">
+                        <div className="p-6 rounded-2xl bg-[#0b0e11]/60 border border-[#45484c]/20 flex gap-4 items-start">
+                            <span className="material-symbols-outlined text-[#00F2FF] text-lg">info</span>
+                            <p className="text-[10px] text-[#a9abaf] leading-relaxed">
+                                Los cambios de peso ajustarán automáticamente la distribución de la masa en las extremidades para garantizar la precisión anatómica.
+                            </p>
+                        </div>
+
+                        {/* Text to Fit Input */}
+                        <div className="p-4 rounded-xl bg-[#1c2024]/80 border border-[#45484c]/30">
+                             <p className="text-[10px] text-[#00F2FF] uppercase font-bold tracking-widest mb-2 font-['Space_Grotesk'] flex items-center gap-2">
+                                <span className="material-symbols-outlined text-sm">smart_toy</span> Prompt-to-Fit
+                             </p>
+                             <form onSubmit={handleTextToFitSubmit} className="flex gap-2">
+                                 <input
+                                     type="text"
+                                     placeholder="Ej: Haz las mangas más anchas..."
+                                     className="flex-1 bg-[#0b0e11] border border-[#45484c]/50 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-[#00F2FF] transition-colors"
+                                     value={fitPrompt}
+                                     onChange={(e) => setFitPrompt(e.target.value)}
+                                     disabled={isModifyingFit || !liveAvatar.garmentParams}
+                                 />
+                                 <button
+                                    type="submit"
+                                    disabled={isModifyingFit || !liveAvatar.garmentParams}
+                                    className="bg-[#00F2FF] text-black px-3 py-2 rounded-lg hover:bg-[#00F2FF]/80 transition-colors disabled:opacity-50"
+                                >
+                                     {isModifyingFit ? (
+                                         <span className="material-symbols-outlined text-sm animate-spin">sync</span>
+                                     ) : (
+                                         <span className="material-symbols-outlined text-sm">send</span>
+                                     )}
+                                 </button>
+                             </form>
+                             {!liveAvatar.garmentParams && (
+                                 <p className="text-[8px] text-[#ff4f4f] mt-2 text-center uppercase">Genera una prenda primero</p>
+                             )}
+                        </div>
                     </div>
                 </aside>
             </div>
