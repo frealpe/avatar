@@ -20,3 +20,13 @@ Servidor/public/patterns/*.val
 Servidor/public/patterns/*.svg
 Servidor/public/*.jpg
 Servidor/public/patterns/medidas_extraidas.json
+
+# Heavy AI Models and Generated Meshes
+Servidor/models/smplx/*.pkl
+Servidor/models/smplx/*.npz
+Servidor/public/avatars/*.glb
+Servidor/public/temp/
+Servidor/public/queue_capture_*.jpg
+ModavatarMobile/node_modules/
+Frontend/node_modules/
+Servidor/node_modules/
