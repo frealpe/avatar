@@ -39,6 +39,10 @@ const AvatarSchema = Schema({
         type: Object,
         default: {}
     },
+    prenda3D: {
+        type: String,
+        default: null
+    },
     // Pose limits / calibración inicial
     poseParams: {
         type: [Number],
