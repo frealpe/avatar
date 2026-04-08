@@ -65,8 +65,11 @@ class Gradio3DProcessor {
                 payload = { image: processedInput, ...extraParams };
             } else if (apiEndpoint === '/extract_glb') {
                 // Not an image keyword.
-                // Just pass as an array of arguments or spread if object
-                payload = [processedInput, extraParams.mesh_simplify || 0.95, extraParams.texture_size || 1024];
+                // Just pass as kwargs matching exactly the parameter names in API.
+                payload = {
+                    mesh_simplify: extraParams.mesh_simplify || 0.95,
+                    texture_size: extraParams.texture_size || 1024
+                };
             } else {
                 payload = { image: processedInput, ...extraParams };
             }
@@ -87,7 +90,7 @@ class Gradio3DProcessor {
 
                         console.error(`Gradio Error [${apiEndpoint}]:`, msg.message);
                         throw new Error(msg.message || "Unknown Gradio error");
-                    } else if (msg.stage !== lastStatus) {
+                    } else if (msg.stage !== lastStatus || (msg.stage === "pending" && msg.position !== undefined)) {
                         const position = msg.position !== undefined ? ` (Queue position: ${msg.position})` : "";
                         console.log(`[${apiEndpoint}] Status: ${msg.stage}${position}`);
                         lastStatus = msg.stage;

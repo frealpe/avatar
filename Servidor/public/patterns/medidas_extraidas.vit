@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vit>
+    <version>0.3.3</version>
+    <read-only>false</read-only>
+    <notes>Medidas generadas inteligentemente por LLaVA y Llama3</notes>
+    <unit>cm</unit>
+    <pm_system>998</pm_system>
+    <personal>
+        <custom>
+            <m name="neck_depth_cm" value="0" description="" full_description=""/>
+            <m name="sleeve_length_cm" value="18" description="" full_description=""/>
+            <m name="waist_ease_cm" value="1" description="" full_description=""/>
+            <m name="shoulder_width_cm" value="35" description="" full_description=""/>
+        </custom>
+    </personal>
+</vit>

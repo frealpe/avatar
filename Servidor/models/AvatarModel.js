@@ -30,6 +30,15 @@ const AvatarSchema = Schema({
         type: [Number], // Array de floats. Para el simulador de Anny
         default: []
     },
+    // Pattern Info Generado por Visión Local
+    patternUrl: {
+        type: String,
+        default: null
+    },
+    garmentParams: {
+        type: Object,
+        default: {}
+    },
     // Pose limits / calibración inicial
     poseParams: {
         type: [Number],

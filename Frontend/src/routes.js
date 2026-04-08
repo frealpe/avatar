@@ -6,6 +6,7 @@ const HomeAvatar = React.lazy(() => import('./views/avatar/Home'))
 const EscaneoAvatar = React.lazy(() => import('./views/avatar/Escaneo'))
 const GeneracionAvatar = React.lazy(() => import('./views/avatar/Generacion'))
 const ProbadorAvatar = React.lazy(() => import('./views/avatar/Probador'))
+const LaboratorioIA = React.lazy(() => import('./views/avatar/LaboratorioIA'))
 
 const routes = [
   {
@@ -24,7 +25,8 @@ const routes = [
   { path: '/avatar', name: 'Home Avatar', element: HomeAvatar, exact: true },
   { path: '/avatar/escaneo', name: 'Escaneo Corporal 3D', element: EscaneoAvatar, exact: true },
   { path: '/avatar/generacion', name: 'Generación Avatar', element: GeneracionAvatar, exact: true },
-  { path: '/avatar/probador', name: 'Probador 3D Virtual', element: ProbadorAvatar, exact: true }
+  { path: '/avatar/probador', name: 'Probador 3D Virtual', element: ProbadorAvatar, exact: true },
+  { path: '/avatar/laboratorio', name: 'Laboratorio de IA Integrado', element: LaboratorioIA, exact: true }
 ]
 
 export default routes

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useContext } from 'react'
+import React, { useContext } from 'react'
 import useStore from '../store'
 import { SocketContext } from '../context/SocketContext'
 

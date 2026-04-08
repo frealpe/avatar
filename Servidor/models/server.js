@@ -36,6 +36,12 @@ class Server {
          */
         this.usuariosPath = '/api/usuarios';
 
+        /**
+         * Ruta base para patrones y Seamly2D.
+         * @type {string}
+         */
+        this.patternsPath = '/api/patterns';
+
         // Conectar a base de datos
         this.conectarDB();
 
@@ -76,6 +82,7 @@ class Server {
     routes() {
         this.app.use( this.usuariosPath, require('../routes/usuarios'));
         this.app.use( '/api/avatar', require('../routes/avatar'));
+        this.app.use( this.patternsPath, require('../routes/patterns'));
     }
 
     /**

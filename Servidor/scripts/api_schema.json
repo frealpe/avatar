@@ -1,0 +1,485 @@
+{
+  "named_endpoints": {
+    "/start_session": {
+      "parameters": [],
+      "returns": [],
+      "type": {
+        "generator": false,
+        "cancel": false
+      }
+    },
+    "/lambda": {
+      "parameters": [],
+      "returns": [],
+      "type": {
+        "generator": false,
+        "cancel": false
+      }
+    },
+    "/lambda_1": {
+      "parameters": [],
+      "returns": [],
+      "type": {
+        "generator": false,
+        "cancel": false
+      }
+    },
+    "/preprocess_image": {
+      "parameters": [
+        {
+          "label": "Image Prompt",
+          "parameter_name": "image",
+          "parameter_has_default": false,
+          "parameter_default": null,
+          "type": "Blob | File | Buffer",
+          "python_type": {
+            "type": "filepath",
+            "description": ""
+          },
+          "component": "Image",
+          "example_input": {
+            "path": "https://raw.githubusercontent.com/gradio-app/gradio/main/test/test_files/bus.png",
+            "meta": {
+              "_type": "gradio.FileData"
+            },
+            "orig_name": "bus.png",
+            "url": "https://raw.githubusercontent.com/gradio-app/gradio/main/test/test_files/bus.png"
+          }
+        }
+      ],
+      "returns": [
+        {
+          "label": "Image Prompt",
+          "type": "string",
+          "python_type": {
+            "type": "filepath",
+            "description": ""
+          },
+          "component": "Image"
+        }
+      ],
+      "type": {
+        "generator": false,
+        "cancel": false
+      }
+    },
+    "/preprocess_images": {
+      "parameters": [
+        {
+          "label": "Image Prompt",
+          "parameter_name": "images",
+          "parameter_has_default": true,
+          "parameter_default": [],
+          "type": "",
+          "python_type": {
+            "type": "List[Dict(image: filepath, caption: str | None)]",
+            "description": ""
+          },
+          "component": "Gallery",
+          "example_input": [
+            {
+              "image": {
+                "path": "https://raw.githubusercontent.com/gradio-app/gradio/main/test/test_files/bus.png",
+                "meta": {
+                  "_type": "gradio.FileData"
+                },
+                "orig_name": "bus.png",
+                "url": "https://raw.githubusercontent.com/gradio-app/gradio/main/test/test_files/bus.png"
+              }
+            }
+          ]
+        }
+      ],
+      "returns": [
+        {
+          "label": "Image Prompt",
+          "type": "",
+          "python_type": {
+            "type": "List[Dict(image: filepath, caption: str | None)]",
+            "description": ""
+          },
+          "component": "Gallery"
+        }
+      ],
+      "type": {
+        "generator": false,
+        "cancel": false
+      }
+    },
+    "/get_seed": {
+      "parameters": [
+        {
+          "label": "Randomize Seed",
+          "parameter_name": "randomize_seed",
+          "parameter_has_default": true,
+          "parameter_default": true,
+          "type": "boolean",
+          "python_type": {
+            "type": "bool",
+            "description": ""
+          },
+          "component": "Checkbox",
+          "example_input": true
+        },
+        {
+          "label": "Seed",
+          "parameter_name": "seed",
+          "parameter_has_default": true,
+          "parameter_default": 0,
+          "type": "number",
+          "python_type": {
+            "type": "float",
+            "description": "numeric value between 0 and 2147483647"
+          },
+          "component": "Slider",
+          "example_input": 0,
+          "description": "numeric value between 0 and 2147483647"
+        }
+      ],
+      "returns": [
+        {
+          "label": "Seed",
+          "type": "number",
+          "python_type": {
+            "type": "float",
+            "description": "numeric value between 0 and 2147483647"
+          },
+          "component": "Slider",
+          "description": "numeric value between 0 and 2147483647"
+        }
+      ],
+      "type": {
+        "generator": false,
+        "cancel": false
+      }
+    },
+    "/image_to_3d": {
+      "parameters": [
+        {
+          "label": "Image Prompt",
+          "parameter_name": "image",
+          "parameter_has_default": false,
+          "parameter_default": null,
+          "type": "Blob | File | Buffer",
+          "python_type": {
+            "type": "filepath",
+            "description": ""
+          },
+          "component": "Image",
+          "example_input": {
+            "path": "https://raw.githubusercontent.com/gradio-app/gradio/main/test/test_files/bus.png",
+            "meta": {
+              "_type": "gradio.FileData"
+            },
+            "orig_name": "bus.png",
+            "url": "https://raw.githubusercontent.com/gradio-app/gradio/main/test/test_files/bus.png"
+          }
+        },
+        {
+          "label": "Image Prompt",
+          "parameter_name": "multiimages",
+          "parameter_has_default": true,
+          "parameter_default": [],
+          "type": "",
+          "python_type": {
+            "type": "List[Dict(image: filepath, caption: str | None)]",
+            "description": ""
+          },
+          "component": "Gallery",
+          "example_input": [
+            {
+              "image": {
+                "path": "https://raw.githubusercontent.com/gradio-app/gradio/main/test/test_files/bus.png",
+                "meta": {
+                  "_type": "gradio.FileData"
+                },
+                "orig_name": "bus.png",
+                "url": "https://raw.githubusercontent.com/gradio-app/gradio/main/test/test_files/bus.png"
+              }
+            }
+          ]
+        },
+        {
+          "component": "state",
+          "example": null,
+          "parameter_default": null,
+          "parameter_has_default": true,
+          "parameter_name": null,
+          "hidden": true,
+          "type": ""
+        },
+        {
+          "label": "Seed",
+          "parameter_name": "seed",
+          "parameter_has_default": true,
+          "parameter_default": 0,
+          "type": "number",
+          "python_type": {
+            "type": "float",
+            "description": "numeric value between 0 and 2147483647"
+          },
+          "component": "Slider",
+          "example_input": 0,
+          "description": "numeric value between 0 and 2147483647"
+        },
+        {
+          "label": "Guidance Strength",
+          "parameter_name": "ss_guidance_strength",
+          "parameter_has_default": true,
+          "parameter_default": 7.5,
+          "type": "number",
+          "python_type": {
+            "type": "float",
+            "description": "numeric value between 0.0 and 10.0"
+          },
+          "component": "Slider",
+          "example_input": 0,
+          "description": "numeric value between 0.0 and 10.0"
+        },
+        {
+          "label": "Sampling Steps",
+          "parameter_name": "ss_sampling_steps",
+          "parameter_has_default": true,
+          "parameter_default": 12,
+          "type": "number",
+          "python_type": {
+            "type": "float",
+            "description": "numeric value between 1 and 50"
+          },
+          "component": "Slider",
+          "example_input": 1,
+          "description": "numeric value between 1 and 50"
+        },
+        {
+          "label": "Guidance Strength",
+          "parameter_name": "slat_guidance_strength",
+          "parameter_has_default": true,
+          "parameter_default": 3,
+          "type": "number",
+          "python_type": {
+            "type": "float",
+            "description": "numeric value between 0.0 and 10.0"
+          },
+          "component": "Slider",
+          "example_input": 0,
+          "description": "numeric value between 0.0 and 10.0"
+        },
+        {
+          "label": "Sampling Steps",
+          "parameter_name": "slat_sampling_steps",
+          "parameter_has_default": true,
+          "parameter_default": 12,
+          "type": "number",
+          "python_type": {
+            "type": "float",
+            "description": "numeric value between 1 and 50"
+          },
+          "component": "Slider",
+          "example_input": 1,
+          "description": "numeric value between 1 and 50"
+        },
+        {
+          "label": "Multi-image Algorithm",
+          "parameter_name": "multiimage_algo",
+          "parameter_has_default": true,
+          "parameter_default": "stochastic",
+          "type": "string",
+          "python_type": {
+            "type": "Literal['stochastic', 'multidiffusion']",
+            "description": ""
+          },
+          "component": "Radio",
+          "example_input": "stochastic"
+        }
+      ],
+      "returns": [
+        {
+          "label": "Generated 3D Asset",
+          "type": "",
+          "python_type": {
+            "type": "Dict(video: filepath, subtitles: filepath | None)",
+            "description": ""
+          },
+          "component": "Video"
+        }
+      ],
+      "type": {
+        "generator": false,
+        "cancel": false
+      }
+    },
+    "/lambda_2": {
+      "parameters": [],
+      "returns": [],
+      "type": {
+        "generator": false,
+        "cancel": false
+      }
+    },
+    "/lambda_3": {
+      "parameters": [],
+      "returns": [],
+      "type": {
+        "generator": false,
+        "cancel": false
+      }
+    },
+    "/extract_glb": {
+      "parameters": [
+        {
+          "component": "state",
+          "example": null,
+          "parameter_default": null,
+          "parameter_has_default": true,
+          "parameter_name": null,
+          "hidden": true,
+          "type": ""
+        },
+        {
+          "label": "Simplify",
+          "parameter_name": "mesh_simplify",
+          "parameter_has_default": true,
+          "parameter_default": 0.95,
+          "type": "number",
+          "python_type": {
+            "type": "float",
+            "description": "numeric value between 0.9 and 0.98"
+          },
+          "component": "Slider",
+          "example_input": 0.9,
+          "description": "numeric value between 0.9 and 0.98"
+        },
+        {
+          "label": "Texture Size",
+          "parameter_name": "texture_size",
+          "parameter_has_default": true,
+          "parameter_default": 1024,
+          "type": "number",
+          "python_type": {
+            "type": "float",
+            "description": "numeric value between 512 and 2048"
+          },
+          "component": "Slider",
+          "example_input": 512,
+          "description": "numeric value between 512 and 2048"
+        }
+      ],
+      "returns": [
+        {
+          "label": "Extracted GLB/Gaussian",
+          "type": "",
+          "python_type": {
+            "type": "filepath",
+            "description": ""
+          },
+          "component": "Litmodel3d"
+        },
+        {
+          "label": "Download GLB",
+          "type": "",
+          "python_type": {
+            "type": "filepath",
+            "description": ""
+          },
+          "component": "Downloadbutton"
+        }
+      ],
+      "type": {
+        "generator": false,
+        "cancel": false
+      }
+    },
+    "/lambda_4": {
+      "parameters": [],
+      "returns": [
+        {
+          "label": "Download GLB",
+          "type": "",
+          "python_type": {
+            "type": "filepath",
+            "description": ""
+          },
+          "component": "Downloadbutton"
+        }
+      ],
+      "type": {
+        "generator": false,
+        "cancel": false
+      }
+    },
+    "/extract_gaussian": {
+      "parameters": [
+        {
+          "component": "state",
+          "example": null,
+          "parameter_default": null,
+          "parameter_has_default": true,
+          "parameter_name": null,
+          "hidden": true,
+          "type": ""
+        }
+      ],
+      "returns": [
+        {
+          "label": "Extracted GLB/Gaussian",
+          "type": "",
+          "python_type": {
+            "type": "filepath",
+            "description": ""
+          },
+          "component": "Litmodel3d"
+        },
+        {
+          "label": "Download Gaussian",
+          "type": "",
+          "python_type": {
+            "type": "filepath",
+            "description": ""
+          },
+          "component": "Downloadbutton"
+        }
+      ],
+      "type": {
+        "generator": false,
+        "cancel": false
+      }
+    },
+    "/lambda_5": {
+      "parameters": [],
+      "returns": [
+        {
+          "label": "Download Gaussian",
+          "type": "",
+          "python_type": {
+            "type": "filepath",
+            "description": ""
+          },
+          "component": "Downloadbutton"
+        }
+      ],
+      "type": {
+        "generator": false,
+        "cancel": false
+      }
+    },
+    "/lambda_6": {
+      "parameters": [],
+      "returns": [
+        {
+          "label": "Download GLB",
+          "type": "",
+          "python_type": {
+            "type": "filepath",
+            "description": ""
+          },
+          "component": "Downloadbutton"
+        }
+      ],
+      "type": {
+        "generator": false,
+        "cancel": false
+      }
+    }
+  },
+  "unnamed_endpoints": {}
+}

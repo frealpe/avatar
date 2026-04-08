@@ -26,6 +26,13 @@ const _nav = [
   },
   {
     component: CNavItem,
+    name: 'Laboratorio IA',
+    to: '/avatar/laboratorio',
+    icon: <CIcon icon={cilUser} customClassName="nav-icon" />,
+    materialIcon: 'science'
+  },
+  {
+    component: CNavItem,
     name: 'Colección',
     to: '/avatar/biblioteca',
     icon: <CIcon icon={cilCart} customClassName="nav-icon" />,

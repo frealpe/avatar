@@ -1,0 +1,9 @@
+# Crear directorio del proyecto
+mkdir agente_costurero_crew
+cd agente_costurero_crew
+
+# Crear el entorno virtual
+python3 -m venv venv
+
+# Activarlo
+source venv/bin/activate
