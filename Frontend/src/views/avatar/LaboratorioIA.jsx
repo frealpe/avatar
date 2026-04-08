@@ -1,5 +1,12 @@
-import React, { useRef, useState } from 'react'
+import React, { useRef, useState, Suspense } from 'react'
+import { Canvas } from '@react-three/fiber'
+import { OrbitControls, useGLTF } from '@react-three/drei'
 import iotApi from '../../service/iotApi'
+
+function Model({ url }) {
+    const { scene } = useGLTF(url);
+    return <primitive object={scene} />;
+}
 
 const LaboratorioIA = () => {
     const fileInputRef = useRef(null);
@@ -73,9 +80,28 @@ const LaboratorioIA = () => {
                         <p className="text-xs text-gray-500 uppercase tracking-widest">Gradio / Trellis / Microsoft</p>
 
                         {aiResult.meshUrl ? (
-                            <a href={aiResult.meshUrl} target="_blank" rel="noreferrer" className="inline-block px-4 py-2 mt-2 bg-[#00f1fe]/10 text-[#00f1fe] border border-[#00f1fe]/50 rounded text-sm text-center font-bold hover:bg-[#00f1fe]/20">
-                                Descargar Modelo GLB
-                            </a>
+                            <div className="flex flex-col gap-2">
+                                <a href={aiResult.meshUrl} target="_blank" rel="noreferrer" className="inline-block px-4 py-2 mt-2 bg-[#00f1fe]/10 text-[#00f1fe] border border-[#00f1fe]/50 rounded text-sm text-center font-bold hover:bg-[#00f1fe]/20">
+                                    Descargar Modelo GLB
+                                </a>
+
+                                <div className="h-[300px] w-full bg-[#0b0e11] rounded-lg mt-2 relative overflow-hidden border border-[#45484c]/20">
+                                    <Canvas camera={{ position: [0, 1.5, 3], fov: 50 }}>
+                                        <ambientLight intensity={0.5} />
+                                        <directionalLight position={[10, 10, 5]} intensity={1} />
+                                        <Suspense fallback={null}>
+                                            <Model url={aiResult.meshUrl} />
+                                            {aiResult.prenda3D && <Model url={aiResult.prenda3D} />}
+                                        </Suspense>
+                                        <OrbitControls target={[0, 1, 0]} />
+                                    </Canvas>
+                                </div>
+                                {aiResult.prenda3D && (
+                                    <p className="text-[#00f1fe] text-xs font-bold text-center mt-2">
+                                        ¡Prenda 3D generada y superpuesta!
+                                    </p>
+                                )}
+                            </div>
                         ) : (
                             <div className="p-4 bg-red-500/10 border border-red-500/50 rounded-md">
                                 <p className="text-red-400 text-sm">Falló la generación volumétrica en Gradio.</p>

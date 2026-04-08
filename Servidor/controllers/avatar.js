@@ -2,6 +2,7 @@ const Avatar = require('../models/AvatarModel');
 const AnnyPipeline = require('../services/annyPipeline');
 const { procesarPrenda } = require('../services/vision_parser');
 const { generarArchivoVIT, generarSVG } = require('../services/seamly_engine');
+const { generarPrenda3D } = require('../services/blender_engine');
 const path = require('path');
 const fs = require('fs');
 
@@ -35,10 +36,11 @@ const generateAvatar = async (req, res) => {
              if (fs.existsSync(valPath)) {
                  await generarSVG(archivoVit, valPath, publicPatterns);
                  const svgURL = `http://localhost:${process.env.PORT || 8080}/patterns/${patronValName.replace('.val', '.svg')}`;
-                 return { url: svgURL, params: resultIa.parametros };
+                 const absoluteSvgPath = path.join(publicPatterns, patronValName.replace('.val', '.svg'));
+                 return { url: svgURL, absoluteSvgPath, params: resultIa.parametros };
              } else {
                  console.warn(`[SEAMLY] No se halló el patrón .val maestro en ${valPath}`);
-                 return { url: null, params: resultIa.parametros };
+                 return { url: null, absoluteSvgPath: null, params: resultIa.parametros };
              }
         })();
 
@@ -46,19 +48,54 @@ const generateAvatar = async (req, res) => {
         const [meshResult, patternResult] = await Promise.allSettled([meshPromise, patternPromise]);
 
         let params = {};
+        let absoluteAvatarPath = null;
         if (meshResult.status === 'fulfilled') {
             params = meshResult.value;
+            // Assuming meshUrl might be a relative or full URL. If local, we need the local path.
+            // For now, let's assume it points to public/avatars or similar.
+            if (params.meshUrl) {
+                const urlObj = new URL(params.meshUrl, `http://localhost:${process.env.PORT || 8080}`);
+                absoluteAvatarPath = path.join(process.cwd(), 'public', urlObj.pathname);
+            }
         } else {
             console.error('❌ Error en Generación Trellis 3D:', meshResult.reason);
         }
 
         let patternUrl = null;
         let garmentParams = {};
+        let absoluteSvgPath = null;
         if (patternResult.status === 'fulfilled') {
             patternUrl = patternResult.value.url;
             garmentParams = patternResult.value.params;
+            absoluteSvgPath = patternResult.value.absoluteSvgPath;
         } else {
             console.error('❌ Error en Pipeline Local Ollama/Seamly:', patternResult.reason);
+        }
+
+        // 4. Promesa C: Generación de Prenda 3D en Blender
+        let blenderPromise = Promise.resolve({ glbPrendaUrl: null });
+        if (absoluteAvatarPath && absoluteSvgPath && fs.existsSync(absoluteAvatarPath) && fs.existsSync(absoluteSvgPath)) {
+             const prendaOutputName = `prenda_${Date.now()}.glb`;
+             blenderPromise = generarPrenda3D({
+                 avatarPath: absoluteAvatarPath,
+                 svgPath: absoluteSvgPath,
+                 outputName: prendaOutputName
+             });
+        } else {
+             console.warn('[BLENDER ENGINE] Saltando simulación 3D: avatar o svg no disponibles localmente.');
+        }
+
+        const [blenderResult] = await Promise.allSettled([blenderPromise]);
+
+        let prenda3DUrl = null;
+        if (blenderResult.status === 'fulfilled') {
+             // For consistency with SVG URL, make it full URL or relative. The frontend expects what's in meshUrl.
+             // Usually it's better to keep it absolute if SVG is absolute, or relative. Let's make it full URL:
+             if (blenderResult.value && blenderResult.value.glbPrendaUrl) {
+                 prenda3DUrl = `http://localhost:${process.env.PORT || 8080}${blenderResult.value.glbPrendaUrl}`;
+             }
+        } else {
+             console.error('❌ Error en Blender Engine 3D:', blenderResult.reason);
         }
 
         // Instanciar y guardar la unificación en MongoDB
@@ -71,6 +108,7 @@ const generateAvatar = async (req, res) => {
             poseParams: params.poseParams || [],
             patternUrl: patternUrl,
             garmentParams: garmentParams,
+            prenda3D: prenda3DUrl,
             status: 'READY'
         });
 
