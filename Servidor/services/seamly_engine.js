@@ -51,13 +51,27 @@ function generarSVG(vitPath, valPath, outDirPath) {
     const { exec } = require('child_process');
     return new Promise((resolve, reject) => {
         // En Linux, usar el path completo al AppImage u ejecutable compilado.
-        const seamlyCmd = '/home/fabio/Downloads/seamly2d';
+        // Intentar encontrar el ejecutable en rutas comunes
+        const seamlyPaths = [
+            '/usr/bin/seamly2d',
+            '/home/fabio/Downloads/seamly2d',
+            'seamly2d'
+        ];
+        
+        let seamlyCmd = '/home/fabio/Downloads/seamly2d'; // Fallback
+        for (const p of seamlyPaths) {
+            if (fs.existsSync(p)) {
+                 seamlyCmd = p;
+                 break;
+            }
+        }
         
         // Ejecución básica CLI: seamly2d -m [vit] -d [outDir] -f svg [val]
-        // Las comillas evitan errores por espacios en rutas
-        const command = `"${seamlyCmd}" -m "${vitPath}" -d "${outDirPath}" -f svg "${valPath}"`;
+        // -b: Habilita el modo consola (headless) usando un nombre base para los archivos de salida
+        const baseName = path.basename(valPath, '.val');
+        const command = `"${seamlyCmd}" -m "${vitPath}" -d "${outDirPath}" -f svg -b "${baseName}" "${valPath}"`;
         
-        console.log(`[SEAMLY_ENGINE] Ejecutando bash: ${command}`);
+        console.log(`[SEAMLY_ENGINE] Ejecutando bash (Headless Mode): ${command}`);
         
         exec(command, (error, stdout, stderr) => {
             if (error) {

@@ -56,20 +56,10 @@ class Gradio3DProcessor {
         console.log(`Sending data to ${this.spaceId} [${apiEndpoint}] (Attempt ${retryCount + 1})...`);
         
         try {
-            // Using submit instead of predict for better queue handling
-            // Determine structure based on endpoint
+            // Simplificado: Solo manejamos el endpoint de reconstrucción corporal o genérico
             let payload;
-            if (apiEndpoint === '/preprocess_image') {
-                payload = { image: processedInput };
-            } else if (apiEndpoint === '/image_to_3d') {
+            if (apiEndpoint === '/reconstruct_body' || apiEndpoint === '/predict') {
                 payload = { image: processedInput, ...extraParams };
-            } else if (apiEndpoint === '/extract_glb') {
-                // Not an image keyword.
-                // Just pass as kwargs matching exactly the parameter names in API.
-                payload = {
-                    mesh_simplify: extraParams.mesh_simplify || 0.95,
-                    texture_size: extraParams.texture_size || 1024
-                };
             } else {
                 payload = { image: processedInput, ...extraParams };
             }
@@ -78,6 +68,7 @@ class Gradio3DProcessor {
 
             let lastStatus = "";
             for await (const msg of job) {
+                console.log(`[${apiEndpoint}] Debug Msg Type: ${msg.type}`);
                 if (msg.type === "status") {
                     if (msg.stage === "error") {
                         const isSessionError = msg.message && msg.message.includes("Session not found");

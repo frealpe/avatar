@@ -1,0 +1,92 @@
+{
+  "named_endpoints": {
+    "/reconstruct_body": {
+      "parameters": [
+        {
+          "label": "Input Image",
+          "parameter_name": "image",
+          "parameter_has_default": false,
+          "parameter_default": null,
+          "type": "Blob | File | Buffer",
+          "python_type": {
+            "type": "dict(path: str | None (Path to a local file), url: str | None (Publicly available url or base64 encoded image), size: int | None (Size of image in bytes), orig_name: str | None (Original filename), mime_type: str | None (mime type of image), is_stream: bool (Can always be set to False), meta: dict(str, Any))",
+            "description": "For input, either path or url must be provided. For output, path is always provided."
+          },
+          "component": "Image",
+          "example_input": {
+            "path": "https://raw.githubusercontent.com/gradio-app/gradio/main/test/test_files/bus.png",
+            "meta": {
+              "_type": "gradio.FileData"
+            },
+            "orig_name": "bus.png",
+            "url": "https://raw.githubusercontent.com/gradio-app/gradio/main/test/test_files/bus.png"
+          }
+        }
+      ],
+      "returns": [
+        {
+          "label": "3D Preview",
+          "type": "",
+          "python_type": {
+            "type": "filepath",
+            "description": ""
+          },
+          "component": "Model3d"
+        },
+        {
+          "label": "Status",
+          "type": "string",
+          "python_type": {
+            "type": "str",
+            "description": ""
+          },
+          "component": "Textbox"
+        }
+      ],
+      "type": {
+        "generator": false,
+        "cancel": false
+      }
+    },
+    "/lambda": {
+      "parameters": [
+        {
+          "label": "3D Preview",
+          "parameter_name": "x",
+          "parameter_has_default": false,
+          "parameter_default": null,
+          "type": "",
+          "python_type": {
+            "type": "filepath",
+            "description": "The FileData class is a subclass of the GradioModel class that represents a file object within a Gradio interface. It is used to store file data and metadata when a file is uploaded.\n\nAttributes:\n    path: The server file path where the file is stored.\n    url: The normalized server URL pointing to the file.\n    size: The size of the file in bytes.\n    orig_name: The original filename before upload.\n    mime_type: The MIME type of the file.\n    is_stream: Indicates whether the file is a stream.\n    meta: Additional metadata used internally (should not be changed)."
+          },
+          "component": "Model3d",
+          "example_input": {
+            "path": "https://raw.githubusercontent.com/gradio-app/gradio/main/gradio/media_assets/models3d/Fox.gltf",
+            "meta": {
+              "_type": "gradio.FileData"
+            },
+            "orig_name": "Fox.gltf",
+            "url": "https://raw.githubusercontent.com/gradio-app/gradio/main/gradio/media_assets/models3d/Fox.gltf"
+          }
+        }
+      ],
+      "returns": [
+        {
+          "label": "Download GLB",
+          "type": "",
+          "python_type": {
+            "type": "filepath",
+            "description": ""
+          },
+          "component": "File"
+        }
+      ],
+      "type": {
+        "generator": false,
+        "cancel": false
+      }
+    }
+  },
+  "unnamed_endpoints": {}
+}

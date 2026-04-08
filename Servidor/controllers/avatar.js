@@ -2,6 +2,7 @@ const Avatar = require('../models/AvatarModel');
 const AnnyPipeline = require('../services/annyPipeline');
 const { procesarPrenda } = require('../services/vision_parser');
 const { generarArchivoVIT, generarSVG } = require('../services/seamly_engine');
+const PatternEngine = require('../services/pattern_engine');
 const { generarPrenda3D } = require('../services/blender_engine');
 const path = require('path');
 const fs = require('fs');
@@ -14,36 +15,11 @@ const generateAvatar = async (req, res) => {
         const startTime = Date.now();
         console.log('🚀 [IA UNIFICADA] Iniciando procesamiento paralelo...');
 
-        // 1. Promesa A: Procesamiento de Avatar 3D (Pipeline Trellis Nativo)
+        // 1. Promesa A: Procesamiento de Avatar 3D (SAM 3D Body)
         const meshPromise = AnnyPipeline.processImageToAnnyParams(imageBase64 || 'default_stream', io);
 
         // 2. Promesa B: Procesamiento 2D de Patrones de Costura (Ollama Local + Seamly)
-        const patternPromise = (async () => {
-             const inputImage = imageBase64;
-             if (!inputImage || typeof inputImage !== 'string' || !inputImage.startsWith('data:image')) {
-                 console.warn('Imagen vacía o no base64, saltando parser local');
-                 return { url: null, params: {} };
-             }
-
-             // Extraer dict
-             const resultIa = await procesarPrenda(inputImage, talla);
-             const publicPatterns = path.join(process.cwd(), 'public', 'patterns');
-             if (!fs.existsSync(publicPatterns)) fs.mkdirSync(publicPatterns, { recursive: true });
-
-             const vitPath = path.join(publicPatterns, `medidas_${Date.now()}.vit`);
-             const archivoVit = generarArchivoVIT(resultIa.parametros, vitPath);
-
-             const valPath = path.join(publicPatterns, patronValName);
-             if (fs.existsSync(valPath)) {
-                 await generarSVG(archivoVit, valPath, publicPatterns);
-                 const svgURL = `http://localhost:${process.env.PORT || 8080}/patterns/${patronValName.replace('.val', '.svg')}`;
-                 const absoluteSvgPath = path.join(publicPatterns, patronValName.replace('.val', '.svg'));
-                 return { url: svgURL, absoluteSvgPath, params: resultIa.parametros };
-             } else {
-                 console.warn(`[SEAMLY] No se halló el patrón .val maestro en ${valPath}`);
-                 return { url: null, absoluteSvgPath: null, params: resultIa.parametros };
-             }
-        })();
+        const patternPromise = PatternEngine.generatePattern(imageBase64, talla, patronValName);
 
         // 3. Esperar a que Ambas IAs regresen (Si una falla, la otra de igual forma sobrevive)
         const [meshResult, patternResult] = await Promise.allSettled([meshPromise, patternPromise]);
@@ -59,7 +35,7 @@ const generateAvatar = async (req, res) => {
                 absoluteAvatarPath = path.join(process.cwd(), 'public', urlObj.pathname);
             }
         } else {
-            console.error('❌ Error en Generación Trellis 3D:', meshResult.reason);
+            console.error('❌ Error en Generación SAM 3D:', meshResult.reason);
         }
 
         let patternUrl = null;
@@ -123,7 +99,7 @@ const generateAvatar = async (req, res) => {
             avatar: nuevoAvatar,
             telemetry: {
                 totalExecutionTime: `${totalTime.toFixed(2)}s`,
-                modelsUsed: ['Trellis-Diffusion', 'LLaVA-v1.5', 'Seamly2D-CLI', 'Blender-Cycles'],
+                modelsUsed: ['SAM 3D Body', 'LLaVA-v1.5', 'Seamly2D-CLI', 'Blender-Cycles'],
                 timestamp: new Date()
             }
         });

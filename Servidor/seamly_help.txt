@@ -1,0 +1,239 @@
+Usage: /home/fabio/Downloads/seamly2d [options] filename
+Seamly2D open source patternmaking program.
+
+Options:
+  -h, --help                                         Displays help on
+                                                     commandline options.
+  --help-all                                         Displays help including Qt
+                                                     specific options.
+  -v, --version                                      Displays version
+                                                     information.
+  -b, --basename <The base filename of layout files> The base filename of
+                                                     exported layout files. Use
+                                                     it to enable console export
+                                                     mode.
+  -d, --destination <The destination folder>         The path to output
+                                                     destination folder. By
+                                                     default the directory at
+                                                     which the application was
+                                                     started.
+  -m, --mfile <The measure file>                     Path to custom measure
+                                                     file (export mode).
+  -f, --format <Format number>                       Number corresponding to
+                                                     output format (default = 0,
+                                                     export mode):
+                                                     SVG files (*.svg) = 0
+                                                     PDF files (*.pdf) = 1
+                                                     PDF tiled files (*.pdf) = 2
+                                                     PNG files (*.png) = 3
+                                                     JPG files (*.jpg) = 4
+                                                     BMP files (*.bmp) = 5
+                                                     TIF files (*.tif) = 37
+                                                     PPM files (*.ppm) = 6
+                                                     Wavefront OBJ (*.obj) = 7
+                                                     PS files (*.ps) = 8
+                                                     EPS files (*.eps) = 9
+                                                     AutoCAD DXF R10 (flat)
+                                                     files (*.dxf) = 10
+                                                     AutoCAD DXF R11/12 (flat)
+                                                     files (*.dxf) = 11
+                                                     AutoCAD DXF R13 (flat)
+                                                     files (*.dxf) = 12
+                                                     AutoCAD DXF R14 (flat)
+                                                     files (*.dxf) = 13
+                                                     AutoCAD DXF 2000 (flat)
+                                                     files (*.dxf) = 14
+                                                     AutoCAD DXF 2004 (flat)
+                                                     files (*.dxf) = 15
+                                                     AutoCAD DXF 2007 (flat)
+                                                     files (*.dxf) = 16
+                                                     AutoCAD DXF 2010 (flat)
+                                                     files (*.dxf) = 17
+                                                     AutoCAD DXF 2013 (flat)
+                                                     files (*.dxf) = 18
+                                                     AutoCAD DXF R10 AAMA files
+                                                     (*.dxf) = 19
+                                                     AutoCAD DXF R11/12 AAMA
+                                                     files (*.dxf) = 20
+                                                     AutoCAD DXF R13 AAMA files
+                                                     (*.dxf) = 21
+                                                     AutoCAD DXF R14 AAMA files
+                                                     (*.dxf) = 22
+                                                     AutoCAD DXF 2000 AAMA files
+                                                     (*.dxf) = 23
+                                                     AutoCAD DXF 2004 AAMA files
+                                                     (*.dxf) = 24
+                                                     AutoCAD DXF 2007 AAMA files
+                                                     (*.dxf) = 25
+                                                     AutoCAD DXF 2010 AAMA files
+                                                     (*.dxf) = 26
+                                                     AutoCAD DXF 2013 AAMA files
+                                                     (*.dxf) = 27
+
+  --bdxf                                             Export dxf in binary form.
+  --text2paths                                       Export text as paths.
+  --exportOnlyDetails                                Export only details.
+                                                     Export details as they
+                                                     positioned in the details
+                                                     mode. Any layout related
+                                                     options will be ignored.
+  -x, --gsize <The size value>                       Set size value a pattern
+                                                     file, that was opened with
+                                                     multisize measurements
+                                                     (export mode). Valid
+                                                     values: 22, 24, 26, 28, 30,
+                                                     32, 34, 36, 38, 40, 42, 44,
+                                                     46, 48, 50, 52, 54, 56, 58,
+                                                     60, 62, 64, 66, 68, 70,
+                                                     72cm.
+  -e, --gheight <The height value>                   Set height value a pattern
+                                                     file, that was opened with
+                                                     multisize measurements
+                                                     (export mode). Valid
+                                                     values: 50, 56, 62, 68, 74,
+                                                     80, 86, 92, 98, 104, 110,
+                                                     116, 122, 128, 134, 140,
+                                                     146, 152, 158, 164, 170,
+                                                     176, 182, 188, 194, 200cm.
+  -p, --pageformat <Template number>                 Number corresponding to
+                                                     page template (default = 0,
+                                                     export mode):
+                                                     A0 = 0
+                                                     A1 = 1
+                                                     A2 = 2
+                                                     A3 = 3
+                                                     A4 = 4
+                                                     Letter = 5
+                                                     Legal = 6
+                                                     Tabloid = 7
+                                                     ANSI C = 8
+                                                     ANSI D = 9
+                                                     ANSI E = 10
+                                                     Roll 24in = 11
+                                                     Roll 30in = 12
+                                                     Roll 36in = 13
+                                                     Roll 42in = 14
+                                                     Roll 44in = 15
+                                                     Custom = 16
+
+  -W, --pagew <The page width>                       Page width in current
+                                                     units like 12.0 (cannot be
+                                                     used with "pageformat",
+                                                     export mode).
+  -H, --pageh <The page height>                      Page height in current
+                                                     units like 12.0 (cannot be
+                                                     used with "pageformat",
+                                                     export mode).
+  -U, --pageunits <The measure unit>                 Page height/width measure
+                                                     units (cannot be used with
+                                                     "pageformat", export mode).
+                                                     Valid values: mm, cm, inch,
+                                                     px.
+  -i, --ignoremargins                                Ignore margins printing
+                                                     (export mode). Disable
+                                                     value keys: "lmargin",
+                                                     "rmargin", "tmargin",
+                                                     "bmargin". Set all margins
+                                                     to 0.
+  -L, --lmargin <The left margin>                    Page left margin in
+                                                     current units like 3.0
+                                                     (export mode). If not set
+                                                     will be used value from
+                                                     default printer. Or 0 if
+                                                     none printers was found.
+                                                     Value will be ignored if
+                                                     key "ignoremargins" is
+                                                     used.
+  -R, --rmargin <The right margin>                   Page right margin in
+                                                     current units like 3.0
+                                                     (export mode). If not set
+                                                     will be used value from
+                                                     default printer. Or 0 if
+                                                     none printers was found.
+                                                     Value will be ignored if
+                                                     key "ignoremargins" is
+                                                     used.
+  -T, --tmargin <The top margin>                     Page top margin in current
+                                                     units like 3.0 (export
+                                                     mode). If not set will be
+                                                     used value from default
+                                                     printer. Or 0 if none
+                                                     printers was found. Value
+                                                     will be ignored if key
+                                                     "ignoremargins" is used.
+  -B, --bmargin <The bottom margin>                  Page bottom margin in
+                                                     current units like 3.0
+                                                     (export mode). If not set
+                                                     will be used value from
+                                                     default printer. Or 0 if
+                                                     none printers was found.
+                                                     Value will be ignored if
+                                                     key "ignoremargins" is
+                                                     used.
+  -r, --rotate <Angle>                               Rotation in degrees (one
+                                                     of predefined, export
+                                                     mode). Default value is
+                                                     180. 0 is no-rotate. Valid
+                                                     values: 0, 1, 2, 3, 4, 5,
+                                                     6, 8, 9, 10, 12, 15, 18,
+                                                     20, 24, 30, 36, 40, 45, 60,
+                                                     72, 90, 180. Each value
+                                                     show how many times details
+                                                     will be rotated. For
+                                                     example 180 mean two times
+                                                     (360/180=2) by 180 degree.
+  -c, --crop                                         Auto crop unused length
+                                                     (export mode).
+  -u, --unite                                        Unite pages if possible
+                                                     (export mode). Maximum
+                                                     value limited by QImage
+                                                     that supports only a
+                                                     maximum of 32768x32768 px
+                                                     images.
+  -S, --savelen                                      Save length of the sheet
+                                                     if set (export mode). The
+                                                     option tells the program to
+                                                     use as much as possible
+                                                     width of sheet. Quality of
+                                                     a layout can be worse when
+                                                     this option was used.
+  -l, --layounits <The unit>                         Layout units (as paper's
+                                                     one except px, export
+                                                     mode).
+  -s, --shiftlen <Shift/Offset length>               Shift/Offset layout length
+                                                     measured in layout units
+                                                     (export mode). The option
+                                                     show how many points along
+                                                     edge will be used in
+                                                     creating a layout.
+  -G, --gapwidth <The gap width>                     The layout gap width x2,
+                                                     measured in layout units
+                                                     (export mode). Set distance
+                                                     between details and a
+                                                     detail and a sheet.
+  -g, --groups <Grouping type>                       Sets layout groupping
+                                                     cases (export mode): 
+                                                     Three groups: big, middle,
+                                                     small = 0;
+                                                     Two groups: big, small = 1;
+                                                     Descending area = 2.
+  -t, --test                                         Run the program in a test
+                                                     mode. The program in this
+                                                     mode loads a single pattern
+                                                     file and silently quit
+                                                     without showing the main
+                                                     window. The key have
+                                                     priority before key
+                                                     'basename'.
+  --no-scaling                                       Disable high dpi scaling.
+                                                     Call this option if has
+                                                     problem with scaling (by
+                                                     default scaling enabled).
+                                                     Alternatively you can use
+                                                     the
+                                                     QT_AUTO_SCREEN_SCALE_FACTOR
+                                                     =0 environment variable.
+
+Arguments:
+  filename                                           Seamly2D pattern file
+                                                     (.sm2d)

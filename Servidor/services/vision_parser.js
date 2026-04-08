@@ -80,6 +80,62 @@ async function generarParametros(descripcion, prompt) {
 }
 
 /**
+ * Función que usa Llama 3 para generar la estructura XML (.val) de Seamly2D.
+ * @param {string} descripcion - Descripción técnica de la prenda
+ * @param {Object} parametros - Medidas base
+ * @returns {Promise<string>} El XML generado
+ */
+async function generarEstructuraVAL(descripcion, parametros) {
+    const modelText = process.env.OLLAMA_MODEL_TEXT || 'llama3';
+    const prompt = `Actúa como un ingeniero de patronaje experto en Seamly2D (Valentina). 
+Tu tarea es generar el código XML completo de un archivo .val compatible con la versión 0.6.0.
+
+DESCRIPCIÓN DE LA PRENDA: ${descripcion}
+MEDIDAS (cm): ${JSON.stringify(parametros)}
+
+REGLAS CRÍTICAS:
+1. El archivo debe empezar con <?xml version="1.0" encoding="UTF-8"?>.
+2. Usa la estructura: <pattern><version>0.6.0</version><unit>cm</unit><draw><calculation>...</calculation></draw></pattern>.
+3. Define al menos los puntos con IDs NUMÉRICOS (ej: id="1", id="2") y nombres A, A1, A2, A3 en coordenadas cartesianas.
+4. Si la descripción menciona un cuello o manga, intenta definir nodos de curva (<spline>) básicos usando los IDs numéricos.
+5. NO incluyas introducciones ni explicaciones. Solo devuelve el código XML puro.
+6. MUY IMPORTANTE: Los IDs deben ser números enteros (1, 2, 3...) para evitar errores de validación.`;
+
+    try {
+        console.log(`[LLAMA3] Generando estructura compleja de patrón...`);
+        const response = await ollama.generate({
+            model: modelText,
+            prompt: prompt,
+            stream: false,
+            options: { num_gpu: 99, temperature: 0.2 }
+        });
+        
+        // Limpiar de forma agresiva para extraer solo el XML
+        let text = response.response.trim();
+        const xmlMatch = text.match(/<\?xml[\s\S]*?<\/pattern>/i); // Non-greedy match
+        if (xmlMatch) {
+            const cleanedXml = xmlMatch[0].trim();
+            console.log(`[LLAMA3] XML limpio detectado (Longitud: ${cleanedXml.length})`);
+            return cleanedXml;
+        }
+        
+        // Si no hay match con XML header, intentar solo el tag pattern
+        const patternMatch = text.match(/<pattern[\s\S]*?<\/pattern>/i);
+        if (patternMatch) {
+             console.log(`[LLAMA3] Tag <pattern> detectado, añadiendo header XML...`);
+             return '<?xml version="1.0" encoding="UTF-8"?>\n' + patternMatch[0].trim();
+        }
+
+        // Fallback: limpiar bloques markdown
+        let xml = text.replace(/```xml/g, "").replace(/```/g, "").trim();
+        return xml;
+    } catch (error) {
+        console.error(`[LLAMA3 ERROR] Falló la generación del XML:`, error.message);
+        return null;
+    }
+}
+
+/**
  * Función principal que orquesta el pipeline completo.
  * @param {string} imagen - Ruta local o base64 de la imagen
  * @param {string} talla - Talla esperada (ej: S, M, L)
@@ -181,13 +237,36 @@ if (require.main === module) {
             console.log('---------------');
             
             // Exportar a Seamly2D (.vit format)
-            const vitPath = path.join(process.cwd(), 'public', 'patterns', 'medidas_extraidas.vit');
+            const baseDir = path.join(process.cwd(), 'public', 'patterns');
+            const vitPath = path.join(baseDir, `medidas_${Date.now()}.vit`);
+            const valPath = path.join(baseDir, `patron_avanzado_${Date.now()}.val`);
+            
             try {
-                const finalPath = generarArchivoVIT(res.parametros, vitPath);
-                console.log(`\n[SEAMLY2D] Exportado exitosamente archivo de medidas (.vit):`);
-                console.log(finalPath);
+                // 1. Guardar medidas .vit
+                const finalVitPath = generarArchivoVIT(res.parametros, vitPath);
+                console.log(`\n[SEAMLY2D] Exportado archivo de medidas (.vit): ${finalVitPath}`);
+                
+                // 2. Generar patrón .val avanzado con LLAMA3
+                generarEstructuraVAL(res.descripcion, res.parametros)
+                    .then(async xml => {
+                        if (xml) {
+                            fs.writeFileSync(valPath, xml, 'utf8');
+                            console.log(`[SEAMLY2D] Patrón avanzado (.val) generado por Llama3: ${valPath}`);
+                            
+                            // 3. Probar generación de SVG (Headless)
+                            const { generarSVG } = require('./seamly_engine');
+                            console.log(`[SEAMLY2D] Iniciando exportación a SVG (Modo Headless)...`);
+                            try {
+                                await generarSVG(finalVitPath, valPath, baseDir);
+                                console.log(`[SEAMLY2D] ¡SVG generado exitosamente sin abrir interfaz!`);
+                            } catch (svgErr) {
+                                console.error(`[SEAMLY2D ERROR] Falló exportación SVG:`, svgErr.message);
+                            }
+                        }
+                    });
+                    
             } catch (vitErr) {
-                console.error('\n[SEAMLY2D ERROR] Falló la creación del archivo .vit:', vitErr.message);
+                console.error('\n[SEAMLY2D ERROR] Falló la creación de archivos:', vitErr.message);
             }
         })
         .catch(err => {

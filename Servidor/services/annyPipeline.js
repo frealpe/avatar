@@ -14,7 +14,7 @@ class AnnyPipeline {
      * @param {Object} io Instancia de Socket.io paranotificaciones en tiempo real
      */
     static async processImageToAnnyParams(inputData, io = null) {
-        console.log('🤖 [IA] Iniciando pipeline de inferencia 3D Trellis...');
+        console.log('🤖 [IA] Iniciando pipeline de inferencia 3D (SMPL-X / SAM3D)...');
         
         let meshUrl = null;
         let isRealGeneration = false;
@@ -27,39 +27,31 @@ class AnnyPipeline {
                 const tempImagePath = path.join(__dirname, '..', 'public', `user_capture_${Date.now()}.jpg`);
                 fs.writeFileSync(tempImagePath, buffer);
 
-                // Run Gradio pipeline
-                const trellisSpace = process.env.TRELLIS_API_URL || "microsoft/TRELLIS";
-                const processor = new Gradio3DProcessor(trellisSpace, process.env.HF_TOKEN);
-                console.log(`🤖 [IA] Gradio: Invocando TRELLIS (${trellisSpace}) /preprocess_image...`);
-                const preprocessedData = await processor.generate3D(tempImagePath, "/preprocess_image");
-                const segmentedImage = preprocessedData[0];
-
-                console.log('🤖 [IA] Gradio: Generando representación 3D (Modo Rápido)...');
-                const stage1Result = await processor.generate3D(segmentedImage, "/image_to_3d", {
-                    seed: 0,
-                    ss_guidance_strength: 7.5,
-                    ss_sampling_steps: 4, // [Optimizado] Antes 12. Menos iteraciones de difusión.
-                    slat_guidance_strength: 3.0,
-                    slat_sampling_steps: 4 // [Optimizado] Antes 12. Reducción exponencial de tiempo.
-                });
-
-                console.log('🤖 [IA] Gradio: Extrayendo GLB mesh (Compresión Web)...');
-                const finalResult = await processor.generate3D(stage1Result[0], "/extract_glb", {
-                    mesh_simplify: 0.85, // [Optimizado] Digeere los polígonos un 10% más para carga rápida
-                    texture_size: 512  // [Optimizado] Texturas en SD en lugar de HD resuelven el encoding más veloz
-                });
-
-                if (finalResult && finalResult.length > 0) {
-                    meshUrl = finalResult[0].url;
+                // Run Gradio pipeline (Human Specific: SAM 3D Body)
+                // We use the space ID provided by user or fallback to standard SAM 3D Body MCP
+                const bodySpace = process.env.BODY_API_URL || "dev-bjoern/sam3d-body-mcp";
+                const processor = new Gradio3DProcessor(bodySpace, process.env.HF_TOKEN);
+                
+                console.log(`🤖 [IA] Gradio: Invocando SAM 3D Body en ${bodySpace} para reconstrucción humana...`);
+                
+                // Segment Anything Model 3D specialized endpoint
+                const result = await processor.generate3D(tempImagePath, "/reconstruct_body");
+                
+                if (result && result.length > 0) {
+                    // Result format for model3d is usually [{ url: "...", path: "..." }]
+                    meshUrl = result[0].url;
                     isRealGeneration = true;
-                    console.log('🤖 [IA] Gradio Completado. GLB Url:', meshUrl);
+                    console.log('🤖 [IA] Reconstrucción Corporal SAM 3D Completada. GLB Url:', meshUrl);
+                } else {
+                    console.warn('🤖 [IA] SAM 3D no devolvió una malla válida. Usando fallback paramétrico.');
                 }
 
                 // Cleanup temporal image
-                fs.unlinkSync(tempImagePath);
+                if (fs.existsSync(tempImagePath)) fs.unlinkSync(tempImagePath);
 
             } catch (err) {
-                console.error("Gradio pipeline fail, falling back to mock:", err);
+                console.error("❌ [IA] SAM 3D Pipeline Error:", err.message);
+                console.log("⚠️ [IA] Usando fallback a motor paramétrico Anny v2...");
             }
         }
 
@@ -73,7 +65,7 @@ class AnnyPipeline {
             const waist = simulatedHeight * 0.42;
 
             const results = {
-                modelType: isRealGeneration ? 'TRELLIS_HighRes' : 'Anny_v2',
+                modelType: isRealGeneration ? 'SAM3D_HumanBody' : 'Anny_v2',
                 meshUrl: meshUrl, // Agregado para enviar la url del GLB al Frontend
                 measurements: {
                     height: parseFloat(simulatedHeight.toFixed(2)),

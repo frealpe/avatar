@@ -13,3 +13,10 @@ yarn-error.log*
 .env.test.local
 .env.production.local
 web-build/
+
+# Servidor public assets
+Servidor/public/patterns/*.vit
+Servidor/public/patterns/*.val
+Servidor/public/patterns/*.svg
+Servidor/public/*.jpg
+Servidor/public/patterns/medidas_extraidas.json
