@@ -1,112 +1,42 @@
 const Avatar = require('../models/AvatarModel');
-const AnnyPipeline = require('../services/annyPipeline');
-const { procesarPrenda } = require('../services/vision_parser');
-const { generarArchivoVIT, generarSVG } = require('../services/seamly_engine');
-const PatternEngine = require('../services/pattern_engine');
-const { generarPrenda3D } = require('../services/blender_engine');
+const { avatarQueue } = require('../helpers/queue');
 const path = require('path');
 const fs = require('fs');
 
 const generateAvatar = async (req, res) => {
     try {
         const { imageBase64, userId = 'mobile_user_01', talla = 'M', patronValName = 'patron_base.val' } = req.body;
-        const io = req.app.get('io');
 
-        const startTime = Date.now();
-        console.log('🚀 [IA UNIFICADA] Iniciando procesamiento paralelo...');
+        console.log('🚀 [IA UNIFICADA] Encolando tarea de procesamiento...');
 
-        // 1. Promesa A: Procesamiento de Avatar 3D (SAM 3D Body)
-        const meshPromise = AnnyPipeline.processImageToAnnyParams(imageBase64 || 'default_stream', io);
-
-        // 2. Promesa B: Procesamiento 2D de Patrones de Costura (Ollama Local + Seamly)
-        const patternPromise = PatternEngine.generatePattern(imageBase64, talla, patronValName);
-
-        // 3. Esperar a que Ambas IAs regresen (Si una falla, la otra de igual forma sobrevive)
-        const [meshResult, patternResult] = await Promise.allSettled([meshPromise, patternPromise]);
-
-        let params = {};
-        let absoluteAvatarPath = null;
-        if (meshResult.status === 'fulfilled') {
-            params = meshResult.value;
-            // Assuming meshUrl might be a relative or full URL. If local, we need the local path.
-            // For now, let's assume it points to public/avatars or similar.
-            if (params.meshUrl) {
-                const urlObj = new URL(params.meshUrl, `http://localhost:${process.env.PORT || 8080}`);
-                absoluteAvatarPath = path.join(process.cwd(), 'public', urlObj.pathname);
-            }
-        } else {
-            console.error('❌ Error en Generación SAM 3D:', meshResult.reason);
+        // Save image to temporary file to avoid large payloads in Redis
+        let imagePath = null;
+        if (imageBase64 && imageBase64.startsWith('data:image')) {
+            const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, "");
+            const buffer = Buffer.from(base64Data, 'base64');
+            imagePath = path.join(process.cwd(), 'public', `queue_capture_${Date.now()}.jpg`);
+            fs.writeFileSync(imagePath, buffer);
         }
 
-        let patternUrl = null;
-        let garmentParams = {};
-        let absoluteSvgPath = null;
-        if (patternResult.status === 'fulfilled') {
-            patternUrl = patternResult.value.url;
-            garmentParams = patternResult.value.params;
-            absoluteSvgPath = patternResult.value.absoluteSvgPath;
-        } else {
-            console.error('❌ Error en Pipeline Local Ollama/Seamly:', patternResult.reason);
-        }
-
-        // 4. Promesa C: Generación de Prenda 3D en Blender
-        let blenderPromise = Promise.resolve({ glbPrendaUrl: null });
-        if (absoluteAvatarPath && absoluteSvgPath && fs.existsSync(absoluteAvatarPath) && fs.existsSync(absoluteSvgPath)) {
-             const prendaOutputName = `prenda_${Date.now()}.glb`;
-             blenderPromise = generarPrenda3D({
-                 avatarPath: absoluteAvatarPath,
-                 svgPath: absoluteSvgPath,
-                 outputName: prendaOutputName
-             });
-        } else {
-             console.warn('[BLENDER ENGINE] Saltando simulación 3D: avatar o svg no disponibles localmente.');
-        }
-
-        const [blenderResult] = await Promise.allSettled([blenderPromise]);
-
-        let prenda3DUrl = null;
-        if (blenderResult.status === 'fulfilled') {
-             // For consistency with SVG URL, make it full URL or relative. The frontend expects what's in meshUrl.
-             // Usually it's better to keep it absolute if SVG is absolute, or relative. Let's make it full URL:
-             if (blenderResult.value && blenderResult.value.glbPrendaUrl) {
-                 prenda3DUrl = `http://localhost:${process.env.PORT || 8080}${blenderResult.value.glbPrendaUrl}`;
-             }
-        } else {
-             console.error('❌ Error en Blender Engine 3D:', blenderResult.reason);
-        }
-
-        // Instanciar y guardar la unificación en MongoDB
-        const nuevoAvatar = new Avatar({
+        // Añadir trabajo a la cola de BullMQ en vez de bloquear el hilo
+        const job = await avatarQueue.add('generateAvatarPipeline', {
+            imagePath, // use path instead of base64 string
             userId,
-            modelType: params.modelType || 'Unified_AI_01',
-            meshUrl: params.meshUrl || null,
-            measurements: params.measurements || {},
-            shapeParams: params.shapeParams || [],
-            poseParams: params.poseParams || [],
-            patternUrl: patternUrl,
-            garmentParams: garmentParams,
-            prenda3D: prenda3DUrl,
-            status: 'READY'
+            talla,
+            patronValName,
+            PORT: process.env.PORT
         });
 
-        await nuevoAvatar.save();
-
-        const totalTime = (Date.now() - startTime) / 1000;
-
-        res.status(201).json({
+        res.status(202).json({
             ok: true,
-            msg: "Mega-Pipeline de IA desplegado. Modelos unificados.",
-            avatar: nuevoAvatar,
-            telemetry: {
-                totalExecutionTime: `${totalTime.toFixed(2)}s`,
-                modelsUsed: ['SAM 3D Body', 'LLaVA-v1.5', 'Seamly2D-CLI', 'Blender-Cycles'],
-                timestamp: new Date()
-            }
+            msg: "Procesamiento iniciado en segundo plano. Recibirás una notificación por WebSockets al finalizar.",
+            jobId: job.id,
+            status: 'PROCESSING'
         });
 
     } catch (error) {
         console.error(error);
-        res.status(500).json({ ok: false, msg: 'Error interno del servidor generando el Avatar.' });
+        res.status(500).json({ ok: false, msg: 'Error interno del servidor encolando el procesamiento de Avatar.' });
     }
 };
 

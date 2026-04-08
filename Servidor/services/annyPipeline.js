@@ -19,14 +19,25 @@ class AnnyPipeline {
         let meshUrl = null;
         let isRealGeneration = false;
 
-        if (typeof inputData === 'string' && inputData.startsWith('data:image')) {
-            try {
+        let targetImagePath = null;
+        let shouldCleanup = false;
+
+        if (typeof inputData === 'string') {
+            if (inputData.startsWith('data:image')) {
                 // Decode base64 and save to temp file
                 const base64Data = inputData.replace(/^data:image\/\w+;base64,/, "");
                 const buffer = Buffer.from(base64Data, 'base64');
-                const tempImagePath = path.join(__dirname, '..', 'public', `user_capture_${Date.now()}.jpg`);
-                fs.writeFileSync(tempImagePath, buffer);
+                targetImagePath = path.join(__dirname, '..', 'public', `user_capture_${Date.now()}.jpg`);
+                fs.writeFileSync(targetImagePath, buffer);
+                shouldCleanup = true;
+            } else if (fs.existsSync(inputData)) {
+                // It's already a file path
+                targetImagePath = inputData;
+            }
+        }
 
+        if (targetImagePath) {
+            try {
                 // Run Gradio pipeline (Human Specific: SAM 3D Body)
                 // We use the space ID provided by user or fallback to standard SAM 3D Body MCP
                 const bodySpace = process.env.BODY_API_URL || "dev-bjoern/sam3d-body-mcp";
@@ -35,7 +46,7 @@ class AnnyPipeline {
                 console.log(`🤖 [IA] Gradio: Invocando SAM 3D Body en ${bodySpace} para reconstrucción humana...`);
                 
                 // Segment Anything Model 3D specialized endpoint
-                const result = await processor.generate3D(tempImagePath, "/reconstruct_body");
+                const result = await processor.generate3D(targetImagePath, "/reconstruct_body");
                 
                 if (result && result.length > 0) {
                     // Result format for model3d is usually [{ url: "...", path: "..." }]
@@ -47,11 +58,12 @@ class AnnyPipeline {
                 }
 
                 // Cleanup temporal image
-                if (fs.existsSync(tempImagePath)) fs.unlinkSync(tempImagePath);
+                if (shouldCleanup && fs.existsSync(targetImagePath)) fs.unlinkSync(targetImagePath);
 
             } catch (err) {
                 console.error("❌ [IA] SAM 3D Pipeline Error:", err.message);
                 console.log("⚠️ [IA] Usando fallback a motor paramétrico Anny v2...");
+                if (shouldCleanup && fs.existsSync(targetImagePath)) fs.unlinkSync(targetImagePath);
             }
         }
 
