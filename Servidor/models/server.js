@@ -3,6 +3,7 @@ const cors = require('cors');
 const { dbConnection } = require('../database/config');
 const { Server: SocketServer } = require('socket.io');
 const http = require('http');
+const { setupWorker } = require('../workers/avatarWorker');
 
 /**
  * Clase que representa el servidor de la aplicación.
@@ -53,6 +54,9 @@ class Server {
 
         // Sockets
         this.sockets();
+
+        // Workers
+        this.workers();
     }
 
     async conectarDB() {
@@ -95,6 +99,13 @@ class Server {
                 console.log('Cliente socket desconectado:', socket.id);
             });
         });
+    }
+
+    /**
+     * Configuración e inicialización de workers para procesamiento en background (BullMQ).
+     */
+    workers() {
+        setupWorker(this.io);
     }
 
     /**

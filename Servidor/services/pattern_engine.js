@@ -10,17 +10,17 @@ const fs = require('fs');
 class PatternEngine {
     /**
      * Executes the full garment pipeline.
-     * @param {string} imageBase64 - User photo in base64.
+     * @param {string} imagePath - User photo path.
      * @param {string} talla - Expected size (S, M, L).
      * @param {string} patronBaseName - Filename of the master .val pattern.
      * @returns {Promise<Object>} Results including SVG URL and parameters.
      */
-    static async generatePattern(imageBase64, talla = 'M', patronBaseName = 'patron_base.val') {
+    static async generatePattern(imagePath, talla = 'M', patronBaseName = 'patron_base.val') {
         console.log('🧵 [PATTERN ENGINE] Starting garment pipeline...');
         
         try {
             // 1. Analyze image and extract parameters (LLaVA + Llama 3)
-            const resultIa = await procesarPrenda(imageBase64, talla);
+            const resultIa = await procesarPrenda(imagePath, talla);
             console.log('🧵 [PATTERN ENGINE] Garment parameters extracted:', resultIa.parametros);
 
             const publicPatterns = path.join(process.cwd(), 'public', 'patterns');

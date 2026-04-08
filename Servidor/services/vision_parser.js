@@ -137,11 +137,11 @@ REGLAS CRÍTICAS:
 
 /**
  * Función principal que orquesta el pipeline completo.
- * @param {string} imagen - Ruta local o base64 de la imagen
+ * @param {string} imagePath - Ruta local o base64 de la imagen
  * @param {string} talla - Talla esperada (ej: S, M, L)
  * @returns {Promise<Object>} Objeto JSON con descripción y parámetros validados
  */
-async function procesarPrenda(imagen, talla) {
+async function procesarPrenda(imagePath, talla) {
     try {
         const promptVision = `Analiza esta imagen de una prenda de vestir como si fueras un experto en patronaje industrial. Describe detalladamente los siguientes puntos:
 
@@ -152,7 +152,7 @@ Ajuste al cuerpo (fit: holgado, entallado o regular).
 Detalles adicionales como bolsillos, puños o pinzas.
 Responde de forma técnica y concisa.`;
 
-        const descripcion = await analizarImagen(imagen, promptVision);
+        const descripcion = await analizarImagen(imagePath, promptVision);
 
         const promptTexto = `Actúa como un traductor de diseño de moda a parámetros de Seamly2D. A continuación te daré una descripción técnica de una prenda. Tu tarea es extraer las medidas de diseño y devolver exclusivamente un objeto JSON.
 
