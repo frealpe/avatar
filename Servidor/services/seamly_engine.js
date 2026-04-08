@@ -49,6 +49,20 @@ ${medicionesXML.trimEnd()}
  */
 function generarSVG(vitPath, valPath, outDirPath) {
     const { exec } = require('child_process');
+    
+    // Sanitización preventiva: Eliminar tags incompatibles como <incremental/>
+    try {
+        let valContent = fs.readFileSync(valPath, 'utf8');
+        if (valContent.includes('<incremental/>') || valContent.includes('<incremental></incremental>')) {
+            console.log(`[SEAMLY_ENGINE] Sanitizando ${path.basename(valPath)}: Eliminando tag <incremental> incompatible...`);
+            valContent = valContent.replace(/<incremental\/>/g, '');
+            valContent = valContent.replace(/<incremental><\/incremental>/g, '');
+            fs.writeFileSync(valPath, valContent, 'utf8');
+        }
+    } catch (sanErr) {
+        console.warn(`[SEAMLY_ENGINE] Advertencia en sanitización: ${sanErr.message}`);
+    }
+
     return new Promise((resolve, reject) => {
         // En Linux, usar el path completo al AppImage u ejecutable compilado.
         // Intentar encontrar el ejecutable en rutas comunes

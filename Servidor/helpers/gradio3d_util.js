@@ -64,33 +64,48 @@ class Gradio3DProcessor {
                 payload = { image: processedInput, ...extraParams };
             }
 
+            console.log(`[${apiEndpoint}] Job submitted. Waiting for events...`);
             const job = this.client.submit(apiEndpoint, payload);
 
             let lastStatus = "";
-            for await (const msg of job) {
-                console.log(`[${apiEndpoint}] Debug Msg Type: ${msg.type}`);
-                if (msg.type === "status") {
-                    if (msg.stage === "error") {
-                        const isSessionError = msg.message && msg.message.includes("Session not found");
-                        
-                        if (isSessionError && retryCount < 2) {
-                            console.warn(`Session lost for ${this.spaceId}. Reconnecting and retrying...`);
-                            this.client = null; // Force reconnection
-                            return this.generate3D(imageInput, apiEndpoint, extraParams, retryCount + 1);
-                        }
+            let messageCount = 0;
+            
+            // Set a safety timeout for the entire loop if no data is received
+            const timeoutPromise = new Promise((_, reject) => {
+                setTimeout(() => reject(new Error("Gradio Job Timeout: No data received after 5 minutes")), 300000);
+            });
 
-                        console.error(`Gradio Error [${apiEndpoint}]:`, msg.message);
-                        throw new Error(msg.message || "Unknown Gradio error");
-                    } else if (msg.stage !== lastStatus || (msg.stage === "pending" && msg.position !== undefined)) {
-                        const position = msg.position !== undefined ? ` (Queue position: ${msg.position})` : "";
-                        console.log(`[${apiEndpoint}] Status: ${msg.stage}${position}`);
-                        lastStatus = msg.stage;
+            const processJob = async () => {
+                for await (const msg of job) {
+                    messageCount++;
+                    console.log(`[${apiEndpoint}] Event #${messageCount} | Type: ${msg.type} | Stage: ${msg.stage || 'N/A'}`);
+                    
+                    if (msg.type === "status") {
+                        if (msg.stage === "error") {
+                            const isSessionError = msg.message && msg.message.includes("Session not found");
+                            
+                            if (isSessionError && retryCount < 2) {
+                                console.warn(`Session lost for ${this.spaceId}. Reconnecting and retrying...`);
+                                this.client = null; // Force reconnection
+                                return this.generate3D(imageInput, apiEndpoint, extraParams, retryCount + 1);
+                            }
+
+                            console.error(`Gradio Error [${apiEndpoint}]:`, msg.message);
+                            throw new Error(msg.message || "Unknown Gradio error");
+                        } else if (msg.stage !== lastStatus || (msg.stage === "pending" && msg.position !== undefined)) {
+                            const position = msg.position !== undefined ? ` (Queue position: ${msg.position})` : "";
+                            console.log(`[${apiEndpoint}] Progress: ${msg.stage}${position}`);
+                            lastStatus = msg.stage;
+                        }
+                    } else if (msg.type === "data") {
+                        console.log(`[${apiEndpoint}] Success! Data received.`);
+                        return msg.data;
                     }
-                } else if (msg.type === "data") {
-                    console.log(`[${apiEndpoint}] Data received.`);
-                    return msg.data;
                 }
-            }
+                throw new Error("Gradio Job finished without returning data.");
+            };
+
+            return await Promise.race([processJob(), timeoutPromise]);
         } catch (error) {
             const isSessionError = error.message && error.message.includes("Session not found");
             const isSocketError = error.message && (error.message.includes("terminated") || error.message.includes("socket"));
