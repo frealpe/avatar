@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useContext, Suspense } from 'react'
 import useStore from '../../store';
 import * as THREE from 'three';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls, useGLTF, PerspectiveCamera, Stage, PivotControls } from '@react-three/drei';
+import { OrbitControls, useGLTF, PerspectiveCamera, Stage, PivotControls, TransformControls } from '@react-three/drei';
 import iotApi from '../../service/iotApi';
 import { SocketContext } from '../../context/SocketContext';
 
@@ -23,89 +23,128 @@ const PoseSlider = ({ label, value, min, max, onChange }) => (
 );
 
 // --- Componentes 3D ---
-const JointControl = ({ position, rotation, onChange, activeAxes, scale = 0.4, color = "#00f1fe", children }) => (
-    <group position={position}>
-        <PivotControls
-            depthTest={false} anchor={[0, 0, 0]} disableAxes disableSliders scale={scale}
-            activeAxes={activeAxes}
-            onDrag={(l) => {
-                const rot = new THREE.Euler().setFromRotationMatrix(l);
-                onChange(rot);
-            }}
-        >
-            <mesh><sphereGeometry args={[0.07, 16, 16]} /><meshStandardMaterial color={color} emissive={color} emissiveIntensity={2} /></mesh>
-        </PivotControls>
-        <group rotation={rotation}>
-            {children}
-        </group>
-    </group>
-);
+// Helper IK Solver (Simple 2-bone CCD IK)
+const solveIK = (targetPos, rootPos, l1, l2) => {
+    // Very simple geometric IK for 2 bones
+    const dir = new THREE.Vector3().subVectors(targetPos, rootPos);
+    const dist = Math.min(dir.length(), l1 + l2 - 0.01);
 
-const AnnyFullSkeleton = ({ poseParams, onChange }) => {
+    // Law of cosines
+    const angleElbow = Math.acos((l1*l1 + l2*l2 - dist*dist) / (2 * l1 * l2));
+    const angleShoulder = Math.acos((dist*dist + l1*l1 - l2*l2) / (2 * dist * l1));
+
+    return {
+        dist, dir, angleElbow, angleShoulder
+    };
+};
+
+// Componente Brazo IK
+const ArmIK = ({ side, rootPos, poseData, onChange }) => {
+    const isLeft = side === 'left';
+    const sign = isLeft ? 1 : -1;
+    const l1 = 0.6; // Upper arm length
+    const l2 = 0.6; // Forearm length
+
+    // End effector target pos
+    const [targetPos, setTargetPos] = useState(() => {
+        return new THREE.Vector3(rootPos[0] + sign * (l1+l2), rootPos[1], rootPos[2]);
+    });
+
+    const shoulderRef = useRef();
+    const elbowRef = useRef();
+    const handRef = useRef();
+
+    // Solve IK on drag
+    const onTargetDrag = (e) => {
+        if (!handRef.current) return;
+        const newPos = handRef.current.position;
+        setTargetPos(newPos.clone());
+
+        const rootVec = new THREE.Vector3(...rootPos);
+        const { dir, angleElbow, angleShoulder } = solveIK(newPos, rootVec, l1, l2);
+
+        // 3D rotation application
+        // XZ plane angle for forward/backward movement (Y rotation of shoulder)
+        const shoulderY = Math.atan2(-dir.z, sign * dir.x);
+
+        // XY plane angle for up/down movement (Z rotation of shoulder)
+        // We project the distance onto the XY plane
+        const horizontalDist = Math.sqrt(dir.x * dir.x + dir.z * dir.z);
+        const baseZ = Math.atan2(dir.y, horizontalDist * sign);
+
+        const shoulderZ = baseZ + sign * angleShoulder;
+        const elbowZ = -sign * (Math.PI - angleElbow);
+
+        // Update visual
+        if (shoulderRef.current) {
+            shoulderRef.current.rotation.y = shoulderY;
+            shoulderRef.current.rotation.z = shoulderZ;
+        }
+        if (elbowRef.current) {
+            elbowRef.current.rotation.z = elbowZ;
+        }
+
+        // Update pose data for backend
+        const newPoseData = { ...poseData };
+        if (isLeft) {
+            newPoseData.shoulder_l = [0, shoulderY, shoulderZ];
+            newPoseData.elbow_l = [0, 0, elbowZ];
+        } else {
+            newPoseData.shoulder_r = [0, shoulderY, shoulderZ];
+            newPoseData.elbow_r = [0, 0, elbowZ];
+        }
+        onChange(newPoseData);
+    };
+
     return (
         <group>
+            {/* Target End Effector */}
+            <TransformControls mode="translate" onObjectChange={onTargetDrag} size={0.5}>
+                <mesh ref={handRef} position={targetPos}>
+                    <sphereGeometry args={[0.08, 16, 16]} />
+                    <meshStandardMaterial color="#00f1fe" emissive="#00f1fe" emissiveIntensity={2} />
+                </mesh>
+            </TransformControls>
 
+            {/* Arm hierarchy */}
+            <group position={rootPos} ref={shoulderRef} rotation={poseData[isLeft ? 'shoulder_l' : 'shoulder_r']}>
+                {/* Upper arm */}
+                <mesh position={[sign * l1/2, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+                    <boxGeometry args={[0.05, l1, 0.05]} />
+                    <meshStandardMaterial color="#00f1fe" opacity={0.3} transparent />
+                </mesh>
+
+                {/* Elbow */}
+                <group position={[sign * l1, 0, 0]} ref={elbowRef} rotation={[0, 0, poseData[isLeft ? 'elbow_l' : 'elbow_r'][2]]}>
+                    {/* Forearm */}
+                    <mesh position={[sign * l2/2, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+                        <boxGeometry args={[0.04, l2, 0.04]} />
+                        <meshStandardMaterial color="#00f1fe" opacity={0.3} transparent />
+                    </mesh>
+                </group>
+            </group>
+        </group>
+    );
+};
+
+const AnnyFullSkeleton = ({ poseParams, onChange }) => {
+    const handlePoseChange = (newPoseData) => {
+        onChange({ ...poseParams, poseData: newPoseData });
+    };
+
+    return (
+        <group>
             {/* Torso Central */}
             <mesh position={[0, 2.5, 0]}>
                 <boxGeometry args={[0.8, 1.2, 0.4]} />
                 <meshStandardMaterial color="#333" wireframe opacity={0.2} transparent />
             </mesh>
 
-            {/* Brazo Izquierdo */}
-            <group position={[0.45, 3.0, 0]}>
-                <PivotControls
-                    depthTest={false} anchor={[0, 0, 0]} disableAxes disableSliders scale={0.5}
-                    activeAxes={[false, false, true]}
-                    onDrag={(l) => {
-                        const rot = new THREE.Euler().setFromRotationMatrix(l);
-                        onChange({ ...poseParams, poseLShoulder: -rot.z });
-                    }}
-                >
-                    <mesh><sphereGeometry args={[0.08, 16, 16]} /><meshStandardMaterial color="#00f1fe" emissive="#00f1fe" emissiveIntensity={2} /></mesh>
-                </PivotControls>
+            {/* Brazo Izquierdo (IK) */}
+            <ArmIK side="left" rootPos={[0.45, 3.0, 0]} poseData={poseParams.poseData || {}} onChange={handlePoseChange} />
 
-                <group rotation={[0, 0, -poseParams.poseLShoulder]}>
-                    <mesh position={[0.3, 0, 0]} rotation={[0, 0, Math.PI / 2]}><boxGeometry args={[0.05, 0.6, 0.05]} /><meshStandardMaterial color="#00f1fe" opacity={0.3} transparent /></mesh>
-
-                    <JointControl
-                        position={[0.6, 0, 0]}
-                        rotation={[0, 0, poseParams.poseLElbow]}
-                        activeAxes={[false, true, false]}
-                        onChange={(rot) => onChange({ ...poseParams, poseLElbow: rot.y })}
-                    >
-                        <mesh position={[0.3, 0, 0]} rotation={[0, 0, Math.PI / 2]}><boxGeometry args={[0.04, 0.6, 0.04]} /><meshStandardMaterial color="#00f1fe" opacity={0.3} transparent /></mesh>
-                        <mesh position={[0.6, 0, 0]}><sphereGeometry args={[0.06, 16, 16]} /><meshStandardMaterial color="#d800ff" emissive="#d800ff" emissiveIntensity={5} /></mesh>
-                    </JointControl>
-                </group>
-            </group>
-
-            {/* Brazo Derecho */}
-            <group position={[-0.45, 3.0, 0]}>
-                <PivotControls
-                    depthTest={false} anchor={[0, 0, 0]} disableAxes disableSliders scale={0.5}
-                    activeAxes={[false, false, true]}
-                    onDrag={(l) => {
-                        const rot = new THREE.Euler().setFromRotationMatrix(l);
-                        onChange({ ...poseParams, poseRShoulder: rot.z });
-                    }}
-                >
-                    <mesh><sphereGeometry args={[0.08, 16, 16]} /><meshStandardMaterial color="#00f1fe" emissive="#00f1fe" emissiveIntensity={2} /></mesh>
-                </PivotControls>
-
-                <group rotation={[0, 0, poseParams.poseRShoulder]}>
-                    <mesh position={[-0.3, 0, 0]} rotation={[0, 0, Math.PI / 2]}><boxGeometry args={[0.05, 0.6, 0.05]} /><meshStandardMaterial color="#00f1fe" opacity={0.3} transparent /></mesh>
-
-                    <JointControl
-                        position={[-0.6, 0, 0]}
-                        rotation={[0, 0, -poseParams.poseRElbow]}
-                        activeAxes={[false, true, false]}
-                        onChange={(rot) => onChange({ ...poseParams, poseRElbow: -rot.y })}
-                    >
-                        <mesh position={[-0.3, 0, 0]} rotation={[0, 0, Math.PI / 2]}><boxGeometry args={[0.04, 0.6, 0.04]} /><meshStandardMaterial color="#00f1fe" opacity={0.3} transparent /></mesh>
-                        <mesh position={[-0.6, 0, 0]}><sphereGeometry args={[0.06, 16, 16]} /><meshStandardMaterial color="#d800ff" emissive="#d800ff" emissiveIntensity={5} /></mesh>
-                    </JointControl>
-                </group>
-            </group>
+            {/* Brazo Derecho (IK) */}
+            <ArmIK side="right" rootPos={[-0.45, 3.0, 0]} poseData={poseParams.poseData || {}} onChange={handlePoseChange} />
 
             {/* Piernas (Placeholder estático) */}
             <group position={[0.25, 1.9, 0]}>
@@ -117,9 +156,6 @@ const AnnyFullSkeleton = ({ poseParams, onChange }) => {
         </group>
     );
 };
-
-
-
 // --- Componentes 3D ---
 function AnnyHumanBody({ targetScale = [1, 1, 1], isPosing }) {
     const group = useRef();
@@ -192,11 +228,13 @@ const AjustesPose = () => {
     }, [avatarData]);
 
 
-    const [poseParams, setPoseParams] = useState({
-        poseLShoulder: -1.3,
-        poseRShoulder: -1.3,
-        poseLElbow: 0.1,
-        poseRElbow: -0.1
+        const [poseParams, setPoseParams] = useState({
+        poseData: {
+            shoulder_l: [0, 0, -1.3],
+            shoulder_r: [0, 0, 1.3],
+            elbow_l: [0, 0, 0.1],
+            elbow_r: [0, 0, -0.1]
+        }
     });
 
     const [targetScale, setTargetScale] = useState([1, 1, 1]);
@@ -314,15 +352,15 @@ const AjustesPose = () => {
                         {selectedJoint === 'Brazo Izquierdo' ? (
                             <>
                                 <div className="space-y-8 pt-6 border-t border-white/5">
-                                    <PoseSlider label="Elevación Hombro (Z)" value={poseParams.poseLShoulder} min={-3.0} max={2.0} onChange={(v) => setPoseParams(p => ({ ...p, poseLShoulder: v }))} />
-                                    <PoseSlider label="Flexión Codo" value={poseParams.poseLElbow} min={-1.5} max={1.5} onChange={(v) => setPoseParams(p => ({ ...p, poseLElbow: v }))} />
+                                    <PoseSlider label="Elevación Hombro (Z)" value={poseParams.poseData.shoulder_l[2]} min={-3.0} max={2.0} onChange={(v) => setPoseParams(p => ({ ...p, poseData: { ...p.poseData, shoulder_l: [0, 0, v] } }))} />
+                                    <PoseSlider label="Flexión Codo" value={poseParams.poseData.elbow_l[2]} min={-1.5} max={1.5} onChange={(v) => setPoseParams(p => ({ ...p, poseData: { ...p.poseData, elbow_l: [0, 0, v] } }))} />
                                 </div>
                             </>
                         ) : (
                             <>
                                 <div className="space-y-8 pt-6 border-t border-white/5">
-                                    <PoseSlider label="Elevación Hombro (Z)" value={poseParams.poseRShoulder} min={-3.0} max={2.0} onChange={(v) => setPoseParams(p => ({ ...p, poseRShoulder: v }))} />
-                                    <PoseSlider label="Flexión Codo" value={poseParams.poseRElbow} min={-1.5} max={1.5} onChange={(v) => setPoseParams(p => ({ ...p, poseRElbow: v }))} />
+                                    <PoseSlider label="Elevación Hombro (Z)" value={poseParams.poseData.shoulder_r[2]} min={-3.0} max={2.0} onChange={(v) => setPoseParams(p => ({ ...p, poseData: { ...p.poseData, shoulder_r: [0, 0, v] } }))} />
+                                    <PoseSlider label="Flexión Codo" value={poseParams.poseData.elbow_r[2]} min={-1.5} max={1.5} onChange={(v) => setPoseParams(p => ({ ...p, poseData: { ...p.poseData, elbow_r: [0, 0, v] } }))} />
                                 </div>
                             </>
                         )}
