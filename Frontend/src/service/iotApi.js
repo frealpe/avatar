@@ -1,11 +1,15 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8080/api/avatar';
+const API_BASE = (typeof window !== 'undefined' && window.location.hostname !== 'localhost') 
+    ? `http://${window.location.hostname}:8080` 
+    : 'http://localhost:8080';
+
+const API_URL = `${API_BASE}/api/avatar`;
 
 const iotApi = {
-    generateAvatar: async (imageBase64, userId) => {
+    generateAvatar: async (imageBase64, userId, target = 'both') => {
         try {
-            const response = await axios.post(`${API_URL}/generate`, { imageBase64, userId });
+            const response = await axios.post(`${API_URL}/generate`, { imageBase64, userId, target });
             return response.data;
         } catch (error) {
             console.error('Error generating avatar', error);
@@ -19,6 +23,16 @@ const iotApi = {
             return response.data;
         } catch (error) {
             console.error('Error uploading avatar', error);
+            throw error;
+        }
+    },
+
+    recalculateAvatar: async (betas, gender = 'neutral') => {
+        try {
+            const response = await axios.post(`${API_URL}/recalculate`, { betas, gender });
+            return response.data;
+        } catch (error) {
+            console.error('Error recalculating avatar', error);
             throw error;
         }
     },
@@ -49,6 +63,15 @@ const iotApi = {
             return response.data;
         } catch (error) {
             console.error('Error trying on clothes', error);
+            throw error;
+        }
+    },
+    getPredefinedAvatars: async () => {
+        try {
+            const response = await axios.get(`${API_URL}/predefined`);
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching predefined avatars', error);
             throw error;
         }
     }

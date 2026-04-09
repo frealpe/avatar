@@ -1,170 +1,209 @@
-import React, { useState, useEffect, useRef, useContext } from 'react';
+import React, { useState, useEffect, useRef, useContext, Suspense } from 'react';
 import useStore from '../../store';
-import { Canvas } from '@react-three/fiber';
-import { OrbitControls } from '@react-three/drei';
+import { Canvas, useFrame } from '@react-three/fiber';
+import { OrbitControls, useGLTF, PerspectiveCamera, Stage } from '@react-three/drei';
 import iotApi from '../../service/iotApi';
 import { SocketContext } from '../../context/SocketContext';
-import Model3D from '../../components/probador/Model3D';
-import Sidebar from '../../components/probador/Sidebar';
 
-const DEFAULT_AVATAR = {
-    modelType: 'ANNY_MODEL_01',
-    meshUrl: null
-};
+// --- Componentes 3D ---
+function AvatarRealGLB({ url, targetScale = [1, 1, 1] }) {
+    const { scene } = useGLTF(url);
+    const group = useRef();
+    const currentScale = useRef([1, 1, 1]);
 
+    useFrame((state, delta) => {
+        if (group.current) {
+            // Animación sutil de respiración / flotación
+            group.current.position.y = -1 + Math.sin(state.clock.elapsedTime * 1.5) * 0.01;
+
+            // Interpolación Suave (Lerp) para cambios de escala (60 FPS)
+            // Usamos un factor de interpolación basado en delta para consistencia
+            const lerpFactor = 0.1;
+            group.current.scale.x += (targetScale[0] - group.current.scale.x) * lerpFactor;
+            group.current.scale.y += (targetScale[1] - group.current.scale.y) * lerpFactor;
+            group.current.scale.z += (targetScale[2] - group.current.scale.z) * lerpFactor;
+        }
+    });
+
+    return (
+        <group ref={group} position={[0, -1, 0]}>
+            <primitive object={scene} />
+        </group>
+    );
+}
+
+function AnnyHumanBody({ measurements, targetScale = [1, 1, 1], isTryingOn }) {
+    const group = useRef();
+    const bodyColor = isTryingOn ? '#9D00FF' : '#00F2FF';
+
+    useFrame((state) => {
+        if (group.current) {
+            const lerpFactor = 0.1;
+            group.current.scale.x += (targetScale[0] - group.current.scale.x) * lerpFactor;
+            group.current.scale.y += (targetScale[1] - group.current.scale.y) * lerpFactor;
+            group.current.scale.z += (targetScale[2] - group.current.scale.z) * lerpFactor;
+
+            if (!isTryingOn) {
+                group.current.position.y = (-1 * group.current.scale.y) + Math.sin(state.clock.elapsedTime * 2) * 0.05;
+            }
+        }
+    });
+
+    return (
+        <group ref={group} position={[0, -1, 0]}>
+            <mesh position={[0, 1.5, 0]}>
+                <boxGeometry args={[1.2, 2.5, 0.6]} />
+                <meshStandardMaterial color={bodyColor} wireframe={!isTryingOn} opacity={0.6} transparent />
+            </mesh>
+            <mesh position={[0, 3.2, 0]}>
+                <sphereGeometry args={[0.4, 32, 32]} />
+                <meshStandardMaterial color="#00F2FF" />
+            </mesh>
+        </group>
+    );
+}
+
+// --- Componente Principal ---
 const ProbadorAvatar = () => {
-    const avatarData = useStore(state => state.avatarData) || DEFAULT_AVATAR;
+    const avatarData = useStore(state => state.avatarData);
     const { socket } = useContext(SocketContext);
 
-    const initialAvatar = useRef(avatarData);
-    const [liveAvatar, setLiveAvatar] = useState(initialAvatar.current);
+    const [liveAvatar, setLiveAvatar] = useState(avatarData || { meshUrl: null, measurements: null });
     const [prendas, setPrendas] = useState([]);
-    const [tryingOn, setTryingOn] = useState(false);
     const [wornClothId, setWornClothId] = useState(null);
+    const [targetScale, setTargetScale] = useState([1, 1, 1]);
 
-    // Sincronización segura (solo si el ID cambia)
+    // Calcular escala inicial basada en biometría
     useEffect(() => {
-        if (avatarData && avatarData._id !== liveAvatar?._id) {
-            setLiveAvatar(JSON.parse(JSON.stringify(avatarData))); // Deep copy so we can edit
+        if (liveAvatar.measurements) {
+            const h = liveAvatar.measurements.height / 170 || 1;
+            const w = (liveAvatar.measurements.chest || 90) / 90 || 1;
+            setTargetScale([w, h, w]);
         }
-    }, [avatarData?._id]);
+    }, [liveAvatar.measurements]);
 
+    // Escuchar cambios en tiempo real vía Socket (Preview y Finalizado)
     useEffect(() => {
         if (!socket) return;
-        const handleAvatarReady = (data) => {
-            if (JSON.stringify(data) === JSON.stringify(liveAvatar)) return;
-            console.log('✨ [Socket] Nuevo avatar recibido:', data);
-            setLiveAvatar(data);
-        };
-        socket.on('avatar:ready', handleAvatarReady);
-        return () => socket.off('avatar:ready', handleAvatarReady);
-    }, [socket, liveAvatar]);
 
+        const handleAvatarPreview = (data) => {
+            // Data contiene solo betas para previsualización inmediata
+            if (data.betas) {
+                const b = data.betas;
+                // Beta 0: Estatura, Beta 1: Peso/Ancho (Simplificado para preview)
+                const h = 1 + (b[0] * 0.05);
+                const w = 1 + (b[1] * 0.05);
+                setTargetScale([w, h, w]);
+            }
+        };
+
+        const handleAvatarReady = (data) => {
+            console.log('✨ [Socket] Modelo Finalizado:', data);
+            setLiveAvatar(data);
+            if (data.measurements) {
+                const h = data.measurements.height / 170;
+                const w = (data.measurements.chest || 90) / 90;
+                setTargetScale([w, h, w]);
+            }
+        };
+
+        socket.on('avatar:preview', handleAvatarPreview);
+        socket.on('avatar:completed', handleAvatarReady);
+
+        return () => {
+            socket.off('avatar:preview', handleAvatarPreview);
+            socket.off('avatar:completed', handleAvatarReady);
+        };
+    }, [socket]);
+
+    // Cargar Catálogo
     useEffect(() => {
         const fetchCatalog = async () => {
             try {
                 const data = await iotApi.getClothesCatalog();
                 if (data && data.ok) setPrendas(data.data);
-            } catch (e) {
-                console.error("Error fetching catalog", e);
-            }
+            } catch (e) { console.error("Error fetching catalog", e); }
         };
         fetchCatalog();
     }, []);
 
-    const handleTryOn = async (itemId) => {
-        setTryingOn(true);
-        try {
-            await iotApi.tryOnClothes(liveAvatar._id || 'mock', itemId);
-            setWornClothId(itemId);
-        } catch (e) {
-            console.error(e);
-        } finally {
-            setTryingOn(false);
-        }
+    const handleTryOn = (itemId) => {
+        setWornClothId(itemId);
+        console.log(`👕 Probando prenda ID: ${itemId}`);
     };
 
     return (
-        <div className="flex-1 flex flex-col h-full bg-[#0b0e11] relative overflow-hidden">
+        <div className="flex-1 flex flex-col h-full bg-[#0b0e11] relative overflow-hidden font-['Inter']">
 
-            {/* Body: Viewport + Parameters */}
+            {/* Main Viewport - pantalla completa sin sidebar */}
             <div className="flex-1 flex overflow-hidden relative">
-
-                {/* Viewport Section */}
                 <section className="flex-1 relative blueprint-grid">
                     <div className="absolute top-10 left-10 z-20">
-                        <span className="text-[8px] text-[#a9abaf] uppercase tracking-[0.4em] font-['Space_Grotesk']">Área de Visualización</span>
-                        <h2 className="text-5xl font-black text-white/10 tracking-tighter uppercase pointer-events-none mt-2">Anny_m</h2>
-                    </div>
-
-                    {/* Floating Axis Selector */}
-                    <div className="absolute top-10 right-10 z-20 w-32 h-32 bg-[#101417]/80 backdrop-blur-xl border border-[#45484c]/30 rounded-2xl p-4 shadow-2xl">
-                        <div className="relative w-full h-full border border-[#45484c]/20 flex items-center justify-center">
-                            <div className="absolute w-full h-[1px] bg-[#45484c]/20"></div>
-                            <div className="absolute h-full w-[1px] bg-[#45484c]/20"></div>
-                            <div className="w-3 h-3 rounded-full bg-[#00F2FF] shadow-[0_0_15px_rgba(0,242,255,0.8)]"></div>
-                        </div>
-                        <p className="text-[7px] text-[#00F2FF] text-right mt-2 uppercase tracking-widest font-['Space_Grotesk']">Pos: Eje-Z</p>
+                        <span className="text-[8px] text-[#00f1fe] uppercase tracking-[0.4em] font-black">Intervención Neural / Vista Probador</span>
+                        <h2 className="text-4xl font-black text-white/10 tracking-tighter uppercase pointer-events-none mt-2">
+                            {liveAvatar.modelType || 'Avatar_Anny'}
+                        </h2>
                     </div>
 
                     <div className="absolute inset-0 z-0">
-                        <Canvas camera={{ position: [0, 0, 7], fov: 45 }}>
-                            <ambientLight intensity={0.5} />
-                            <pointLight position={[10, 10, 10]} intensity={1.5} color="#00F2FF" />
-                            <spotLight position={[-10, 10, 5]} intensity={0.5} color="#C47FFF" />
+                        <Canvas dpr={[1, 2]}>
+                            <PerspectiveCamera makeDefault position={[0, 0.5, 5]} fov={35} />
+                            <ambientLight intensity={0.4} />
+                            <pointLight position={[10, 10, 10]} intensity={1} color="#00F2FF" />
+                            <spotLight position={[-5, 5, 5]} intensity={0.5} angle={0.2} penumbra={1} color="#d800ff" />
 
-                            <Model3D glbUrl={liveAvatar.meshUrl} isTryingOn={wornClothId !== null} />
+                            <Suspense fallback={null}>
+                                <Stage environment="city" intensity={0.5} contactShadow={{ opacity: 0.2, blur: 2 }}>
+                                    {liveAvatar.meshUrl ? (
+                                        <AvatarRealGLB key={liveAvatar.meshUrl} url={liveAvatar.meshUrl} targetScale={targetScale} />
+                                    ) : (
+                                        <AnnyHumanBody measurements={liveAvatar.measurements} targetScale={targetScale} isTryingOn={wornClothId !== null} />
+                                    )}
+                                </Stage>
+                            </Suspense>
 
-                            <OrbitControls enablePan={false} enableZoom={true} />
+                            <OrbitControls enablePan={false} enableZoom={true} minDistance={1.5} maxDistance={8} />
                         </Canvas>
                     </div>
-
-                    {/* Bottom Overlays */}
-                    <div className="absolute bottom-10 left-10 flex gap-10 items-end z-20">
-                        <div>
-                            <span className="text-[8px] text-[#00F2FF] uppercase tracking-[0.2em] font-['Space_Grotesk'] font-bold">Orientación</span>
-                            <div className="flex gap-2 mt-3">
-                                <div className="w-10 h-10 rounded-lg bg-[#101417]/80 border border-[#45484c]/30 flex items-center justify-center cursor-pointer hover:bg-[#00F2FF]/10 transition-all">
-                                    <span className="material-symbols-outlined text-sm text-white">3d_rotation</span>
-                                </div>
-                                <div className="w-10 h-10 rounded-lg bg-[#101417]/80 border border-[#45484c]/30 flex items-center justify-center cursor-pointer hover:bg-[#00F2FF]/10 transition-all">
-                                    <span className="material-symbols-outlined text-sm text-white">grid_view</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div>
-                            <span className="text-[8px] text-[#a9abaf] uppercase tracking-[0.2em] font-['Space_Grotesk'] font-bold">Puntos de Tensión</span>
-                            <div className="flex gap-3 mt-3">
-                                <div className="w-4 h-4 rounded-full bg-[#C47FFF] shadow-[0_0_10px_rgba(196,127,255,0.6)]"></div>
-                                <div className="w-4 h-4 rounded-full bg-[#45484c]/50 border border-[#45484c]/20"></div>
-                                <div className="w-4 h-4 rounded-full bg-[#45484c]/50 border border-[#45484c]/20"></div>
-                            </div>
-                        </div>
-                    </div>
                 </section>
-
-                {/* Parameters Section (Sidebar from Component) */}
-                <Sidebar />
             </div>
 
-            {/* Footer: Collection Carousel */}
-            <footer className="h-64 bg-[#0b0e11] border-t border-[#45484c]/10 p-8 z-40">
-                <div className="flex justify-between items-center mb-6 px-2">
-                    <h4 className="text-[10px] font-black text-white uppercase tracking-[0.4em] font-['Space_Grotesk']">Colección Actual: Neo-Refraction 2024</h4>
+            {/* Collection Carousel */}
+            <footer className="h-64 bg-black/40 border-t border-white/5 p-8 z-40 backdrop-blur-md">
+                <div className="flex justify-between items-center mb-6 px-4">
+                    <h4 className="text-[10px] font-black text-[#00f1fe]/50 uppercase tracking-[0.4em]">Colección: Neo-Refraction 2026</h4>
                     <div className="flex gap-4">
-                        <span className="material-symbols-outlined text-sm text-[#a9abaf] cursor-pointer hover:text-white">west</span>
-                        <span className="material-symbols-outlined text-sm text-white cursor-pointer">east</span>
+                        <span className="material-symbols-outlined text-sm text-gray-700">grid_view</span>
+                        <span className="material-symbols-outlined text-sm text-gray-700">filter_list</span>
                     </div>
                 </div>
 
-                <div className="flex gap-4 overflow-x-auto custom-scrollbar pb-4">
-                    {[
-                        { name: 'Pulse_Jacket', active: true, id: 101 },
-                        { name: 'Void_Core_V2', active: false, id: 102 },
-                        { name: 'Stratos_Pants', active: false, id: 103 },
-                        { name: 'Holo_Tees', active: false, id: 104 },
-                        { name: 'Light_Step_01', active: false, id: 105 },
-                        { name: 'Cyber_Mesh', active: false, id: 106 }
-                    ].map(item => (
-                        <div key={item.id} className={`flex-shrink-0 w-48 h-32 rounded-2xl relative overflow-hidden group cursor-pointer transition-all ${item.active ? 'ring-2 ring-[#facd2e] ring-offset-4 ring-offset-[#0b0e11]' : 'opacity-60 hover:opacity-100'}`}>
-                            <div className={`absolute inset-0 bg-gradient-to-br ${item.active ? 'from-[#facd2e]/20 to-transparent' : 'from-white/5 to-transparent'}`}></div>
-                            <div className="absolute inset-0 flex items-center justify-center p-4">
-                                <div className={`w-32 h-32 bg-[radial-gradient(circle_at_50%_50%,${item.active ? '#facd2e30' : '#ffffff10'}_0%,transparent_70%)] absolute`}></div>
-                                <span className="material-symbols-outlined text-4xl text-white/20 group-hover:text-white/40 transition-colors">checkroom</span>
+                <div className="flex gap-5 overflow-x-auto pb-4 no-scrollbar px-4">
+                    {prendas.length > 0 ? prendas.map(prenda => (
+                        <div
+                            key={prenda._id}
+                            onClick={() => handleTryOn(prenda._id)}
+                            className={`flex-shrink-0 w-56 h-36 rounded-3xl relative overflow-hidden group cursor-pointer border transition-all duration-500 ${wornClothId === prenda._id ? 'border-[#00f1fe] bg-[#00f1fe]/10 scale-95 shadow-[0_0_40px_rgba(0,241,254,0.1)]' : 'border-white/5 bg-white/5 hover:border-white/20'}`}
+                        >
+                            <div className="absolute inset-0 flex items-center justify-center opacity-10 group-hover:opacity-20 transition-opacity">
+                                <span className="material-symbols-outlined text-5xl">apparel</span>
                             </div>
-                            <div className="absolute bottom-0 left-0 w-full p-4 bg-gradient-to-t from-black/80 to-transparent">
-                                <span className="text-[10px] font-bold text-white uppercase tracking-widest font-['Space_Grotesk']">{item.name}</span>
+                            <div className="absolute bottom-0 left-0 w-full p-5 bg-gradient-to-t from-black to-transparent">
+                                <p className="text-[10px] font-black text-white uppercase tracking-widest truncate">{prenda.titulo}</p>
+                                <div className="flex justify-between items-center mt-1">
+                                    <span className="text-[8px] text-gray-500 font-bold uppercase">{prenda.categoria || 'Concept'}</span>
+                                    <span className="text-[8px] text-[#00f1fe] font-black">{prenda.talla || 'L'}</span>
+                                </div>
                             </div>
-                            {item.active && (
-                                <div className="absolute top-4 right-4 w-2 h-2 rounded-full bg-[#00F2FF] shadow-[0_0_8px_rgba(0,242,255,1)]"></div>
-                            )}
                         </div>
-                    ))}
+                    )) : (
+                        Array(6).fill(0).map((_, i) => (
+                            <div key={i} className="flex-shrink-0 w-56 h-36 rounded-3xl bg-white/5 border border-white/10 animate-pulse"></div>
+                        ))
+                    )}
                 </div>
             </footer>
         </div>
-
-
     );
 };
 

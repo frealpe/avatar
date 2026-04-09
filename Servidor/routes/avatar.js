@@ -3,11 +3,15 @@ const {
     generateAvatar, 
     uploadModel, 
     getClothesCatalog, 
+    getPredefinedAvatars,
     getAvatarById, 
-    tryOnClothes 
+    tryOnClothes,
+    recalculateAvatar
 } = require('../controllers/avatar');
 
 const router = Router();
+
+router.get('/predefined', getPredefinedAvatars);
 
 /**
  * @route POST /api/avatar/generate
@@ -15,6 +19,12 @@ const router = Router();
  * Pasa la imagen al pipeline Anny IA y guarda los shape params en Mongo.
  */
 router.post('/generate', generateAvatar);
+
+/**
+ * @route POST /api/avatar/recalculate
+ * Recalcula los parámetros del avatar.
+ */
+router.post('/recalculate', recalculateAvatar);
 
 /**
  * @route POST /api/avatar/upload

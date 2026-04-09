@@ -64,59 +64,28 @@ class Gradio3DProcessor {
                 payload = { image: processedInput, ...extraParams };
             }
 
-            console.log(`[${apiEndpoint}] Job submitted. Waiting for events...`);
-            const job = this.client.submit(apiEndpoint, payload);
-
-            let lastStatus = "";
-            let messageCount = 0;
+            console.log(`[${apiEndpoint}] Preparing payload and initiating Gradio call...`);
             
-            // Set a safety timeout for the entire loop if no data is received
-            const timeoutPromise = new Promise((_, reject) => {
-                setTimeout(() => reject(new Error("Gradio Job Timeout: No data received after 5 minutes")), 300000);
-            });
+            // Try using predict() for a more direct HTTP-based call if submit() hangs
+            // predict() returns a promise that resolves when the job is done.
+            console.log(`[${apiEndpoint}] Using predict() for direct processing...`);
+            const prediction = await this.client.predict(apiEndpoint, payload);
+            
+            console.log(`[${apiEndpoint}] Success! Prediction received.`);
+            return prediction.data;
 
-            const processJob = async () => {
-                for await (const msg of job) {
-                    messageCount++;
-                    console.log(`[${apiEndpoint}] Event #${messageCount} | Type: ${msg.type} | Stage: ${msg.stage || 'N/A'}`);
-                    
-                    if (msg.type === "status") {
-                        if (msg.stage === "error") {
-                            const isSessionError = msg.message && msg.message.includes("Session not found");
-                            
-                            if (isSessionError && retryCount < 2) {
-                                console.warn(`Session lost for ${this.spaceId}. Reconnecting and retrying...`);
-                                this.client = null; // Force reconnection
-                                return this.generate3D(imageInput, apiEndpoint, extraParams, retryCount + 1);
-                            }
-
-                            console.error(`Gradio Error [${apiEndpoint}]:`, msg.message);
-                            throw new Error(msg.message || "Unknown Gradio error");
-                        } else if (msg.stage !== lastStatus || (msg.stage === "pending" && msg.position !== undefined)) {
-                            const position = msg.position !== undefined ? ` (Queue position: ${msg.position})` : "";
-                            console.log(`[${apiEndpoint}] Progress: ${msg.stage}${position}`);
-                            lastStatus = msg.stage;
-                        }
-                    } else if (msg.type === "data") {
-                        console.log(`[${apiEndpoint}] Success! Data received.`);
-                        return msg.data;
-                    }
-                }
-                throw new Error("Gradio Job finished without returning data.");
-            };
-
-            return await Promise.race([processJob(), timeoutPromise]);
         } catch (error) {
+            console.error(`❌ Gradio Error [${apiEndpoint}]:`, error.message);
+            
             const isSessionError = error.message && error.message.includes("Session not found");
             const isSocketError = error.message && (error.message.includes("terminated") || error.message.includes("socket"));
 
             if ((isSessionError || isSocketError) && retryCount < 2) {
-                console.warn(`Connection issue: ${error.message}. Retrying...`);
+                console.warn(`Connection issue: ${error.message}. Retrying with fresh client...`);
                 this.client = null; // Force reconnection
                 return this.generate3D(imageInput, apiEndpoint, extraParams, retryCount + 1);
             }
 
-            console.error("Error during 3D generation:", error);
             throw error;
         }
     }

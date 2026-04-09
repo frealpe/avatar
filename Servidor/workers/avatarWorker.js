@@ -10,18 +10,24 @@ const fs = require('fs');
 
 const setupWorker = (io) => {
   const worker = new Worker('avatarGeneration', async (job) => {
-    const { imagePath, userId, talla, patronValName, PORT } = job.data;
+    const { imagePath, userId, talla, patronValName, target, PORT } = job.data;
     const port = PORT || 8080;
 
-    console.log(`🚀 [IA UNIFICADA] [Worker] Procesando job ${job.id} para usuario ${userId}...`);
+    console.log(`🚀 [IA UNIFICADA] [Worker] Procesando job ${job.id} (${target}) para usuario ${userId}...`);
     const startTime = Date.now();
 
     try {
-      // 1. Promesa A: Procesamiento de Avatar 3D (SAM 3D Body)
-      const meshPromise = AnnyPipeline.processImageToAnnyParams(imagePath || 'default_stream', io);
+      // 1. Promesa A: Procesamiento de Avatar 3D
+      let meshPromise = Promise.resolve(null);
+      if (target === 'both' || target === 'body') {
+          meshPromise = AnnyPipeline.processImageToAnnyParams(imagePath || 'default_stream', io);
+      }
 
-      // 2. Promesa B: Procesamiento 2D de Patrones de Costura (Ollama Local + Seamly)
-      const patternPromise = PatternEngine.generatePattern(imagePath, talla, patronValName);
+      // 2. Promesa B: Procesamiento 2D de Patrones
+      let patternPromise = Promise.resolve(null);
+      if (target === 'both' || target === 'garment') {
+          patternPromise = PatternEngine.generatePattern(imagePath, talla, patronValName);
+      }
 
       // 3. Esperar a que Ambas IAs regresen (Si una falla, la otra de igual forma sobrevive)
       const [meshResult, patternResult] = await Promise.allSettled([meshPromise, patternPromise]);
@@ -30,7 +36,7 @@ const setupWorker = (io) => {
       let absoluteAvatarPath = null;
       if (meshResult.status === 'fulfilled') {
           params = meshResult.value;
-          if (params.meshUrl) {
+          if (params && params.meshUrl) {
               const urlObj = new URL(params.meshUrl, `http://localhost:${port}`);
               absoluteAvatarPath = path.join(process.cwd(), 'public', urlObj.pathname);
           }
@@ -90,17 +96,27 @@ const setupWorker = (io) => {
       await nuevoAvatar.save();
 
       const totalTime = (Date.now() - startTime) / 1000;
-      console.log(`✅ [Worker] Job ${job.id} completado en ${totalTime.toFixed(2)}s`);
+      console.log(`✅ [Worker] Job ${job.id} (${target}) completado en ${totalTime.toFixed(2)}s`);
+
+      // 5. Construir telemetría dinámica
+      const modelsUsed = [];
+      if (target === 'both' || target === 'body') modelsUsed.push('SAM 3D / Anny v2');
+      if (target === 'both' || target === 'garment') {
+          modelsUsed.push('LLaVA v1.5');
+          modelsUsed.push('Seamly2D CLI');
+      }
+      if (prenda3DUrl) modelsUsed.push('Blender Cycles (Sim)');
 
       // Notificar por websockets al cliente que su avatar final está listo
       if (io) {
         io.emit('avatar:completed', {
           jobId: job.id,
           userId,
+          target, // Pasar el target original para que el front sepa qué panel actualizar
           avatar: nuevoAvatar,
           telemetry: {
               totalExecutionTime: `${totalTime.toFixed(2)}s`,
-              modelsUsed: ['SAM 3D Body', 'LLaVA-v1.5', 'Seamly2D-CLI', 'Blender-Cycles'],
+              modelsUsed,
               timestamp: new Date()
           }
         });

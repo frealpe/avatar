@@ -30,3 +30,4 @@ Servidor/public/queue_capture_*.jpg
 ModavatarMobile/node_modules/
 Frontend/node_modules/
 Servidor/node_modules/
+Servidor/models/smplx/

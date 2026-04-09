@@ -54,7 +54,7 @@ class AnnyPipeline {
                     isRealGeneration = true;
                     console.log('🤖 [IA] Reconstrucción Corporal SAM 3D Completada. GLB Url:', meshUrl);
                 } else {
-                    console.warn('🤖 [IA] SAM 3D no devolvió una malla válida. Usando fallback paramétrico.');
+                    throw new Error("Gradio returned empty result");
                 }
 
                 // Cleanup temporal image
@@ -62,7 +62,40 @@ class AnnyPipeline {
 
             } catch (err) {
                 console.error("❌ [IA] SAM 3D Pipeline Error:", err.message);
-                console.log("⚠️ [IA] Usando fallback a motor paramétrico Anny v2...");
+                console.log("⚠️ [IA] Usando FALLBACK científico SMPL-X local...");
+                
+                try {
+                    const { execSync } = require('child_process');
+                    const pythonPath = '/home/fabio/miniconda3/bin/python3';
+                    const extractorPath = path.join(__dirname, '..', 'helpers', 'smplx_extractor.py');
+                    const modelDir = path.join(__dirname, '..', 'models', 'smplx');
+                    const fallbackMeshName = `fallback_mesh_${Date.now()}.glb`;
+                    const fallbackMeshPath = path.join(__dirname, '..', 'public', 'avatars', fallbackMeshName);
+                    
+                    // Asegurar carpeta avatars
+                    if (!fs.existsSync(path.join(__dirname, '..', 'public', 'avatars'))) {
+                        fs.mkdirSync(path.join(__dirname, '..', 'public', 'avatars'), { recursive: true });
+                    }
+
+                    const cmd = `"${pythonPath}" "${extractorPath}" --model_dir "${modelDir}" --output_glb "${fallbackMeshPath}"`;
+                    console.log(`🤖 [IA] Ejecutando Extractor SMPL-X: ${cmd}`);
+                    
+                    const pythonOutput = execSync(cmd).toString();
+                    // El script imprime el JSON al final
+                    const jsonLines = pythonOutput.split('\n').filter(l => l.trim().startsWith('{'));
+                    if (jsonLines.length > 0) {
+                        const smplxData = JSON.parse(jsonLines[0]);
+                        if (!smplxData.error) {
+                            meshUrl = `/avatars/${fallbackMeshName}`;
+                            console.log('🤖 [IA] Malla SMPL-X básica generada correctamente.');
+                        } else {
+                            console.warn("⚠️ [IA] Script SMPL-X falló internamente. Asegúrate de tener los modelos en /models/smplx.");
+                        }
+                    }
+                } catch (smplxErr) {
+                    console.error("❌ [IA] Error fatal en Fallback SMPL-X:", smplxErr.message);
+                }
+
                 if (shouldCleanup && fs.existsSync(targetImagePath)) fs.unlinkSync(targetImagePath);
             }
         }
@@ -77,8 +110,8 @@ class AnnyPipeline {
             const waist = simulatedHeight * 0.42;
 
             const results = {
-                modelType: isRealGeneration ? 'SAM3D_HumanBody' : 'Anny_v2',
-                meshUrl: meshUrl, // Agregado para enviar la url del GLB al Frontend
+                modelType: isRealGeneration ? 'SAM3D_HumanBody' : 'SMPLX_Fallback',
+                meshUrl: meshUrl, // Será null si todo falló, o la ruta al GLB local
                 measurements: {
                     height: parseFloat(simulatedHeight.toFixed(2)),
                     weight: parseFloat((60 + Math.random() * 20).toFixed(2)),
@@ -88,7 +121,7 @@ class AnnyPipeline {
                 },
                 shapeParams: Array.from({ length: 10 }).map(() => (Math.random() * 2) - 1),
                 poseParams: Array.from({ length: 72 }).fill(0),
-                meshGenerated: true,
+                meshGenerated: meshUrl ? true : false,
                 timestamp: new Date()
             };
 

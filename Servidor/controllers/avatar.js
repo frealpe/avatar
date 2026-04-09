@@ -2,14 +2,15 @@ const Avatar = require('../models/AvatarModel');
 const { avatarQueue } = require('../helpers/queue');
 const path = require('path');
 const fs = require('fs');
+const { exec } = require('child_process');
+const v4 = require('uuid').v4;
 
 const generateAvatar = async (req, res) => {
     try {
-        const { imageBase64, userId = 'mobile_user_01', talla = 'M', patronValName = 'patron_base.val' } = req.body;
+        const { imageBase64, userId = 'mobile_user_01', talla = 'M', patronValName = 'patron_base.val', target = 'both' } = req.body;
 
         console.log('🚀 [IA UNIFICADA] Encolando tarea de procesamiento...');
 
-        // Save image to temporary file to avoid large payloads in Redis
         let imagePath = null;
         if (imageBase64 && imageBase64.startsWith('data:image')) {
             const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, "");
@@ -18,12 +19,12 @@ const generateAvatar = async (req, res) => {
             fs.writeFileSync(imagePath, buffer);
         }
 
-        // Añadir trabajo a la cola de BullMQ en vez de bloquear el hilo
         const job = await avatarQueue.add('generateAvatarPipeline', {
-            imagePath, // use path instead of base64 string
+            imagePath,
             userId,
             talla,
             patronValName,
+            target,
             PORT: process.env.PORT
         });
 
@@ -40,12 +41,50 @@ const generateAvatar = async (req, res) => {
     }
 };
 
+const recalculateAvatar = async (req, res) => {
+    try {
+        const { betas, gender = 'neutral' } = req.body;
+        if (!betas || !Array.isArray(betas)) {
+            return res.status(400).json({ ok: false, msg: 'Se requiere un vector de 10 betas.' });
+        }
+
+        const jobId = v4();
+        const tempDir = path.join(process.cwd(), 'public', 'temp');
+        const outputGlb = path.join(tempDir, `recalc_${jobId}.glb`);
+        const outputVit = path.join(tempDir, `recalc_${jobId}.vit`);
+        
+        if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
+
+        const scriptPath = path.join(process.cwd(), 'helpers', 'smplx_extractor.py');
+        const modelDir = path.join(process.cwd(), 'models', 'smplx');
+        
+        // Usamos el path completo de Python del entorno que sabemos que funciona
+        const pythonPath = "/home/fabio/miniconda3/bin/python3";
+        const pythonCmd = `"${pythonPath}" "${scriptPath}" --model_dir "${modelDir}" --betas ${betas.join(' ')} --gender ${gender} --output_glb "${outputGlb}" --output_vit "${outputVit}"`;
+
+        console.log(`🤖 [RECALCULATE] Ejecutando: ${pythonCmd}`);
+
+        exec(pythonCmd, (error, stdout, stderr) => {
+            if (error) {
+                console.error(`❌ [RECALCULATE] Error: ${error.message}`);
+                console.error(`❌ [RECALCULATE] Stderr: ${stderr}`);
+                return res.status(500).json({ ok: false, msg: 'Error de motor 3D.', detail: error.message, stderr });
+            }
+            try {
+                const lines = stdout.trim().split('\n');
+                const lastLine = lines.pop(); 
+                const resultJson = JSON.parse(lastLine);
+                res.json({ ok: true, meshUrl: `/temp/recalc_${jobId}.glb`, measurements: resultJson, modelType: 'SMPLX_Custom' });
+            } catch (e) { 
+                console.error("❌ [RECALCULATE] Error parseando JSON:", stdout);
+                res.status(500).json({ ok: false, msg: 'Error parseando biométricos.', stdout }); 
+            }
+        });
+    } catch (err) { res.status(500).json({ ok: false, msg: 'Fallo en motor de recalculo.' }); }
+};
+
 const uploadModel = async (req, res) => {
-    // Implementación mock para almacenamiento de modelos
-    res.status(200).json({
-        ok: true,
-        msg: "Modelo subido correctamente."
-    });
+    res.status(200).json({ ok: true, msg: "Modelo subido correctamente." });
 };
 
 const getClothesCatalog = (req, res) => {
@@ -60,11 +99,8 @@ const getClothesCatalog = (req, res) => {
 const getAvatarById = async (req, res) => {
     try {
         const { id } = req.params;
-
         const avatar = await Avatar.findById(id);
-        if (!avatar) {
-            return res.status(404).json({ ok: false, msg: 'Avatar no encontrado' });
-        }
+        if (!avatar) return res.status(404).json({ ok: false, msg: 'Avatar no encontrado' });
         res.json({ ok: true, avatar });
     } catch (error) {
         res.status(500).json({ ok: false, msg: 'Error interno obteniendo avatar' });
@@ -73,26 +109,52 @@ const getAvatarById = async (req, res) => {
 
 const tryOnClothes = async (req, res) => {
     const { avatarId, prendaId } = req.body;
-    
-    // Aquí el backend podría despachar un Job pesado para Cloth Simulation
     console.log(`👕 Solicitud de Try-On para el avatar [${avatarId}] usando prenda [${prendaId}]`);
-
     setTimeout(() => {
         res.json({
             ok: true,
             msg: "Simulación de ropa sobre malla completada",
-            resultConfig: {
-                clothScale: 1.05,
-                deformMatrix: "..." // Matrices generadas por la IA para ThreeJS
-            }
+            resultConfig: { clothScale: 1.05, deformMatrix: "..." }
         });
     }, 2500);
 };
 
+const getPredefinedAvatars = (req, res) => {
+    const predefined = [
+        { 
+            id: 'std_athletic', 
+            name: 'Atlético', 
+            description: 'Perfil muscular hombros anchos',
+            meshUrl: '/avatars/standard_male.glb', 
+            betas: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            measurements: { height: 180, chest: 104, waist: 82, hips: 98 } 
+        },
+        { 
+            id: 'std_slim', 
+            name: 'Esbelto', 
+            description: 'Perfil delgado y espigado',
+            meshUrl: '/avatars/standard_female.glb', 
+            betas: [0.5, -1, 0, 0, 0, 0, 0, 0, 0, 0],
+            measurements: { height: 170, chest: 88, waist: 64, hips: 92 } 
+        },
+        { 
+            id: 'std_curvy', 
+            name: 'Curvilíneo', 
+            description: 'Perfil con curvas pronunciadas',
+            meshUrl: '/avatars/standard_curvy.glb', 
+            betas: [2.0, 0.5, 0, 0, 0, 0, 0, 0, 0, 0],
+            measurements: { height: 165, chest: 98, waist: 72, hips: 105 } 
+        }
+    ];
+    res.json({ ok: true, data: predefined });
+};
+
 module.exports = {
     generateAvatar,
+    recalculateAvatar,
     uploadModel,
     getClothesCatalog,
+    getPredefinedAvatars,
     getAvatarById,
     tryOnClothes
 };

@@ -18,13 +18,10 @@ function generarArchivoVIT(parametros, outputPath) {
 <vit>
     <version>0.3.3</version>
     <read-only>false</read-only>
-    <notes>Medidas generadas inteligentemente por LLaVA y Llama3</notes>
     <unit>cm</unit>
     <pm_system>998</pm_system>
     <personal>
-        <custom>
 ${medicionesXML.trimEnd()}
-        </custom>
     </personal>
 </vit>`;
 
@@ -50,13 +47,27 @@ ${medicionesXML.trimEnd()}
 function generarSVG(vitPath, valPath, outDirPath) {
     const { exec } = require('child_process');
     
-    // Sanitización preventiva: Eliminar tags incompatibles como <incremental/>
+    // Sanitización preventiva: Eliminar tags incompatibles como <incremental/> y atributos label
     try {
         let valContent = fs.readFileSync(valPath, 'utf8');
+        let modified = false;
+
         if (valContent.includes('<incremental/>') || valContent.includes('<incremental></incremental>')) {
-            console.log(`[SEAMLY_ENGINE] Sanitizando ${path.basename(valPath)}: Eliminando tag <incremental> incompatible...`);
+            console.log(`[SEAMLY_ENGINE] Sanitizando ${path.basename(valPath)}: Eliminando tag <incremental>...`);
             valContent = valContent.replace(/<incremental\/>/g, '');
             valContent = valContent.replace(/<incremental><\/incremental>/g, '');
+            modified = true;
+        }
+
+        // Eliminar CUALQUIER atributo label="..." o label='...' en el archivo XML
+        if (valContent.includes('label=')) {
+            console.log(`[SEAMLY_ENGINE] Sanitización PROFUNDA en ${path.basename(valPath)}: Eliminando todos los atributos 'label'...`);
+            // Regex para capturar label con comillas dobles o simples y cualquier espacio intermedio
+            valContent = valContent.replace(/\slabel\s?=\s?["'][^"']*["']/g, '');
+            modified = true;
+        }
+
+        if (modified) {
             fs.writeFileSync(valPath, valContent, 'utf8');
         }
     } catch (sanErr) {

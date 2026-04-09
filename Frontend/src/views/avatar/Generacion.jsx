@@ -4,42 +4,71 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import useStore from '../../store';
 import iotApi from '../../service/iotApi';
 
+import { SocketContext } from '../../context/SocketContext';
+
 const GeneracionAvatar = () => {
     const navigate = useNavigate();
     const location = useLocation();
+    const { socket } = React.useContext(SocketContext);
     const setStoreAvatar = useStore((state) => state.setAvatar);
     const [loading, setLoading] = useState(true);
+    const [statusText, setStatusText] = useState('Encolando procesamiento en el servidor...');
     const [avatarData, setAvatarData] = useState(null);
 
-    // Simular la captura local o descargar el generado por móvil
     useEffect(() => {
-        const fetchOrGenerate = async () => {
+        if (!socket) return;
+
+        const handleAvatarCompleted = (data) => {
+            console.log("✨ [Socket] Procesamiento completado:", data);
+            const finalAvatar = data.avatar || data;
+            setAvatarData(finalAvatar);
+            setStoreAvatar(finalAvatar);
+            setLoading(false);
+
+            // Auto navigate when completed
+            setTimeout(() => {
+                navigate('/avatar/probador');
+            }, 2000);
+        };
+
+        const handleAvatarError = (err) => {
+            console.error("❌ [Socket] Error en procesamiento:", err);
+            setStatusText(`Error: ${err.message || err}`);
+            setLoading(false);
+        };
+
+        socket.on('avatar:completed', handleAvatarCompleted);
+        socket.on('avatar:error', handleAvatarError);
+
+        return () => {
+            socket.off('avatar:completed', handleAvatarCompleted);
+            socket.off('avatar:error', handleAvatarError);
+        };
+    }, [socket, setStoreAvatar, navigate]);
+
+    // Iniciar el procesamiento
+    useEffect(() => {
+        const startGeneration = async () => {
             try {
                 const imageBase64 = location.state?.imageBase64 || 'web_session_dummy';
-                console.log("Enviando imagen real para Inferencia Trellis...");
+                console.log("🚀 Enviando imagen para procesamiento asíncrono...");
                 const data = await iotApi.generateAvatar(imageBase64, 'web_user');
 
                 if (data.ok) {
-                    const newAvatar = data.avatar;
-                    setAvatarData(newAvatar);
-                    setStoreAvatar(newAvatar);
-
-                    // Auto navigate when completed
-                    setTimeout(() => {
-                        navigate('/avatar/probador');
-                    }, 1500);
+                    setStatusText("Tarea encolada. Procesando anatomía y patrones (SAM 3D + Seamly)...");
                 } else {
-                    console.error("Backend did not return ok:", data);
+                    console.error("Backend error:", data);
+                    setStatusText("Error enviando tarea al servidor.");
+                    setLoading(false);
                 }
             } catch (e) {
-                console.error("Error generating avatar", e);
-            } finally {
+                console.error("Error starting generation", e);
                 setLoading(false);
             }
         };
 
-        fetchOrGenerate();
-    }, [setStoreAvatar, location.state?.imageBase64, navigate]);
+        startGeneration();
+    }, [location.state?.imageBase64]);
 
     return (
         <CRow className="justify-content-center">
@@ -56,8 +85,8 @@ const GeneracionAvatar = () => {
                         {loading ? (
                             <div className="py-5">
                                 <CSpinner style={{ width: '4rem', height: '4rem', color: '#00f1fe' }} />
-                                <h5 className="mt-4 text-white">Extrayendo Feature Maps de Anny...</h5>
-                                <p style={{ color: '#a9abaf' }}>Conectando con Servidor de IA (Trellis). Podría tardar 1 a 2 minutos.</p>
+                                <h5 className="mt-4 text-white">{statusText}</h5>
+                                <p style={{ color: '#a9abaf' }}>Conectando con Servidor de IA (Gradio/BullMQ). Podría tardar 1 a 2 minutos.</p>
                             </div>
                         ) : (
                             <>

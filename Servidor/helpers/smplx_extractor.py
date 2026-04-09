@@ -18,10 +18,9 @@ def generate_vit_xml(measurements, output_path):
     unit = ET.SubElement(root, "unit")
     unit.text = "cm"
     
-    personal = ET.SubElement(root, "personal")
-    # Nota: Quitamos <custom> para compatibilidad segun logs previos
+    body_measurements = ET.SubElement(root, "body-measurements")
     for name, value in measurements.items():
-        m = ET.SubElement(personal, "m")
+        m = ET.SubElement(body_measurements, "m")
         m.set("name", name)
         m.set("value", f"{value:.2f}")
         m.set("description", "")
@@ -38,10 +37,16 @@ def run_extraction(model_path, betas_vector, gender='neutral', output_vit=None, 
     # Usar CPU para evitar problemas de drivers en headless servers
     device = torch.device('cpu')
     
-    # Cargar modelo
-    model = smplx.create(model_path, model_type='smplx', gender=gender, use_pca=False).to(device)
+    # Asegurar que tenemos al menos 10 betas (estandar SMPL-X)
+    full_betas = list(betas_vector)
+    if len(full_betas) < 10:
+        full_betas += [0.0] * (10 - len(full_betas))
     
-    betas = torch.tensor([betas_vector], dtype=torch.float32).to(device)
+    # Cargar modelo con el numero de betas detectado o minimo 10
+    num_betas = len(full_betas)
+    model = smplx.create(model_path, model_type='smplx', gender=gender, use_pca=False, num_betas=num_betas).to(device)
+    
+    betas = torch.tensor([full_betas], dtype=torch.float32).to(device)
     output = model(betas=betas)
     vertices = output.vertices[0].detach().cpu().numpy()
     
@@ -71,12 +76,16 @@ def run_extraction(model_path, betas_vector, gender='neutral', output_vit=None, 
     waist_y = min_y + (height * 0.60)
     hips_y = min_y + (height * 0.48)
     
+    # 3. Hombros
+    joints_cm = output.joints[0].detach().cpu().numpy() * 100
+    shoulder_width = np.linalg.norm(joints_cm[16] - joints_cm[17])
+
     measurements = {
         "height": float(height),
         "chest": float(get_circ(chest_y)),
         "waist": float(get_circ(waist_y)),
         "hips": float(get_circ(hips_y)),
-        "shoulder_width": float(np.linalg.norm(vertices_cm[model.joints[0, 16]] - vertices_cm[model.joints[0, 17]]))
+        "shoulder_width": float(shoulder_width)
     }
     
     if output_vit:
@@ -88,7 +97,7 @@ def run_extraction(model_path, betas_vector, gender='neutral', output_vit=None, 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='SMPL-X Measurement & Mesh Extractor')
     parser.add_argument('--model_dir', type=str, default='./models/smplx', help='Path to SMPL-X models')
-    parser.add_argument('--betas', type=float,勇nargs='+', default=[0.0]*10, help='10 shape parameters')
+    parser.add_argument('--betas', type=float, nargs='+', default=[0.0]*10, help='10 shape parameters')
     parser.add_argument('--gender', type=str, default='neutral', choices=['male', 'female', 'neutral'])
     parser.add_argument('--output_vit', type=str, help='Path to save Seamly2D .vit file')
     parser.add_argument('--output_glb', type=str, help='Path to save 3D mesh .glb')

@@ -6,8 +6,8 @@ export const SocketContext = createContext();
 
 export const SocketProvider = ({ children }) => {
     // Usar la URL de la API pero removiendo el /api/ al final para la conexión de socket
-    const { VITE_API_URL } = getEnvVariables();
-    const serverPath = (VITE_API_URL || 'http://localhost:8080/api/').replace('/api/', '');
+    const { VITE_API_URL, VITE_SOCKET_URL } = getEnvVariables();
+    const serverPath = VITE_SOCKET_URL || (VITE_API_URL || 'http://localhost:8080/api/').replace('/api/', '');
     const { socket, online } = useSocket(serverPath);
 
     return (
