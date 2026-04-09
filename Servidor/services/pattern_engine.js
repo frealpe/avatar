@@ -74,7 +74,21 @@ class PatternEngine {
             console.log('🧵 [PATTERN ENGINE] Exporting to SVG...');
             await generarSVG(vitPath, valPath, publicPatterns, null);
             
-            const svgName = 'patron_base.svg';
+            // 5. Detectar el SVG generado por Seamly2D (genera patron_base_layout_01.svg)
+            const svgFiles = fs.readdirSync(publicPatterns)
+                .filter(f => f.startsWith('patron_base') && f.endsWith('.svg'))
+                .sort((a, b) => {
+                    const statA = fs.statSync(path.join(publicPatterns, a));
+                    const statB = fs.statSync(path.join(publicPatterns, b));
+                    return statB.mtimeMs - statA.mtimeMs; // Más reciente primero
+                });
+
+            if (svgFiles.length === 0) {
+                throw new Error('Seamly2D no generó ningún archivo SVG.');
+            }
+
+            const svgName = svgFiles[0]; // El más reciente
+            console.log(`🧵 [PATTERN ENGINE] ✅ SVG detectado: ${svgName}`);
             const svgURL = `/patterns/${svgName}`;
             const absoluteSvgPath = path.join(publicPatterns, svgName);
 

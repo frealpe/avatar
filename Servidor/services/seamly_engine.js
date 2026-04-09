@@ -143,16 +143,32 @@ function generarArchivoVIT(parametros, outputPath) {
     }
 
     // 2. Generar XML de medidas
+    //    CRÍTICO: nombres custom DEBEN empezar con @ en Seamly2D
     let medicionesXML = '';
     for (const [name, value] of Object.entries(cleanParams)) {
-        medicionesXML += `    <m name="${name}" value="${value}"/>\n`;
+        const safeName = name.startsWith('@') ? name : `@${name}`;
+        medicionesXML += `    <m name="${safeName}" value="${value}"/>\n`;
     }
 
-    // 3. Ensamblar plantilla .vit — formato IDÉNTICO al de smplx_extractor.py que funciona
+    // 3. Ensamblar plantilla .vit
+    // SCHEMA VERIFICADO por prueba directa con CLI Seamly2D v2026.4.6.214
+    // Orden estricto: version → read-only → notes → unit → pm_system → personal → body-measurements
+    // personal requiere: family-name, given-name, birth-date, gender, email
+    // Medidas custom DEBEN usar prefijo @
     const xmlTemplate = `<?xml version='1.0' encoding='UTF-8'?>
 <vit>
   <version>0.3.3</version>
+  <read-only>false</read-only>
+  <notes/>
   <unit>cm</unit>
+  <pm_system>998</pm_system>
+  <personal>
+    <family-name>AI</family-name>
+    <given-name>Generated</given-name>
+    <birth-date>2000-01-01</birth-date>
+    <gender>unknown</gender>
+    <email/>
+  </personal>
   <body-measurements>
 ${medicionesXML.trimEnd()}
   </body-measurements>
@@ -197,16 +213,14 @@ ${medicionesXML.trimEnd()}
  */
 function generarArchivoVAL(params, vitFileName, outputPath) {
     // Valores con defaults seguros
-    const ancho = parseFloat(params.ancho_pecho || '52.00');
-    const largo = parseFloat(params.largo_total || '70.00');
-    const cuello = parseFloat(params.neck_depth_cm || '8.00');
-    const hombro = parseFloat(params.shoulder_width_cm || '44.00');
+    const ancho = parseFloat(params.ancho_pecho || params['@ancho_pecho'] || '52.00');
+    const largo = parseFloat(params.largo_total || params['@largo_total'] || '70.00');
 
     const valXML = `<?xml version="1.0" encoding="UTF-8"?>
 <pattern>
     <version>0.6.0</version>
     <unit>cm</unit>
-    <description>Patron generado por IA</description>
+    <description>Patron base</description>
     <notes/>
     <measurements>${vitFileName}</measurements>
     <draw name="drawing">
@@ -215,11 +229,30 @@ function generarArchivoVAL(params, vitFileName, outputPath) {
             <point id="2" name="B" type="single" x="${ancho.toFixed(2)}" y="0"/>
             <point id="3" name="C" type="single" x="0" y="${(-largo).toFixed(2)}"/>
             <point id="4" name="D" type="single" x="${ancho.toFixed(2)}" y="${(-largo).toFixed(2)}"/>
-            <point id="5" name="E" type="single" x="${(ancho / 2).toFixed(2)}" y="${(-cuello).toFixed(2)}"/>
-            <point id="6" name="F" type="single" x="${(hombro / 2).toFixed(2)}" y="0"/>
+            <line id="5" firstPoint="1" secondPoint="2" typeLine="hair" lineColor="black"/>
+            <line id="6" firstPoint="2" secondPoint="4" typeLine="hair" lineColor="black"/>
+            <line id="7" firstPoint="4" secondPoint="3" typeLine="hair" lineColor="black"/>
+            <line id="8" firstPoint="3" secondPoint="1" typeLine="hair" lineColor="black"/>
         </calculation>
-        <modeling/>
-        <details/>
+        <modeling>
+            <point id="100" idObject="1" inUse="true" type="modeling"/>
+            <point id="101" idObject="2" inUse="true" type="modeling"/>
+            <point id="102" idObject="4" inUse="true" type="modeling"/>
+            <point id="103" idObject="3" inUse="true" type="modeling"/>
+        </modeling>
+        <details>
+            <detail id="200" name="Panel" mx="0" my="0" version="2" inLayout="true" united="false" width="10" forbidFlipping="false">
+                <data letter="" visible="true" fontSize="14" mx="0" my="0" width="60" height="30" rotation="0"/>
+                <patternInfo visible="true" fontSize="14" mx="0" my="0" width="60" height="30" rotation="0"/>
+                <grainline visible="false" mx="0" my="0" length="80" rotation="90"/>
+                <nodes>
+                    <node idObject="100" type="NodePoint"/>
+                    <node idObject="101" type="NodePoint"/>
+                    <node idObject="102" type="NodePoint"/>
+                    <node idObject="103" type="NodePoint"/>
+                </nodes>
+            </detail>
+        </details>
     </draw>
 </pattern>`;
 
