@@ -73,7 +73,19 @@ const ProbadorAvatar = () => {
     const [wornClothId, setWornClothId] = useState(null);
     const [targetScale, setTargetScale] = useState([1, 1, 1]);
 
-    // Calcular escala inicial basada en biometría
+    // 1. Sincronización con LocalStorage al montar
+    useEffect(() => {
+        const savedBody = localStorage.getItem('modavatar_active_body');
+        if (savedBody) {
+            try {
+                const parsed = JSON.parse(savedBody);
+                setLiveAvatar(parsed);
+                console.log("👗 [Probador] Modelo recuperado de memoria activa:", parsed.modelType);
+            } catch (e) { console.error("Error cargando avatar guardado", e); }
+        }
+    }, []);
+
+    // 2. Calcular escala inicial basada en biometría
     useEffect(() => {
         if (liveAvatar.measurements) {
             const h = liveAvatar.measurements.height / 170 || 1;
