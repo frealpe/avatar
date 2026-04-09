@@ -74,16 +74,45 @@ const setupWorker = (io) => {
       }
 
       // 4. Promesa C: Generación de Prenda 3D en Blender
+      // Si no hay avatar 3D generado en este job, buscar el más reciente o usar estándar
+      if (!absoluteAvatarPath || !fs.existsSync(absoluteAvatarPath || '')) {
+          console.log(`[Worker ${job.id}] [BLENDER] Avatar no disponible en este job. Buscando fallback...`);
+          
+          // Buscar el avatar SMPL-X más reciente
+          const tempDir = path.join(process.cwd(), 'public', 'temp');
+          if (fs.existsSync(tempDir)) {
+              const recalcFiles = fs.readdirSync(tempDir)
+                  .filter(f => f.startsWith('recalc_') && f.endsWith('.glb'))
+                  .map(f => ({ name: f, mtime: fs.statSync(path.join(tempDir, f)).mtimeMs }))
+                  .sort((a, b) => b.mtime - a.mtime);
+              
+              if (recalcFiles.length > 0) {
+                  absoluteAvatarPath = path.join(tempDir, recalcFiles[0].name);
+                  console.log(`[Worker ${job.id}] [BLENDER] ✅ Usando avatar reciente: ${recalcFiles[0].name}`);
+              }
+          }
+
+          // Si no hay recalc, usar avatar estándar
+          if (!absoluteAvatarPath || !fs.existsSync(absoluteAvatarPath || '')) {
+              const standardAvatar = path.join(process.cwd(), 'public', 'avatars', 'standard_male.glb');
+              if (fs.existsSync(standardAvatar)) {
+                  absoluteAvatarPath = standardAvatar;
+                  console.log(`[Worker ${job.id}] [BLENDER] ✅ Usando avatar estándar: standard_male.glb`);
+              }
+          }
+      }
+
       let blenderPromise = Promise.resolve({ glbPrendaUrl: null });
       if (absoluteAvatarPath && absoluteSvgPath && fs.existsSync(absoluteAvatarPath) && fs.existsSync(absoluteSvgPath)) {
            const prendaOutputName = `prenda_${Date.now()}.glb`;
+           console.log(`[Worker ${job.id}] [BLENDER] 🚀 Iniciando simulación 3D de prenda...`);
            blenderPromise = generarPrenda3D({
                avatarPath: absoluteAvatarPath,
                svgPath: absoluteSvgPath,
                outputName: prendaOutputName
            });
       } else {
-           console.warn(`[Worker ${job.id}] [BLENDER ENGINE] Saltando simulación 3D: avatar o svg no disponibles localmente.`);
+           console.warn(`[Worker ${job.id}] [BLENDER ENGINE] Saltando simulación 3D: avatar=${!!absoluteAvatarPath} svg=${!!absoluteSvgPath}`);
       }
 
       const [blenderResult] = await Promise.allSettled([blenderPromise]);
