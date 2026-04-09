@@ -1,6 +1,11 @@
 import bpy
 import sys
 import os
+import numpy as np
+
+# Industrial Patch: NumPy 1.24+ compatibility for Blender 3.x
+if not hasattr(np, 'bool'):
+    np.bool = bool
 
 def clean_scene():
     bpy.ops.wm.read_factory_settings(use_empty=True)

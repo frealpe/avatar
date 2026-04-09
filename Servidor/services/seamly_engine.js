@@ -51,23 +51,35 @@ function sanitizeValue(value) {
 }
 
 /**
- * Sanitiza un nombre de variable para XML.
- * Solo permite [a-zA-Z_][a-zA-Z0-9_]*
- * @param {string} name - Nombre crudo
- * @returns {string|null} Nombre limpio o null si inválido
+ * Sanitiza un nombre de medida para uso industrial en Seamly2D.
+ * Solo permite nombres que cumplan con /^[a-zA-Z_][a-zA-Z0-9_]*$/
+ * 
+ * @param {string} name - Nombre crudo proveniente de IA o UI
+ * @returns {string} Nombre sanitizado (siempre empieza con @ en el XML final)
  */
-function sanitizeVarName(name) {
-    if (!name || typeof name !== 'string') return null;
+function sanitizeMeasurementName(name) {
+    if (!name || typeof name !== 'string') return `auto_${Math.random().toString(36).substr(2, 5)}`;
 
-    // Eliminar todo carácter que no sea alfanumérico o underscore
-    let clean = name.replace(/[^a-zA-Z0-9_]/g, '');
+    // 1. Eliminar caracteres especiales prohibidos
+    let clean = name.replace(/[@#$%^&*()\s\-\+\=]/g, '_');
 
-    // Debe empezar con letra o underscore
+    // 2. Transliterar caracteres comunes (opcional, pero ayuda)
+    clean = clean.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+    // 3. Regex industrial: Solo alfanuméricos y guión bajo
+    clean = clean.replace(/[^a-zA-Z0-9_]/g, '');
+
+    // 4. Garantizar que empiece con letra o guión bajo
     if (!/^[a-zA-Z_]/.test(clean)) {
-        clean = '_' + clean;
+        clean = 'm_' + clean;
     }
 
-    return clean.length > 0 ? clean : null;
+    // 5. Fallback si quedó vacío
+    if (clean.length === 0) {
+        clean = `auto_${Math.random().toString(36).substr(2, 5)}`;
+    }
+
+    return clean;
 }
 
 /**
@@ -78,13 +90,13 @@ function sanitizeVarName(name) {
 function cleanAIOutput(data) {
     const cleaned = {};
     for (const [rawKey, rawValue] of Object.entries(data)) {
-        const cleanName = sanitizeVarName(rawKey);
+        const cleanName = sanitizeMeasurementName(rawKey);
         const cleanValue = sanitizeValue(rawValue);
 
         if (cleanName && cleanValue !== null) {
             cleaned[cleanName] = cleanValue;
         } else {
-            console.warn(`[SEAMLY_ENGINE] ⚠️ Descartado: ${rawKey}=${rawValue} (nombre: ${cleanName}, valor: ${cleanValue})`);
+            console.warn(`[ENGINE] WARNING: Descartado: ${rawKey}=${rawValue} (nombre: ${cleanName}, valor: ${cleanValue})`);
         }
     }
     return cleaned;
@@ -143,19 +155,16 @@ function generarArchivoVIT(parametros, outputPath) {
     }
 
     // 2. Generar XML de medidas
-    //    CRÍTICO: nombres custom DEBEN empezar con @ en Seamly2D
+    //    REGLA INDUSTRIAL: Nombres custom SIEMPRE empiezan con @ en Seamly2D
     let medicionesXML = '';
     for (const [name, value] of Object.entries(cleanParams)) {
         const safeName = name.startsWith('@') ? name : `@${name}`;
         medicionesXML += `    <m name="${safeName}" value="${value}"/>\n`;
     }
 
-    // 3. Ensamblar plantilla .vit
-    // SCHEMA VERIFICADO por prueba directa con CLI Seamly2D v2026.4.6.214
-    // Orden estricto: version → read-only → notes → unit → pm_system → personal → body-measurements
-    // personal requiere: family-name, given-name, birth-date, gender, email
-    // Medidas custom DEBEN usar prefijo @
-    const xmlTemplate = `<?xml version='1.0' encoding='UTF-8'?>
+    // 3. Ensamblar plantilla .vit INDUSTRIAL
+    // SCHEMA v0.3.3 REQUERIDO: version → read-only → notes → unit → pm_system → personal → body-measurements
+    const xmlTemplate = `<?xml version="1.0" encoding="UTF-8"?>
 <vit>
   <version>0.3.3</version>
   <read-only>false</read-only>
@@ -264,7 +273,7 @@ function generarArchivoVAL(params, vitFileName, outputPath) {
     }
 
     fs.writeFileSync(outputPath, valXML, 'utf8');
-    console.log(`[SEAMLY_ENGINE] ✅ .val generado con coordenadas numéricas: A(0,0) B(${ancho},0) C(0,${-largo}) D(${ancho},${-largo})`);
+    console.log(`[ENGINE] SUCCESS: .val generado con coordenadas numéricas: A(0,0) B(${ancho},0) C(0,${-largo}) D(${ancho},${-largo})`);
 
     return outputPath;
 }
@@ -297,13 +306,13 @@ function generarSVG(vitPath, valPath, outDirPath, params) {
     try {
         const vitContent = fs.readFileSync(vitPath, 'utf8');
         const valContent = fs.readFileSync(valPath, 'utf8');
-        console.log(`\n[SEAMLY_ENGINE] ═══════════════ DEBUG: .vit ═══════════════`);
+        console.log(`\n[ENGINE] DEBUG: ═══════════════ .vit ═══════════════`);
         console.log(vitContent);
-        console.log(`[SEAMLY_ENGINE] ═══════════════ DEBUG: .val ═══════════════`);
+        console.log(`[ENGINE] DEBUG: ═══════════════ .val ═══════════════`);
         console.log(valContent);
-        console.log(`[SEAMLY_ENGINE] ═══════════════════════════════════════════\n`);
+        console.log(`[ENGINE] DEBUG: ════════════════════════════════════\n`);
     } catch (e) {
-        console.warn(`[SEAMLY_ENGINE] No se pudieron leer archivos para debug: ${e.message}`);
+        console.warn(`[ENGINE] WARNING: No se pudieron leer archivos para debug: ${e.message}`);
     }
 
     return new Promise((resolve, reject) => {
@@ -325,16 +334,16 @@ function generarSVG(vitPath, valPath, outDirPath, params) {
         const baseName = path.basename(valPath, '.val');
         const command = `"${seamlyCmd}" -m "${vitPath}" -d "${outDirPath}" -f svg -b "${baseName}" "${valPath}"`;
 
-        console.log(`[SEAMLY_ENGINE] 🚀 Ejecutando CLI: ${command}`);
+        console.log(`[ENGINE] STATUS: Ejecutando CLI: ${command}`);
 
         exec(command, { timeout: 30000 }, (error, stdout, stderr) => {
-            if (stdout) console.log(`[SEAMLY_ENGINE] stdout: ${stdout}`);
-            if (stderr) console.log(`[SEAMLY_ENGINE] stderr: ${stderr}`);
+            if (stdout) console.log(`[ENGINE] STDOUT: ${stdout}`);
+            if (stderr) console.log(`[ENGINE] STDERR: ${stderr}`);
 
             if (error) {
-                return reject(new Error(`Error Seamly2D CLI: ${error.message}\n${stderr}`));
+                return reject(new Error(`[ENGINE] CRITICAL: Error Seamly2D CLI: ${error.message}\n${stderr}`));
             }
-            console.log(`[SEAMLY_ENGINE] ✅ SVG exportado exitosamente en: ${outDirPath}`);
+            console.log(`[ENGINE] SUCCESS: SVG exportado exitosamente en: ${outDirPath}`);
             resolve(outDirPath);
         });
     });
