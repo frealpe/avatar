@@ -1,5 +1,5 @@
 const { procesarPrenda, generarEstructuraVAL } = require('./vision_parser');
-const { generarArchivoVIT, generarSVG } = require('./seamly_engine');
+const { generarArchivoVIT, generarArchivoVAL, generarSVG } = require('./seamly_engine');
 const path = require('path');
 const fs = require('fs');
 
@@ -57,33 +57,24 @@ class PatternEngine {
             }
 
             const timestamp = Date.now();
-            // CRÍTICO: Nombre fijo para que patron_base.val siempre encuentre las medidas.
+            // CRÍTICO: Nombre fijo para que el .val siempre encuentre las medidas.
             const vitPath = path.join(publicPatterns, `medidas_activas.vit`);
-            const valPath = path.join(publicPatterns, patronBaseName);
+            const valPath = path.join(publicPatterns, `patron_base.val`);
 
-            // 2. Generate .vit file (SeamlyMe format) — nombre fijo para que .val lo encuentre
+            // 2. Generar .vit con sanitización industrial
             const archivoVit = generarArchivoVIT(resultIa.parametros, vitPath);
-            console.log('🧵 [PATTERN ENGINE] .vit generado (medidas_activas.vit):', archivoVit);
+            console.log('🧵 [PATTERN ENGINE] .vit generado:', archivoVit);
 
-            // 3. Optional: Generate dynamic .val structure using Llama 3 
-            // If the base pattern doesn't exist, we try to generate one from scratch
-            let finalValPath = valPath;
-            if (!fs.existsSync(valPath)) {
-                console.warn(`🧵 [PATTERN ENGINE] Base pattern ${patronBaseName} not found. Generating dynamic structure...`);
-                const dynamicValContent = await generarEstructuraVAL(resultIa.descripcion, resultIa.parametros);
-                if (dynamicValContent) {
-                    finalValPath = path.join(publicPatterns, `dynamic_${timestamp}.val`);
-                    fs.writeFileSync(finalValPath, dynamicValContent, 'utf8');
-                } else {
-                    throw new Error('Could not generate base pattern structure.');
-                }
-            }
+            // 3. Generar .val DINÁMICAMENTE con valores numéricos literales
+            //    (Seamly2D <point type="single"> solo acepta números, NO variables)
+            generarArchivoVAL(resultIa.parametros, 'medidas_activas.vit', valPath);
+            console.log('🧵 [PATTERN ENGINE] .val generado dinámicamente con coordenadas numéricas.');
 
             // 4. Export SVG (Seamly2D CLI Headless)
             console.log('🧵 [PATTERN ENGINE] Exporting to SVG...');
-            await generarSVG(archivoVit, finalValPath, publicPatterns);
+            await generarSVG(vitPath, valPath, publicPatterns, null);
             
-            const svgName = path.basename(finalValPath, '.val') + '.svg';
+            const svgName = 'patron_base.svg';
             const svgURL = `/patterns/${svgName}`;
             const absoluteSvgPath = path.join(publicPatterns, svgName);
 

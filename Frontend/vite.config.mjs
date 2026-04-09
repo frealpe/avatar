@@ -63,7 +63,24 @@ export default defineConfig(({ mode }) => {
       host: true,
       port: 8086,
       strictPort: true,
-      proxy: {},
+      proxy: {
+        '/api': {
+          target: 'http://localhost:8080',
+          changeOrigin: true
+        },
+        '/temp': {
+          target: 'http://localhost:8080',
+          changeOrigin: true
+        },
+        '/avatars': {
+          target: 'http://localhost:8080',
+          changeOrigin: true
+        },
+        '/patterns': {
+          target: 'http://localhost:8080',
+          changeOrigin: true
+        }
+      },
     },
   }
 })

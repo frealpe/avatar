@@ -9,15 +9,34 @@ import { SocketContext } from '../../context/SocketContext';
 function AvatarRealGLB({ url, targetScale = [1, 1, 1] }) {
     const { scene } = useGLTF(url);
     const group = useRef();
-    const currentScale = useRef([1, 1, 1]);
 
     useFrame((state, delta) => {
         if (group.current) {
-            // Animación sutil de respiración / flotación
+            group.current.position.y = -1 + Math.sin(state.clock.elapsedTime * 1.5) * 0.01;
+            const lerpFactor = 0.1;
+            group.current.scale.x += (targetScale[0] - group.current.scale.x) * lerpFactor;
+            group.current.scale.y += (targetScale[1] - group.current.scale.y) * lerpFactor;
+            group.current.scale.z += (targetScale[2] - group.current.scale.z) * lerpFactor;
+        }
+    });
+
+    return (
+        <group ref={group} position={[0, -1, 0]}>
+            <primitive object={scene} />
+        </group>
+    );
+}
+
+function GarmentRealGLB({ url, targetScale = [1, 1, 1] }) {
+    const { scene } = useGLTF(url);
+    const group = useRef();
+
+    useFrame((state, delta) => {
+        if (group.current) {
+            // Sincronizar posición con el avatar
             group.current.position.y = -1 + Math.sin(state.clock.elapsedTime * 1.5) * 0.01;
 
-            // Interpolación Suave (Lerp) para cambios de escala (60 FPS)
-            // Usamos un factor de interpolación basado en delta para consistencia
+            // Sincronizar escala
             const lerpFactor = 0.1;
             group.current.scale.x += (targetScale[0] - group.current.scale.x) * lerpFactor;
             group.current.scale.y += (targetScale[1] - group.current.scale.y) * lerpFactor;
@@ -69,6 +88,9 @@ const ProbadorAvatar = () => {
     const { socket } = useContext(SocketContext);
 
     const [liveAvatar, setLiveAvatar] = useState(avatarData || { meshUrl: null, measurements: null });
+    const [posedMeshUrl, setPosedMeshUrl] = useState(null);
+    const lastPosedBetas = useRef(null);
+
     const [prendas, setPrendas] = useState([]);
     const [wornClothId, setWornClothId] = useState(null);
     const [targetScale, setTargetScale] = useState([1, 1, 1]);
@@ -99,10 +121,8 @@ const ProbadorAvatar = () => {
         if (!socket) return;
 
         const handleAvatarPreview = (data) => {
-            // Data contiene solo betas para previsualización inmediata
             if (data.betas) {
                 const b = data.betas;
-                // Beta 0: Estatura, Beta 1: Peso/Ancho (Simplificado para preview)
                 const h = 1 + (b[0] * 0.05);
                 const w = 1 + (b[1] * 0.05);
                 setTargetScale([w, h, w]);
@@ -127,6 +147,38 @@ const ProbadorAvatar = () => {
             socket.off('avatar:completed', handleAvatarReady);
         };
     }, [socket]);
+
+    // 3. Poseser Mi Avatar (Convertir T-Pose a Modeling solo para Probador)
+    useEffect(() => {
+        const poseMiAvatar = async () => {
+            // Si no tiene betas (ej: es un modelo estático de catálogo), no posamos nosotros
+            if (!liveAvatar.betas) {
+                setPosedMeshUrl(null);
+                return;
+            }
+
+            // Evitar re-posar si las betas no han cambiado significativamente
+            const betasStr = JSON.stringify(liveAvatar.betas);
+            if (lastPosedBetas.current === betasStr) return;
+
+            console.log("👗 [Probador] Solicitando postura pasarela/natural para Mi Avatar...");
+            try {
+                const res = await iotApi.recalculateAvatar(liveAvatar.betas, 'neutral', 'modeling');
+                if (res && res.ok) {
+                    setPosedMeshUrl(res.meshUrl);
+                    lastPosedBetas.current = betasStr;
+                }
+            } catch (e) {
+                console.error("Error posando avatar", e);
+            }
+        };
+        poseMiAvatar();
+    }, [liveAvatar.betas]);
+
+    // Resetear posedMeshUrl si cambiamos a un avatar sin betas (Catálogo)
+    useEffect(() => {
+        if (!liveAvatar.betas) setPosedMeshUrl(null);
+    }, [liveAvatar.meshUrl]);
 
     // Cargar Catálogo
     useEffect(() => {
@@ -166,8 +218,17 @@ const ProbadorAvatar = () => {
 
                             <Suspense fallback={null}>
                                 <Stage environment="city" intensity={0.5} contactShadow={{ opacity: 0.2, blur: 2 }}>
-                                    {liveAvatar.meshUrl ? (
-                                        <AvatarRealGLB key={liveAvatar.meshUrl} url={liveAvatar.meshUrl} targetScale={targetScale} />
+                                    {(posedMeshUrl || liveAvatar.meshUrl) ? (
+                                        <>
+                                            <AvatarRealGLB
+                                                key={posedMeshUrl || liveAvatar.meshUrl}
+                                                url={posedMeshUrl || liveAvatar.meshUrl}
+                                                targetScale={targetScale}
+                                            />
+                                            {liveAvatar.prenda3D && (
+                                                <GarmentRealGLB key={liveAvatar.prenda3D} url={liveAvatar.prenda3D} targetScale={targetScale} />
+                                            )}
+                                        </>
                                     ) : (
                                         <AnnyHumanBody measurements={liveAvatar.measurements} targetScale={targetScale} isTryingOn={wornClothId !== null} />
                                     )}
@@ -193,7 +254,7 @@ const ProbadorAvatar = () => {
                 <div className="flex gap-5 overflow-x-auto pb-4 no-scrollbar px-4">
                     {prendas.length > 0 ? prendas.map(prenda => (
                         <div
-                            key={prenda._id}
+                            key={prenda.id || prenda._id}
                             onClick={() => handleTryOn(prenda._id)}
                             className={`flex-shrink-0 w-56 h-36 rounded-3xl relative overflow-hidden group cursor-pointer border transition-all duration-500 ${wornClothId === prenda._id ? 'border-[#00f1fe] bg-[#00f1fe]/10 scale-95 shadow-[0_0_40px_rgba(0,241,254,0.1)]' : 'border-white/5 bg-white/5 hover:border-white/20'}`}
                         >

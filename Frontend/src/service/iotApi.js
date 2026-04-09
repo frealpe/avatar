@@ -27,9 +27,9 @@ const iotApi = {
         }
     },
 
-    recalculateAvatar: async (betas, gender = 'neutral') => {
+    recalculateAvatar: async (betas, gender = 'neutral', poseType = 't-pose') => {
         try {
-            const response = await axios.post(`${API_URL}/recalculate`, { betas, gender });
+            const response = await axios.post(`${API_URL}/recalculate`, { betas, gender, poseType });
             return response.data;
         } catch (error) {
             console.error('Error recalculating avatar', error);

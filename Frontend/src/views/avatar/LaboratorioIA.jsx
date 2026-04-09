@@ -14,6 +14,7 @@ const LaboratorioIA = () => {
     const [tab, setTab] = useState('BODY'); // 'BODY' or 'GARMENT'
     const [bodyState, setBodyState] = useState({ loading: false, result: null, telemetry: null, timer: 0 });
     const [garmentState, setGarmentState] = useState({ loading: false, result: null, telemetry: null, timer: 0 });
+    const [garmentView, setGarmentView] = useState('2D'); // '2D' or '3D'
 
     // 1. Cargar desde localStorage al montar si no hay datos en location
     useEffect(() => {
@@ -22,10 +23,27 @@ const LaboratorioIA = () => {
             if (savedBody) {
                 try {
                     const parsed = JSON.parse(savedBody);
-                    setBodyState(prev => ({ ...prev, result: parsed, loading: false }));
-                    if (parsed.measurements) setEditableMeasurements(parsed.measurements);
-                    if (parsed.betas) setBetas(parsed.betas);
-                    console.log("🧬 [Lab IA] Perfil recordado:", parsed.modelType || 'Avatar');
+                    // Verificar que la URL del GLB es accesible antes de usarla
+                    if (parsed.meshUrl) {
+                        fetch(parsed.meshUrl, { method: 'HEAD' })
+                            .then(r => {
+                                if (!r.ok) throw new Error('GLB stale');
+                                setBodyState(prev => ({ ...prev, result: parsed, loading: false }));
+                                if (parsed.measurements) setEditableMeasurements(parsed.measurements);
+                                if (parsed.betas) {
+                                    const b = [...parsed.betas];
+                                    while (b.length < 12) b.push(0);
+                                    setBetas(b);
+                                }
+                                console.log("🧬 [Lab IA] Perfil recordado:", parsed.modelType || 'Avatar');
+                            })
+                            .catch(() => {
+                                console.warn("🧬 [Lab IA] GLB en cache no disponible, limpiando localStorage.");
+                                localStorage.removeItem('modavatar_active_body');
+                            });
+                    } else {
+                        setBodyState(prev => ({ ...prev, result: parsed, loading: false }));
+                    }
                 } catch (e) { console.error("Error parsing saved body:", e); }
             }
         }
@@ -38,7 +56,7 @@ const LaboratorioIA = () => {
             const newResult = {
                 meshUrl: model.meshUrl.startsWith('http') ? model.meshUrl : `http://localhost:8080${model.meshUrl}`,
                 measurements: model.measurements,
-                betas: model.betas || [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                betas: model.betas || [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                 modelType: model.name || 'SMPLX_Standard'
             };
             setBodyState({
@@ -48,7 +66,11 @@ const LaboratorioIA = () => {
                 timer: 0
             });
             setEditableMeasurements(model.measurements);
-            if (model.betas) setBetas(model.betas);
+            if (model.betas) {
+                const b = [...model.betas];
+                while (b.length < 12) b.push(0);
+                setBetas(b);
+            }
             // Persistir como perfil
             localStorage.setItem('modavatar_active_body', JSON.stringify(newResult));
         }
@@ -73,6 +95,11 @@ const LaboratorioIA = () => {
             if (res.meshUrl || data.target === 'body') {
                 setBodyState(prev => ({ ...prev, loading: false, result: res, telemetry: data.telemetry }));
                 if (res.measurements) setEditableMeasurements(res.measurements);
+                if (res.betas) {
+                    const b = [...res.betas];
+                    while (b.length < 12) b.push(0);
+                    setBetas(b);
+                }
                 if (res.meshUrl) localStorage.setItem('modavatar_active_body', JSON.stringify(res));
             }
             if (res.patternUrl || data.target === 'garment') {
@@ -107,7 +134,9 @@ const LaboratorioIA = () => {
         reader.onloadend = async () => {
             try {
                 const data = await iotApi.generateAvatar(reader.result, 'mobile_user_01', target);
-                if (!data.ok) {
+                if (data.ok) {
+                    console.log('✅ [Upload] Solicitud aceptada por el servidor:', data.jobId);
+                } else {
                     alert('Error: ' + data.msg);
                     stateSetter(prev => ({ ...prev, loading: false }));
                 }
@@ -120,7 +149,7 @@ const LaboratorioIA = () => {
     };
 
     const [editableMeasurements, setEditableMeasurements] = useState(null);
-    const [betas, setBetas] = useState([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+    const [betas, setBetas] = useState([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
     const [recalculating, setRecalculating] = useState(false);
 
     // ... handleSaveMeasurements ...
@@ -195,7 +224,7 @@ const LaboratorioIA = () => {
                         {/* Ventana 1: Visor 3D (3/5) */}
                         <div className="lg:col-span-3">
                             <Panel
-                                title="Visualización 3D Real"
+                                title=""
                                 icon="visibility"
                                 state={bodyState}
                                 inputRef={bodyInputRef}
@@ -203,15 +232,17 @@ const LaboratorioIA = () => {
                                 color="#00f1fe"
                             >
                                 {bodyState.result?.meshUrl ? (
-                                    <Canvas shadows dpr={[1, 2]} className="">
-                                        <PerspectiveCamera makeDefault position={[0, 1, 4]} fov={45} />
-                                        <Suspense fallback={null}>
-                                            <Stage environment="city" intensity={0.5} contactShadow={{ opacity: 0.2, blur: 2 }}>
-                                                <Model key={bodyState.result.meshUrl} url={bodyState.result.meshUrl} />
-                                            </Stage>
-                                        </Suspense>
-                                        <OrbitControls makeDefault />
-                                    </Canvas>
+                                    <ModelErrorBoundary>
+                                        <Canvas shadows dpr={[1, 2]} className="">
+                                            <PerspectiveCamera makeDefault position={[0, 1, 4]} fov={45} />
+                                            <Suspense fallback={null}>
+                                                <Stage environment="city" intensity={0.5} contactShadow={{ opacity: 0.2, blur: 2 }}>
+                                                    <Model key={bodyState.result.meshUrl} url={bodyState.result.meshUrl} />
+                                                </Stage>
+                                            </Suspense>
+                                            <OrbitControls makeDefault />
+                                        </Canvas>
+                                    </ModelErrorBoundary>
                                 ) : (
                                     <EmptyState message="Esperando Escaneo Corporal" icon="biotech" />
                                 )}
@@ -221,7 +252,7 @@ const LaboratorioIA = () => {
                         {/* Ventana 2: Editor (2/5) */}
                         <div className="lg:col-span-2">
                             <Panel
-                                title="BIO-NEURO CONSOLE"
+                                title=""
                                 icon="neurology"
                                 state={{ ...bodyState, loading: recalculating }}
                                 inputRef={null}
@@ -231,15 +262,15 @@ const LaboratorioIA = () => {
                             >
                                 {bodyState.result ? (
                                     <div className="flex flex-col h-full overflow-hidden">
-                                        <div className="flex bg-[#0d1014]/50 border-b border-white/5 p-3 rounded-t-xl">
-                                            <h4 className="text-[10px] font-black uppercase tracking-widest text-[#00f1fe]">Consola Bio-Métrica</h4>
+                                        <div className="flex bg-[#0d1014]/50 border-b border-white/5 p-3 rounded-t-xl -mt-4 -mx-4">
+                                            <h4 className="text-[10px] font-black uppercase tracking-widest text-[#00f1fe] w-full text-center">Consola Bio-Métrica</h4>
                                         </div>
 
-                                        <div className="flex-1 overflow-y-auto p-4 custom-scrollbar space-y-6">
+                                        <div className="flex-1 overflow-y-auto p-3 custom-scrollbar space-y-3 mt-2">
                                             {/* SECCIÓN: SHAPE BETAS (PAREJAS) */}
                                             <div className="grid grid-cols-2 gap-3">
                                                 {betas.map((v, i) => {
-                                                    const labels = ["Estatura", "Peso", "Músculo", "Hombros", "Cadera", "Piernas", "Torso", "Cuello", "Fondo (Prof.)", "Cabeza", "Brazos"];
+                                                    const labels = ["Estatura", "Peso", "Músculo", "Hombros", "Cadera", "Piernas", "Torso", "Cuello", "Fondo (Prof.)", "Cabeza", "Brazos", "Muslo"];
                                                     const METRIC_CONFIG = {
                                                         0: { base: 170.0, delta: 7.0, unit: "cm" }, // Estatura
                                                         1: { base: 72.0, delta: 6.0, unit: "kg" },  // Peso
@@ -252,6 +283,7 @@ const LaboratorioIA = () => {
                                                         8: { base: 22.0, delta: 3.0, unit: "cm" },  // Fondo (Profundidad)
                                                         9: { base: 56.0, delta: 1.5, unit: "cm" },  // Cabeza
                                                         10: { base: 65.0, delta: 3.0, unit: "cm" }, // Brazos
+                                                        11: { base: 56.0, delta: 3.5, unit: "cm" }, // Muslo
                                                     };
 
                                                     const config = METRIC_CONFIG[i];
@@ -272,7 +304,7 @@ const LaboratorioIA = () => {
                                                         }
                                                     };
                                                     return (
-                                                        <div key={i} className="bg-black/40 p-2.5 rounded-xl border border-white/5 space-y-2">
+                                                        <div key={i} className="bg-black/40 p-2 rounded-xl border border-white/5 space-y-1">
                                                             <div className="flex justify-between items-center">
                                                                 <div className="flex flex-col">
                                                                     <span className="text-[8px] font-black uppercase text-gray-500">{labels[i] || `BETA ${i}`}</span>
@@ -304,16 +336,16 @@ const LaboratorioIA = () => {
                                             </div>
                                         </div>
 
-                                        <div className="p-4 bg-[#0d1014] border-t border-white/5 flex gap-2">
+                                        <div className="p-3 bg-[#0d1014] border-t border-white/5 flex gap-2">
                                             <button
                                                 onClick={() => handleRecalculate()}
                                                 disabled={recalculating}
-                                                className="flex-1 py-3 bg-[#d800ff] text-white font-black text-[9px] uppercase tracking-widest rounded-xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2"
+                                                className="flex-1 py-1.5 bg-[#d800ff] text-white font-black text-[8px] uppercase tracking-widest rounded-lg hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2"
                                             >
-                                                <span className="material-symbols-outlined text-sm">rebase_edit</span> Sincronizar
+                                                <span className="material-symbols-outlined text-[10px]">rebase_edit</span> Sincronizar
                                             </button>
-                                            <button onClick={() => alert('Perfil Guardado')} className="px-4 py-3 bg-white/5 text-gray-400 rounded-xl border border-white/10 hover:bg-white/10">
-                                                <span className="material-symbols-outlined text-sm">save</span>
+                                            <button onClick={() => alert('Perfil Guardado')} className="px-3 py-1.5 bg-white/5 text-gray-400 rounded-lg border border-white/10 hover:bg-white/10">
+                                                <span className="material-symbols-outlined text-[10px]">save</span>
                                             </button>
                                         </div>
                                     </div>
@@ -331,14 +363,44 @@ const LaboratorioIA = () => {
                         {/* Ventana 1: Escaneo Estructural (3/5) */}
                         <div className="lg:col-span-3">
                             <Panel
-                                title="Escaneo Estructural / Patrón"
+                                title=""
                                 icon="apparel"
                                 state={garmentState}
                                 inputRef={garmentInputRef}
                                 onUpload={(e) => handleUpload(e, 'garment')}
                                 color="#d800ff"
+                                extraHeader={
+                                    garmentState.result?.prenda3D && (
+                                        <div className="flex bg-black/40 p-1 rounded-lg border border-white/10 ml-4">
+                                            <button
+                                                onClick={() => setGarmentView('2D')}
+                                                className={`px-3 py-1 rounded-md text-[8px] font-black uppercase transition-all ${garmentView === '2D' ? 'bg-[#d800ff] text-white' : 'text-gray-500'}`}
+                                            >
+                                                2D
+                                            </button>
+                                            <button
+                                                onClick={() => setGarmentView('3D')}
+                                                className={`px-3 py-1 rounded-md text-[8px] font-black uppercase transition-all ${garmentView === '3D' ? 'bg-[#d800ff] text-white' : 'text-gray-500'}`}
+                                            >
+                                                3D
+                                            </button>
+                                        </div>
+                                    )
+                                }
                             >
-                                {garmentState.result?.patternUrl ? (
+                                {garmentView === '3D' && garmentState.result?.prenda3D ? (
+                                    <ModelErrorBoundary>
+                                        <Canvas shadows dpr={[1, 2]} className="bg-[#0d1014] rounded-2xl">
+                                            <PerspectiveCamera makeDefault position={[0, 0, 2]} fov={45} />
+                                            <Suspense fallback={null}>
+                                                <Stage environment="city" intensity={0.5} contactShadow={{ opacity: 0.2, blur: 2 }}>
+                                                    <Model key={garmentState.result.prenda3D} url={garmentState.result.prenda3D} />
+                                                </Stage>
+                                            </Suspense>
+                                            <OrbitControls makeDefault />
+                                        </Canvas>
+                                    </ModelErrorBoundary>
+                                ) : garmentState.result?.patternUrl ? (
                                     <div className="flex-1 bg-white rounded-2xl overflow-hidden p-6 shadow-inner flex items-center justify-center">
                                         <img src={garmentState.result.patternUrl} alt="SVG Pattern" className="max-w-full max-h-full object-contain mix-blend-multiply" />
                                     </div>
@@ -351,14 +413,14 @@ const LaboratorioIA = () => {
                         {/* Ventana 2: Consola de Geometría (2/5) */}
                         <div className="lg:col-span-2">
                             <Panel
-                                title="Geometría de Prenda"
+                                title=""
                                 icon="analytics"
                                 color="#facd2e"
                                 hideUpload={true}
                             >
                                 <div className="flex flex-col h-full overflow-hidden">
-                                    <div className="flex bg-[#0d1014]/50 border-b border-white/5 p-3 rounded-t-xl">
-                                        <h4 className="text-[10px] font-black uppercase tracking-widest text-[#facd2e]">Parámetros de Prenda</h4>
+                                    <div className="flex bg-[#0d1014]/50 border-b border-white/5 p-3 rounded-t-xl -mt-4 -mx-4">
+                                        <h4 className="text-[10px] font-black uppercase tracking-widest text-[#facd2e] w-full text-center">Parámetros de Prenda</h4>
                                     </div>
 
                                     <div className="flex-1 overflow-y-auto p-4 custom-scrollbar space-y-4 mt-2">
@@ -387,9 +449,9 @@ const LaboratorioIA = () => {
                                         )}
                                     </div>
 
-                                    <div className="p-4 bg-[#0d1014] border-t border-white/5">
-                                        <button onClick={() => alert('Patrón Exportado (.VAL)')} className="w-full py-4 bg-[#facd2e] text-black font-black text-[9px] uppercase tracking-[0.3em] rounded-xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2">
-                                            <span className="material-symbols-outlined text-sm">download</span> Descargar Patrón
+                                    <div className="p-3 bg-[#0d1014] border-t border-white/5">
+                                        <button onClick={() => alert('Patrón Exportado (.VAL)')} className="w-full py-2 bg-[#facd2e] text-black font-black text-[8px] uppercase tracking-[0.2em] rounded-lg hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2">
+                                            <span className="material-symbols-outlined text-[10px]">download</span> Descargar Patrón
                                         </button>
                                     </div>
                                 </div>
@@ -403,31 +465,35 @@ const LaboratorioIA = () => {
 }
 
 // Componentes Helper Internos
-const Panel = ({ title, icon, state, inputRef, onUpload, color, children, hideUpload }) => (
-    <div className="bg-[#111418] border border-[#45484c]/20 rounded-3xl p-5 flex flex-col gap-4 backdrop-blur-lg h-[800px] shadow-2xl transition-all">
-        <div className="flex justify-between items-center">
-            <div className="flex items-center gap-3">
-                <span className="material-symbols-outlined text-xs" style={{ color }}>{icon}</span>
-                <h3 className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-500">{title}</h3>
-            </div>
-            {!hideUpload && state && (
+const Panel = ({ title, icon, state, inputRef, onUpload, color, children, hideUpload, extraHeader }) => (
+    <div className="bg-[#111418] border border-[#45484c]/20 rounded-3xl p-4 flex flex-col gap-3 backdrop-blur-lg h-[720px] shadow-2xl transition-all">
+        {(title || (!hideUpload && onUpload)) && (
+            <div className="flex justify-between items-center">
                 <div className="flex items-center gap-3">
-                    <input type="file" ref={inputRef} onChange={onUpload} accept="image/*" className="hidden" />
-                    <button
-                        onClick={() => inputRef.current.click()}
-                        disabled={state.loading}
-                        className={`flex items-center gap-2 px-3 py-1.5 rounded-xl font-bold text-[9px] uppercase tracking-widest transition-all ${state.loading
-                            ? 'bg-gray-800 text-gray-500 cursor-not-allowed'
-                            : 'bg-white/5 text-white border border-white/10 hover:bg-white/10 active:scale-95'
-                            }`}
-                    >
-                        <span className="material-symbols-outlined text-xs">{state.loading ? 'sync' : 'upload_file'}</span>
-                        {state.loading ? `${state.timer?.toFixed(1) || 0}s` : 'Subir'}
-                    </button>
+                    <div className="flex items-center gap-3">
+                        <span className="material-symbols-outlined text-xs" style={{ color }}>{icon}</span>
+                        {title && <h3 className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-500">{title}</h3>}
+                    </div>
+                    {extraHeader}
                 </div>
-            )}
-        </div>
-
+                {!hideUpload && state && onUpload && (
+                    <div className="flex items-center gap-3">
+                        <input type="file" ref={inputRef} onChange={onUpload} accept="image/*" className="hidden" />
+                        <button
+                            onClick={() => inputRef.current.click()}
+                            disabled={state.loading}
+                            className={`flex items-center gap-2 px-3 py-1.5 rounded-xl font-bold text-[9px] uppercase tracking-widest transition-all ${state.loading
+                                ? 'bg-gray-800 text-gray-500 cursor-not-allowed'
+                                : 'bg-white/5 text-white border border-white/10 hover:bg-white/10 active:scale-95'
+                                }`}
+                        >
+                            <span className="material-symbols-outlined text-xs">{state.loading ? 'sync' : 'upload_file'}</span>
+                            {state.loading ? `${state.timer?.toFixed(1) || 0}s` : 'Subir'}
+                        </button>
+                    </div>
+                )}
+            </div>
+        )}
         <div className="flex-1 relative overflow-hidden">
             {state?.loading && (
                 <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm rounded-2xl">
@@ -446,6 +512,23 @@ const EmptyState = ({ message, icon }) => (
         <h3 className="text-gray-500 font-bold uppercase tracking-tighter text-sm">{message}</h3>
     </div>
 )
+
+class ModelErrorBoundary extends React.Component {
+    constructor(props) { super(props); this.state = { hasError: false }; }
+    static getDerivedStateFromError() { return { hasError: true }; }
+    render() {
+        if (this.state.hasError) {
+            return (
+                <div className="flex flex-col items-center justify-center h-full opacity-40 text-center p-4">
+                    <span className="material-symbols-outlined text-4xl mb-2">broken_image</span>
+                    <p className="text-[9px] uppercase font-black tracking-widest">Modelo no disponible</p>
+                    <p className="text-[8px] text-gray-500 mt-1">Reinicia el servidor e intenta de nuevo.</p>
+                </div>
+            );
+        }
+        return this.props.children;
+    }
+}
 
 function Model({ url }) {
     const { scene } = useGLTF(url);
