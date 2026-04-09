@@ -355,7 +355,7 @@ module.exports = {
     generarSVG,
     // Utilidades exportadas para testing
     sanitizeValue,
-    sanitizeVarName,
+    sanitizeMeasurementName,
     cleanAIOutput,
     validateXML
 };
