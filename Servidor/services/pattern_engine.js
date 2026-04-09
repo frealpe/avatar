@@ -61,18 +61,29 @@ class PatternEngine {
             const vitPath = path.join(publicPatterns, `medidas_activas.vit`);
             const valPath = path.join(publicPatterns, `patron_base.val`);
 
-            // 2. Generar .vit con sanitización industrial
-            const archivoVit = generarArchivoVIT(resultIa.parametros, vitPath);
-            console.log('🧵 [PATTERN ENGINE] .vit generado:', archivoVit);
+            console.log(`[ENGINE] STATUS: Validando y generando archivos Seamly2D...`);
 
-            // 3. Generar .val DINÁMICAMENTE con valores numéricos literales
-            //    (Seamly2D <point type="single"> solo acepta números, NO variables)
-            generarArchivoVAL(resultIa.parametros, 'medidas_activas.vit', valPath);
-            console.log('🧵 [PATTERN ENGINE] .val generado dinámicamente con coordenadas numéricas.');
+            // PROTECCIÓN DEL PIPELINE: Validar vit, generar y exportar SVG de forma segura
+            let archivoVit;
+            try {
+                // 2. Generar .vit con sanitización industrial (internamente valida)
+                archivoVit = generarArchivoVIT(resultIa.parametros, vitPath);
+                console.log(`[ENGINE] STATUS: .vit validado y generado correctamente: ${archivoVit}`);
 
-            // 4. Export SVG (Seamly2D CLI Headless)
-            console.log('🧵 [PATTERN ENGINE] Exporting to SVG...');
-            await generarSVG(vitPath, valPath, publicPatterns, null);
+                // 3. Generar .val DINÁMICAMENTE con valores numéricos literales
+                generarArchivoVAL(resultIa.parametros, 'medidas_activas.vit', valPath);
+                console.log(`[ENGINE] STATUS: .val generado correctamente.`);
+
+                // 4. Export SVG (Seamly2D CLI Headless)
+                console.log(`[ENGINE] STATUS: Ejecutando Seamly2D CLI para SVG...`);
+                await generarSVG(vitPath, valPath, publicPatterns, null);
+
+            } catch (engineError) {
+                console.error(`[ENGINE] ERROR CRÍTICO: ${engineError.message}`);
+                console.log(`[ENGINE] STATUS: Aplicando fallback seguro para el pipeline de patrones...`);
+                // Enviar objeto nulo o throw seguro que no rompa el Worker superior
+                throw new Error(`Pipeline falló en Seamly2D: ${engineError.message}`);
+            }
             
             // 5. Detectar el SVG generado por Seamly2D (genera patron_base_layout_01.svg)
             const svgFiles = fs.readdirSync(publicPatterns)
@@ -88,7 +99,7 @@ class PatternEngine {
             }
 
             const svgName = svgFiles[0]; // El más reciente
-            console.log(`🧵 [PATTERN ENGINE] ✅ SVG detectado: ${svgName}`);
+            console.log(`[ENGINE] STATUS: SVG detectado: ${svgName}`);
             const svgURL = `/patterns/${svgName}`;
             const absoluteSvgPath = path.join(publicPatterns, svgName);
 
@@ -101,8 +112,8 @@ class PatternEngine {
             };
 
         } catch (error) {
-            console.error('❌ [PATTERN ENGINE] Error:', error.message);
-            throw error;
+            console.error('[ENGINE] STATUS: Error global en Pattern Engine:', error.message);
+            throw error; // El worker lo captura y maneja
         }
     }
 }

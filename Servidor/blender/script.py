@@ -7,6 +7,8 @@ import numpy as np
 if not hasattr(np, 'bool'):
     np.bool = bool
 
+print("[ENGINE] STATUS: Blender script loaded and np.bool patched.")
+
 def clean_scene():
     bpy.ops.wm.read_factory_settings(use_empty=True)
 
