@@ -243,10 +243,15 @@ const LaboratorioIA = () => {
                                                     // Configuración de transformación para los parámetros principales
                                                     const METRIC_CONFIG = {
                                                         0: { base: 170.0, delta: 7.0, unit: "cm" }, // Estatura
+                                                        1: { base: 72.0, delta: 6.0, unit: "kg" },  // Peso
                                                         2: { base: 95.0, delta: 5.0, unit: "cm" },  // Músculo (Pecho)
                                                         3: { base: 42.0, delta: 2.5, unit: "cm" },  // Hombros
                                                         4: { base: 100.0, delta: 6.0, unit: "cm" }, // Cadera
+                                                        5: { base: 85.0, delta: 4.0, unit: "cm" },  // Piernas
                                                         6: { base: 82.0, delta: 5.0, unit: "cm" },  // Torso (Cintura)
+                                                        7: { base: 38.0, delta: 2.0, unit: "cm" },  // Cuello
+                                                        8: { base: 22.0, delta: 3.0, unit: "cm" },  // Fondo
+                                                        9: { base: 56.0, delta: 1.5, unit: "cm" },  // Cabeza
                                                     };
 
                                                     const config = METRIC_CONFIG[i];
