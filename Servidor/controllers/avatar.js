@@ -2,7 +2,7 @@ const Avatar = require('../models/AvatarModel');
 const { avatarQueue } = require('../helpers/queue');
 const path = require('path');
 const fs = require('fs');
-const { exec } = require('child_process');
+const { execFile } = require('child_process');
 const v4 = require('uuid').v4;
 
 const generateAvatar = async (req, res) => {
@@ -43,7 +43,7 @@ const generateAvatar = async (req, res) => {
 
 const recalculateAvatar = async (req, res) => {
     try {
-        const { betas, gender = 'neutral', poseType = 't-pose', poseLShoulder, poseRShoulder, poseLElbow, poseRElbow } = req.body;
+        const { betas, gender = 'neutral', poseType = 't-pose', poseLShoulder, poseRShoulder, poseLElbow, poseRElbow, poseData } = req.body;
         if (!betas || !Array.isArray(betas)) {
 
             return res.status(400).json({ ok: false, msg: 'Se requiere un vector de 12 betas.' });
@@ -61,18 +61,27 @@ const recalculateAvatar = async (req, res) => {
         
         // Usamos el path completo de Python del entorno que sabemos que funciona
         const pythonPath = "/home/fabio/miniconda3/bin/python3";
-        let pythonCmd = `"${pythonPath}" "${scriptPath}" --model_dir "${modelDir}" --betas ${betas.join(' ')} --gender ${gender} --pose_type ${poseType} --output_glb "${outputGlb}" --output_vit "${outputVit}"`;
+        const args = [
+            scriptPath,
+            "--model_dir", modelDir,
+            "--betas", ...betas.map(String),
+            "--gender", String(gender),
+            "--pose_type", String(poseType),
+            "--output_glb", outputGlb,
+            "--output_vit", outputVit
+        ];
 
-        // Añadir parámetros opcionales de pose
-        if (poseLShoulder !== undefined) pythonCmd += ` --shoulder_l_z ${poseLShoulder}`;
-        if (poseRShoulder !== undefined) pythonCmd += ` --shoulder_r_z ${poseRShoulder}`;
-        if (poseLElbow !== undefined) pythonCmd += ` --elbow_l_x ${poseLElbow}`;
-        if (poseRElbow !== undefined) pythonCmd += ` --elbow_r_x ${poseRElbow}`;
+        if (poseLShoulder !== undefined) args.push("--shoulder_l_z", String(poseLShoulder));
+        if (poseRShoulder !== undefined) args.push("--shoulder_r_z", String(poseRShoulder));
+        if (poseLElbow !== undefined) args.push("--elbow_l_x", String(poseLElbow));
+        if (poseRElbow !== undefined) args.push("--elbow_r_x", String(poseRElbow));
+        if (poseData !== undefined) {
+            args.push("--pose_json", JSON.stringify(poseData));
+        }
 
-        console.log(`🤖 [RECALCULATE] Ejecutando: ${pythonCmd}`);
+        console.log(`🤖 [RECALCULATE] Ejecutando: ${pythonPath} ${args.join(' ')}`);
 
-
-        exec(pythonCmd, (error, stdout, stderr) => {
+        execFile(pythonPath, args, (error, stdout, stderr) => {
             if (error) {
                 console.error(`❌ [RECALCULATE] Error: ${error.message}`);
                 console.error(`❌ [RECALCULATE] Stderr: ${stderr}`);

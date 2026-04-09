@@ -48,28 +48,66 @@ def safe_section_length(mesh, y_level):
 # =========================
 # POSE BUILDER (FIX REAL 🔥)
 # =========================
-def build_pose(pose_type, device, **kwargs):
+
+def euler_to_axis_angle(euler_angles):
+    import numpy as np
+    import math
+    x, y, z = euler_angles
+
+    cx, sx = math.cos(x), math.sin(x)
+    cy, sy = math.cos(y), math.sin(y)
+    cz, sz = math.cos(z), math.sin(z)
+
+    Rx = np.array([[1, 0, 0], [0, cx, -sx], [0, sx, cx]])
+    Ry = np.array([[cy, 0, sy], [0, 1, 0], [-sy, 0, cy]])
+    Rz = np.array([[cz, -sz, 0], [sz, cz, 0], [0, 0, 1]])
+
+    R_mat = Rz @ Ry @ Rx
+
+    angle = math.acos(np.clip((np.trace(R_mat) - 1) / 2, -1.0, 1.0))
+    if angle < 1e-6:
+        return [0.0, 0.0, 0.0]
+
+    x_axis = R_mat[2, 1] - R_mat[1, 2]
+    y_axis = R_mat[0, 2] - R_mat[2, 0]
+    z_axis = R_mat[1, 0] - R_mat[0, 1]
+
+    norm = math.sqrt(x_axis**2 + y_axis**2 + z_axis**2)
+    if norm < 1e-6:
+        return [0.0, 0.0, 0.0]
+
+    return [angle * x_axis/norm, angle * y_axis/norm, angle * z_axis/norm]
+
+def build_pose(pose_type, device, pose_data=None, **kwargs):
     body_pose = torch.zeros((1, 63), device=device)
 
-    # Defaults for 'modeling' / 'a-pose'
-    shoulder_l_z = kwargs.get('shoulder_l_z', -1.3)
-    shoulder_r_z = kwargs.get('shoulder_r_z', -1.3)
-    elbow_l_x = kwargs.get('elbow_l_x', 0.0)
-    elbow_r_x = kwargs.get('elbow_r_x', 0.0)
+    if pose_data:
+        if 'shoulder_l' in pose_data and pose_data['shoulder_l']:
+            body_pose[0, 16*3 : 16*3+3] = torch.tensor(euler_to_axis_angle(pose_data['shoulder_l']))
+        if 'shoulder_r' in pose_data and pose_data['shoulder_r']:
+            body_pose[0, 17*3 : 17*3+3] = torch.tensor(euler_to_axis_angle(pose_data['shoulder_r']))
+        if 'elbow_l' in pose_data and pose_data['elbow_l']:
+            body_pose[0, 18*3 : 18*3+3] = torch.tensor(euler_to_axis_angle(pose_data['elbow_l']))
+        if 'elbow_r' in pose_data and pose_data['elbow_r']:
+            body_pose[0, 19*3 : 19*3+3] = torch.tensor(euler_to_axis_angle(pose_data['elbow_r']))
+    else:
+        # Defaults for 'modeling' / 'a-pose'
+        shoulder_l_z = kwargs.get('shoulder_l_z', -1.3)
+        shoulder_r_z = kwargs.get('shoulder_r_z', -1.3)
+        elbow_l_x = kwargs.get('elbow_l_x', 0.0)
+        elbow_r_x = kwargs.get('elbow_r_x', 0.0)
 
-    if pose_type in ['a-pose', 'modeling', 'relaxed']:
-        # Symmetric A-Pose base
-        body_pose[0, 16*3 + 2] = shoulder_l_z
-        body_pose[0, 17*3 + 2] = shoulder_r_z
-        
-        body_pose[0, 18*3 + 0] = elbow_l_x
-        body_pose[0, 19*3 + 0] = elbow_r_x
+        if pose_type in ['a-pose', 'modeling', 'relaxed']:
+            body_pose[0, 16*3 + 2] = shoulder_l_z
+            body_pose[0, 17*3 + 2] = shoulder_r_z
+            body_pose[0, 18*3 + 0] = elbow_l_x
+            body_pose[0, 19*3 + 0] = elbow_r_x
 
-        # Slight natural X-rotation for shoulders if not provided
-        if 'shoulder_l_x' not in kwargs: body_pose[0, 16*3 + 0] = 0.1
-        if 'shoulder_r_x' not in kwargs: body_pose[0, 17*3 + 0] = 0.1
+            if 'shoulder_l_x' not in kwargs: body_pose[0, 16*3 + 0] = 0.1
+            if 'shoulder_r_x' not in kwargs: body_pose[0, 17*3 + 0] = 0.1
 
     return body_pose
+
 
 
 
@@ -77,7 +115,7 @@ def build_pose(pose_type, device, **kwargs):
 # MAIN
 # =========================
 def run_extraction(model_path, betas_vector, gender='neutral',
-                   pose_type='t-pose', output_vit=None, output_glb=None, **kwargs):
+                   pose_type='t-pose', output_vit=None, output_glb=None, pose_data=None, **kwargs):
 
 
     device = torch.device('cpu')
@@ -152,7 +190,7 @@ def run_extraction(model_path, betas_vector, gender='neutral',
     # =========================
     # POSE FINAL
     # =========================
-    body_pose = build_pose(pose_type, device, **kwargs)
+    body_pose = build_pose(pose_type, device, pose_data=pose_data, **kwargs)
 
 
     output_p = model(betas=betas, body_pose=body_pose)
@@ -185,6 +223,7 @@ if __name__ == "__main__":
     parser.add_argument('--gender', type=str, default='neutral')
     parser.add_argument('--pose_type', type=str, default='t-pose')
     parser.add_argument('--output_vit', type=str)
+
     parser.add_argument('--output_glb', type=str)
     
     # Dynamic Pose Args
@@ -193,9 +232,13 @@ if __name__ == "__main__":
     parser.add_argument('--elbow_l_x', type=float)
     parser.add_argument('--elbow_r_x', type=float)
 
+    parser.add_argument('--pose_json', type=str, help='JSON string with full euler joint angles')
+
+
     args = parser.parse_args()
 
     try:
+
 
         pose_kwargs = {
             'shoulder_l_z': args.shoulder_l_z,
@@ -203,8 +246,14 @@ if __name__ == "__main__":
             'elbow_l_x': args.elbow_l_x,
             'elbow_r_x': args.elbow_r_x
         }
-        # Clear None values
         pose_kwargs = {k: v for k, v in pose_kwargs.items() if v is not None}
+
+        pose_data = None
+        if args.pose_json:
+            try:
+                pose_data = json.loads(args.pose_json)
+            except Exception as e:
+                pass
 
         result = run_extraction(
             args.model_dir,
@@ -213,8 +262,10 @@ if __name__ == "__main__":
             args.pose_type,
             args.output_vit,
             args.output_glb,
+            pose_data=pose_data,
             **pose_kwargs
         )
+
 
         print(json.dumps(result))
 

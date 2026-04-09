@@ -31,3 +31,4 @@ ModavatarMobile/node_modules/
 Frontend/node_modules/
 Servidor/node_modules/
 Servidor/models/smplx/
+Servidor/helpers/__pycache__/
