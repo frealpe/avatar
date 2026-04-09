@@ -43,9 +43,9 @@ const generateAvatar = async (req, res) => {
 
 const recalculateAvatar = async (req, res) => {
     try {
-        const { betas, gender = 'neutral' } = req.body;
+        const { betas, gender = 'neutral', poseType = 't-pose' } = req.body;
         if (!betas || !Array.isArray(betas)) {
-            return res.status(400).json({ ok: false, msg: 'Se requiere un vector de 10 betas.' });
+            return res.status(400).json({ ok: false, msg: 'Se requiere un vector de 12 betas.' });
         }
 
         const jobId = v4();
@@ -60,7 +60,7 @@ const recalculateAvatar = async (req, res) => {
         
         // Usamos el path completo de Python del entorno que sabemos que funciona
         const pythonPath = "/home/fabio/miniconda3/bin/python3";
-        const pythonCmd = `"${pythonPath}" "${scriptPath}" --model_dir "${modelDir}" --betas ${betas.join(' ')} --gender ${gender} --output_glb "${outputGlb}" --output_vit "${outputVit}"`;
+        const pythonCmd = `"${pythonPath}" "${scriptPath}" --model_dir "${modelDir}" --betas ${betas.join(' ')} --gender ${gender} --pose_type ${poseType} --output_glb "${outputGlb}" --output_vit "${outputVit}"`;
 
         console.log(`🤖 [RECALCULATE] Ejecutando: ${pythonCmd}`);
 

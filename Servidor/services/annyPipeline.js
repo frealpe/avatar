@@ -77,7 +77,7 @@ class AnnyPipeline {
                         fs.mkdirSync(path.join(__dirname, '..', 'public', 'avatars'), { recursive: true });
                     }
 
-                    const cmd = `"${pythonPath}" "${extractorPath}" --model_dir "${modelDir}" --output_glb "${fallbackMeshPath}"`;
+                    const cmd = `"${pythonPath}" "${extractorPath}" --model_dir "${modelDir}" --pose_type t-pose --output_glb "${fallbackMeshPath}"`;
                     console.log(`🤖 [IA] Ejecutando Extractor SMPL-X: ${cmd}`);
                     
                     const pythonOutput = execSync(cmd).toString();
@@ -119,7 +119,7 @@ class AnnyPipeline {
                     waist: parseFloat(waist.toFixed(2)),
                     hips: parseFloat((simulatedHeight * 0.56).toFixed(2))
                 },
-                shapeParams: Array.from({ length: 10 }).map(() => (Math.random() * 2) - 1),
+                shapeParams: Array.from({ length: 12 }).map(() => (Math.random() * 2) - 1),
                 poseParams: Array.from({ length: 72 }).fill(0),
                 meshGenerated: meshUrl ? true : false,
                 timestamp: new Date()

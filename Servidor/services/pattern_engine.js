@@ -4,6 +4,31 @@ const path = require('path');
 const fs = require('fs');
 
 /**
+ * Verifica si el servidor Ollama está en línea.
+ * @returns {Promise<boolean>}
+ */
+async function checkOllamaStatus() {
+    const host = process.env.OLLAMA_HOST || 'http://127.0.0.1:11434';
+    const visionModel = process.env.OLLAMA_MODEL_VISION || 'llava';
+    const textModel = process.env.OLLAMA_MODEL_TEXT || 'llama3';
+    try {
+        const response = await fetch(`${host}/api/tags`, { signal: AbortSignal.timeout(3000) });
+        const data = await response.json();
+        const models = (data.models || []).map(m => m.name);
+        const visionOk = models.some(m => m.includes(visionModel.split(':')[0]));
+        const textOk = models.some(m => m.includes(textModel.split(':')[0]));
+        console.log(`🤖 [OLLAMA STATUS] Servidor: ✅ ONLINE (${host})`);
+        console.log(`  👁  Vision (${visionModel}): ${visionOk ? '✅ Disponible' : '❌ NO encontrado — se usará talla M por defecto'}`);
+        console.log(`  📝 Texto  (${textModel}): ${textOk ? '✅ Disponible' : '❌ NO encontrado — se usará talla M por defecto'}`);
+        return { online: true, visionOk, textOk };
+    } catch (e) {
+        console.warn(`🤖 [OLLAMA STATUS] ❌ OFFLINE — ${e.message}`);
+        console.warn(`  ⚠️  Se usarán medidas estándar talla M para continuar el pipeline.`);
+        return { online: false, visionOk: false, textOk: false };
+    }
+}
+
+/**
  * PatternEngine: Orchestrates the transformation of garment images into 
  * parametric Seamly2D patterns.
  */
@@ -19,7 +44,10 @@ class PatternEngine {
         console.log('🧵 [PATTERN ENGINE] Starting garment pipeline...');
         
         try {
-            // 1. Analyze image and extract parameters (LLaVA + Llama 3)
+            // 0. Verificar estado de los modelos de IA
+            await checkOllamaStatus();
+
+            // 1. Analyze image and extract parameters (LLaVA + Garment Analyzer)
             const resultIa = await procesarPrenda(imagePath, talla);
             console.log('🧵 [PATTERN ENGINE] Garment parameters extracted:', resultIa.parametros);
 
@@ -29,12 +57,13 @@ class PatternEngine {
             }
 
             const timestamp = Date.now();
-            const vitPath = path.join(publicPatterns, `medidas_${timestamp}.vit`);
+            // CRÍTICO: Nombre fijo para que patron_base.val siempre encuentre las medidas.
+            const vitPath = path.join(publicPatterns, `medidas_activas.vit`);
             const valPath = path.join(publicPatterns, patronBaseName);
 
-            // 2. Generate .vit file (SeamlyMe format)
+            // 2. Generate .vit file (SeamlyMe format) — nombre fijo para que .val lo encuentre
             const archivoVit = generarArchivoVIT(resultIa.parametros, vitPath);
-            console.log('🧵 [PATTERN ENGINE] .vit file generated:', archivoVit);
+            console.log('🧵 [PATTERN ENGINE] .vit generado (medidas_activas.vit):', archivoVit);
 
             // 3. Optional: Generate dynamic .val structure using Llama 3 
             // If the base pattern doesn't exist, we try to generate one from scratch

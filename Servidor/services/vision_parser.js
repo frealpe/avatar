@@ -99,7 +99,9 @@ REGLAS CRÍTICAS:
 3. Define al menos los puntos con IDs NUMÉRICOS (ej: id="1", id="2") y nombres A, A1, A2, A3 en coordenadas cartesianas.
 4. Si la descripción menciona un cuello o manga, intenta definir nodos de curva (<spline>) básicos usando los IDs numéricos.
 5. NO incluyas introducciones ni explicaciones. Solo devuelve el código XML puro.
-6. MUY IMPORTANTE: Los IDs deben ser números enteros (1, 2, 3...) para evitar errores de validación.`;
+6. MUY IMPORTANTE: Los IDs deben ser números enteros (1, 2, 3...) para evitar errores de validación.
+7. REGLA DE ORO: NO uses el tag <m> ni <measurement> dentro del .val. Los valores de medidas se obtienen mediante sus nombres (ej: _neck_depth_cm) pero NUNCA se declaran dentro de <calculation>. El archivo .val solo debe contener la geometría y fórmulas.
+8. ESTRUCTURA Y ORDEN: El XML DEBE empezar con <pattern> y contener <version>0.6.0</version>, <unit>cm</unit>, y el bloque <draw name="draft">. NO uses <draftBlock>. Dentro de <draw>, el orden DEBE ser: 1º <calculation>, 2º <modeling/>, 3º <details/>. Los tres son obligatorios.`;
 
     try {
         console.log(`[LLAMA3] Generando estructura compleja de patrón...`);
@@ -142,66 +144,24 @@ REGLAS CRÍTICAS:
  * @returns {Promise<Object>} Objeto JSON con descripción y parámetros validados
  */
 async function procesarPrenda(imagePath, talla) {
+    const { analyzeGarmentFromDescription } = require('./garment_analyzer');
+
     try {
         const promptVision = `Analiza esta imagen de una prenda de vestir como si fueras un experto en patronaje industrial. Describe detalladamente los siguientes puntos:
 
 Categoría de la prenda (ej. T-shirt, camisa, pantalón).
 Tipo de cuello y su profundidad estimada (v-neck, round, crew).
-Tipo de manga (corta, larga, raglán, sisa) y su largo relativo.
+Tipo de manga (corta, larga, raglán, sisa, sin manga) y su largo relativo.
 Ajuste al cuerpo (fit: holgado, entallado o regular).
 Detalles adicionales como bolsillos, puños o pinzas.
 Responde de forma técnica y concisa.`;
 
         const descripcion = await analizarImagen(imagePath, promptVision);
 
-        const promptTexto = `Actúa como un traductor de diseño de moda a parámetros de Seamly2D. A continuación te daré una descripción técnica de una prenda. Tu tarea es extraer las medidas de diseño y devolver exclusivamente un objeto JSON.
-
-Variables a usar: neck_depth_cm, sleeve_length_cm, waist_ease_cm, shoulder_width_cm.
-
-Descripción: ${descripcion}
-Talla: ${talla}
-
-Reglas:
-
-* Si no se menciona una medida, estima un valor estándar basado en la talla.
-* No incluyas explicaciones ni texto adicional.
-* Solo devuelve el objeto JSON.`;
-
-        const parametrosRaw = await generarParametros(descripcion, promptTexto);
-        
-        let parametrosPayload;
-        try {
-            parametrosPayload = JSON.parse(parametrosRaw);
-        } catch (e) {
-            throw new Error('El modelo de texto no devolvió un JSON válido. Respuesta: ' + parametrosRaw);
-        }
-
-        const keysRequeridas = ["neck_depth_cm", "sleeve_length_cm", "waist_ease_cm", "shoulder_width_cm"];
-        const parametros = {};
-        
-        // Diccionario de defaults basado ligeramente en la talla M por si el LLM local falla al responder
-        const fallbacksLLM = {
-            "neck_depth_cm": 10,
-            "sleeve_length_cm": 60,
-            "waist_ease_cm": 4,
-            "shoulder_width_cm": 40
-        };
-
-        for (const key of keysRequeridas) {
-            let valor = parametrosPayload[key];
-            if (valor === undefined || valor === null) {
-                console.warn(`\n[ADVERTENCIA] El LLM falló al generar la variable '${key}'. Usando valor estándar por defecto (${fallbacksLLM[key]} cm) debido a limitaciones del modelo local.`);
-                valor = fallbacksLLM[key];
-            }
-            
-            const numero = Number(valor);
-            if (isNaN(numero)) {
-                console.warn(`\n[ADVERTENCIA] El LLM generó basura en '${key}'. Usando fallback (${fallbacksLLM[key]} cm).`);
-                parametros[key] = fallbacksLLM[key];
-            } else {
-                parametros[key] = numero;
-            }
-        }
+        // PIPELINE GEOMÉTRICO:
+        // Usa proporciones (nunca cm directos desde la imagen) y normaliza a talla M.
+        console.log(`[VISION PARSER] Aplicando pipeline proporcional talla M...`);
+        const parametros = analyzeGarmentFromDescription(descripcion);
 
         return {
             descripcion,
@@ -209,7 +169,22 @@ Reglas:
         };
     } catch (error) {
         console.error('[Error en procesarPrenda]:', error.message);
-        throw error;
+
+        // Fallback robusto a talla M por defecto
+        console.warn('[VISION PARSER] ⚠️ Usando valores estándar talla M como fallback.');
+        return {
+            descripcion: 'Descripción no disponible (Ollama offline)',
+            parametros: {
+                neck_depth_cm: 8,
+                sleeve_length_cm: 22,
+                shoulder_width_cm: 44,
+                waist_ease_cm: 4,
+                ancho_pecho: 52,
+                largo_total: 70,
+                largo_manga: 22,
+                fit: 'regular'
+            }
+        };
     }
 }
 

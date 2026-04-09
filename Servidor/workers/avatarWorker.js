@@ -44,6 +44,24 @@ const setupWorker = (io) => {
           console.error(`❌ [Worker ${job.id}] Error en Generación SAM 3D:`, meshResult.reason);
       }
 
+      if (!params || !params.measurements || !params.measurements.height) {
+          params = { 
+              modelType: params?.modelType || 'Unified_AI_01', 
+              meshUrl: params?.meshUrl || null, 
+              measurements: {
+                  height: params?.measurements?.height || 170,
+                  weight: params?.measurements?.weight || 70,
+                  chest: params?.measurements?.chest || 95,
+                  waist: params?.measurements?.waist || 85,
+                  hips: params?.measurements?.hips || 100
+              }, 
+              shapeParams: params?.shapeParams || Array(12).fill(0), 
+              poseParams: params?.poseParams || [] 
+          };
+      }
+
+      console.log(`[Worker ${job.id}] Unificación de parámetros finalizada. Altura detectada: ${params?.measurements?.height}cm`);
+      
       let patternUrl = null;
       let garmentParams = {};
       let absoluteSvgPath = null;

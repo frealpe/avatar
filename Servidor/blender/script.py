@@ -31,21 +31,39 @@ def setup_cloth_simulation(avatar_path, svg_path, output_path):
         if obj.type == 'CURVE':
             obj.select_set(True)
             bpy.context.view_layer.objects.active = obj
+            
+            # Convert to Mesh
             bpy.ops.object.convert(target='MESH')
-
-            # Simple remesh/subdivision for cloth (Mocking complex logic)
+            
+            # 3.1 Basic Mesh Quality (Merge by distance)
             bpy.ops.object.mode_set(mode='EDIT')
             bpy.ops.mesh.select_all(action='SELECT')
-            # Mocking extruding / sewing here
+            bpy.ops.mesh.remove_doubles()
+            
+            # Add thickness (Solidify)
             bpy.ops.object.mode_set(mode='OBJECT')
-
-            # Move cloth piece slightly above/around avatar
+            bpy.ops.object.modifier_add(type='SOLIDIFY')
+            obj.modifiers["Solidify"].thickness = 0.005 # 5mm
+            
+            # 3.2 Position around Avatar (Torso alignment)
             if avatar_obj:
-                obj.location.y += 0.1
-                obj.location.z += 1.0 # arbitrary position around torso
+                # Get avatar center
+                avatar_center = avatar_obj.location
+                # Reset cloth location to center
+                obj.location = avatar_center
+                # Move slightly in front (Y+) and at chest height (Z+)
+                obj.location.y += 0.15 
+                obj.location.z += 1.0 # Chest height approximation
+                
+                # Scale SVG to real-world dimensions (Approximate multiplier if needed)
+                # Blender imports 1 unit = 1 meter usually, but SVGs can be small
+                # obj.scale = (1.0, 1.0, 1.0) 
 
-            # Add cloth modifier
+            # 3.3 Add cloth modifier
             bpy.ops.object.modifier_add(type='CLOTH')
+            obj.modifiers["Cloth"].settings.tension_stiffness = 15
+            obj.modifiers["Cloth"].settings.compression_stiffness = 15
+            
             cloth_objects.append(obj)
 
     # 4. Simulate (frames 1-150)
