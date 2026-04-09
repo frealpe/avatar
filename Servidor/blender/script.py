@@ -1,141 +1,205 @@
 import bpy
+import bmesh
 import sys
 import os
 import numpy as np
 
-# Industrial Patch: NumPy 1.24+ compatibility for Blender 3.x
+# [ENGINE] Industrial Patch: NumPy 1.24+ compatibility for Blender 3.x
 if not hasattr(np, 'bool'):
     np.bool = bool
 
-print("[ENGINE] STATUS: Blender script loaded and np.bool patched.")
-
 def clean_scene():
+    """Clears the entire scene for a clean simulation environment."""
     bpy.ops.wm.read_factory_settings(use_empty=True)
+    # Ensure no orphan data remains
+    for block in bpy.data.meshes: bpy.data.meshes.remove(block)
+    for block in bpy.data.curves: bpy.data.curves.remove(block)
 
 def setup_cloth_simulation(avatar_path, svg_path, output_path):
+    print("\n[ENGINE] ===============================================", flush=True)
+    print("[ENGINE] STARTING INDUSTRIAL 3D SIMULATION PIPELINE", flush=True)
+    print("[ENGINE] ===============================================\n", flush=True)
+    
     clean_scene()
 
-    # 1. Import Avatar (.glb)
-    if os.path.exists(avatar_path):
-        bpy.ops.import_scene.gltf(filepath=avatar_path)
-
-    # Set avatar as collision object
+    # 1. IMPORT AVATAR & CONFIGURE COLLISION
     avatar_obj = None
-    for obj in bpy.context.scene.objects:
-        if obj.type == 'MESH':
-            avatar_obj = obj
-            bpy.context.view_layer.objects.active = obj
+    if os.path.exists(avatar_path):
+        print(f"[ENGINE] Importing Avatar Mesh: {os.path.basename(avatar_path)}", flush=True)
+        bpy.ops.import_scene.gltf(filepath=avatar_path)
+        
+        # Identify the main mesh to act as collision body (pick the one with most vertices)
+        mesh_objs = [obj for obj in bpy.context.scene.objects if obj.type == 'MESH']
+        if mesh_objs:
+            avatar_obj = max(mesh_objs, key=lambda o: len(o.data.vertices))
+            bpy.context.view_layer.objects.active = avatar_obj
             bpy.ops.object.modifier_add(type='COLLISION')
-            break
+            # Standard Collision Settings for Blender 3.0
+            avatar_obj.collision.use_culling = True
+            avatar_obj.collision.thickness_outer = 0.005
+            print(f"[ENGINE] SUCCESS: Avatar Collision Body Configured: {avatar_obj.name} ({len(avatar_obj.data.vertices)} vertices)", flush=True)
+        else:
+            print("[ENGINE] WARNING: No mesh found in imported avatar file.", flush=True)
 
-    # 2. Import SVG
+    else:
+        print(f"[ENGINE] CRITICAL ERROR: Avatar file not found: {avatar_path}", flush=True)
+        sys.exit(1)
+
+    # 2. IMPORT SVG GARMENT PATTERN
     if os.path.exists(svg_path):
+        print(f"[ENGINE] Importing SVG Pattern: {os.path.basename(svg_path)}", flush=True)
         bpy.ops.import_curve.svg(filepath=svg_path)
+    else:
+        print(f"[ENGINE] CRITICAL ERROR: SVG file not found: {svg_path}", flush=True)
+        sys.exit(1)
 
-    # 3. Convert curves to mesh & process cloth pieces
-    cloth_objects = []
-    for obj in bpy.context.scene.objects:
-        if obj.type == 'CURVE':
-            obj.select_set(True)
-            bpy.context.view_layer.objects.active = obj
-            
-            # Convert to Mesh
-            bpy.ops.object.convert(target='MESH')
-            
-            # --- INDUSTRIAL MESH RECONSTRUCTION ---
-            bpy.ops.object.mode_set(mode='EDIT')
-            bpy.ops.mesh.select_all(action='SELECT')
-            
-            # 3.1 Create faces (Required for Cloth)
-            # Try to build faces from the SVG outlines
-            bpy.ops.mesh.edge_face_add() 
-            
-            # Triangulate to ensure good topology for simulation
-            bpy.ops.mesh.quads_convert_to_tris(quad_method='BEAUTY', poly_method='BEAUTY')
-            
-            # Basic Mesh Quality (Merge by distance)
-            bpy.ops.mesh.remove_doubles(threshold=0.001)
-            
-            # Add thickness (Solidify)
-            bpy.ops.object.mode_set(mode='OBJECT')
-            
-            # Scale fix: Seamly2D SVGs are often in points/pixels. 
-            # We scale them to be roughly 10-50cm wide if they are too small.
-            # Default SVG import in Blender is often 0.001 scale.
-            obj.scale = (10.0, 10.0, 10.0) # 10x scale jump for visibility
-            bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+    # 3. GEOMETRY ENGINE: CONVERT & RECONSTRUCT MESH
+    garment_mesh_objects = []
+    # Collect all curve objects imported from SVG
+    curves = [obj for obj in bpy.context.scene.objects if obj.type == 'CURVE']
+    
+    if not curves:
+        print("[ENGINE] CRITICAL ERROR: No curves found after SVG import.", flush=True)
+        sys.exit(1)
 
-            bpy.ops.object.modifier_add(type='SOLIDIFY')
-            obj.modifiers["Solidify"].thickness = 0.002 # 2mm is enough for simulations
-            
-            # 3.2 Position around Avatar (Torso alignment)
-            if avatar_obj:
-                # Get avatar center
-                avatar_center = avatar_obj.location
-                # Reset cloth location to center
-                obj.location = avatar_center
-                # Move slightly in front (Y+) and at chest height (Z+)
-                obj.location.y += 0.15 
-                obj.location.z += 1.0 # Chest height approximation
-                
-                # Scale SVG to real-world dimensions (Approximate multiplier if needed)
-                # Blender imports 1 unit = 1 meter usually, but SVGs can be small
-                # obj.scale = (1.0, 1.0, 1.0) 
+    for curve_obj in curves:
+        print(f"[ENGINE] Processing garment piece: {curve_obj.name}", flush=True)
 
-            # 3.3 Add cloth modifier
-            bpy.ops.object.modifier_add(type='CLOTH')
-            obj.modifiers["Cloth"].settings.tension_stiffness = 15
-            obj.modifiers["Cloth"].settings.compression_stiffness = 15
+        
+        # 3.1 Path Stabilization: Close all open splines
+        for spline in curve_obj.data.splines:
+            spline.use_cyclic_u = True
+        
+        # 3.2 High-Fidelity Conversion to Mesh
+        curve_obj.data.dimensions = '2D'
+        curve_obj.data.fill_mode = 'BOTH' # Initial surface generation
+        bpy.context.view_layer.objects.active = curve_obj
+        curve_obj.select_set(True)
+        bpy.ops.object.convert(target='MESH')
+        
+        # 3.3 Reconstruction using BMesh for Topological Integrity
+        bm = bmesh.new()
+        bm.from_mesh(curve_obj.data)
+        
+        # Removal of duplicate/overlapping vertices from Seamly2D export
+        bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=0.001)
+        
+        # Face Validation & Hole Filling
+        if len(bm.faces) == 0:
+            print(f"[ENGINE] INFO: Filling geometry holes for {curve_obj.name}...", flush=True)
+            bmesh.ops.holes_fill(bm, edges=bm.edges, sides=4)
+        
+        # Industrial-grade Triangulation
+        bmesh.ops.triangulate(bm, faces=bm.faces[:])
+        
+        bm.to_mesh(curve_obj.data)
+        
+        # 3.4 Empty Mesh Safety: Skip if no geometry was generated
+        if len(bm.verts) == 0:
+            print(f"[ENGINE] SKIPPING: {curve_obj.name} has no valid geometry.", flush=True)
+            bm.free()
+            continue
             
-            cloth_objects.append(obj)
+        bm.free()
+        
+        # 3.5 Physical Density: Subdivide to ensure realistic cloth folds
+        bpy.ops.object.mode_set(mode='EDIT')
+        bpy.ops.mesh.select_all(action='SELECT')
+        # Subdividing creates more points for simulation to act upon
+        bpy.ops.mesh.subdivide(number_cuts=2)
+        bpy.ops.mesh.normals_make_consistent(inside=False)
+        bpy.ops.object.mode_set(mode='OBJECT')
+        
+        # 3.5 Industrial Thickness (Solidify)
+        bpy.ops.object.modifier_add(type='SOLIDIFY')
+        curve_obj.modifiers["Solidify"].thickness = 0.002
+        curve_obj.modifiers["Solidify"].offset = 0.0
+        
+        # 3.6 Automated Positioning (Torso Alignment)
+        if avatar_obj:
+            # Normalize scale to meters (Standard Seamly2D SVG scale)
+            curve_obj.scale = (1, 1, 1) 
+            bpy.ops.object.transform_apply(scale=True)
+            
+            # Align to Avatar Chest/Torso area
+            curve_obj.location = avatar_obj.location
+            curve_obj.location.y += 0.20 # Move to front of chest
+            curve_obj.location.z += 1.05 # Chest area at approx 1m height
+        
+        # 3.7 CLOTH PHYSICS ENGINE CONFIGURATION
+        bpy.ops.object.modifier_add(type='CLOTH')
+        c_settings = curve_obj.modifiers["Cloth"].settings
+        
+        c_settings.quality = 8
+        c_settings.mass = 0.3 # 300g per unit area
+        c_settings.tension_stiffness = 15
+        c_settings.compression_stiffness = 15
+        c_settings.shear_stiffness = 15
+        c_settings.bending_stiffness = 0.5
+        
+        # Collision settings within Cloth
+        curve_obj.modifiers["Cloth"].collision_settings.use_collision = True
+        curve_obj.modifiers["Cloth"].collision_settings.use_self_collision = True
+        curve_obj.modifiers["Cloth"].collision_settings.collision_quality = 5
+        curve_obj.modifiers["Cloth"].collision_settings.self_distance_min = 0.005
+        
+        garment_mesh_objects.append(curve_obj)
 
-    # 4. Simulate (frames 1-150)
+    # 4. HEADLESS SIMULATION ENGINE (PHYSICS BAKE)
+    print(f"\n[ENGINE] Starting Physics Simulation Sequence (150 Frames)...", flush=True)
     bpy.context.scene.frame_start = 1
     bpy.context.scene.frame_end = 150
-
-    # Simple bake simulation loop (mock implementation for headless run)
+    
     for frame in range(1, 151):
         bpy.context.scene.frame_set(frame)
+        if frame % 25 == 0:
+            print(f"[ENGINE] SIMULATION PROGRESS: {frame}/150 frames computed.", flush=True)
 
-    # 5. Apply modifiers
-    for obj in cloth_objects:
+    # 5. POST-PROCESSING & GLTF EXPORT
+    print(f"\n[ENGINE] Finalizing geometry and baking keys...", flush=True)
+    for obj in garment_mesh_objects:
         bpy.context.view_layer.objects.active = obj
+        # Apply all modifiers to "bake" the simulation into the mesh
         for mod in obj.modifiers:
+            print(f"[ENGINE] Applying Modifier: {mod.name} on {obj.name}", flush=True)
             bpy.ops.object.modifier_apply(modifier=mod.name)
-
-    # Remove avatar so we only export the cloth, or export both?
-    # The requirement says "prenda.glb (NUEVO)" so we export only the cloth
+            
+    # Remove avatar (we only want the garment in the final GLB)
     if avatar_obj:
+        print(f"[ENGINE] Decoupling avatar from export...", flush=True)
         bpy.data.objects.remove(avatar_obj, do_unlink=True)
-
-    # Remove any unwanted objects
+        
+    # Remove any non-mesh leftovers
     for obj in bpy.context.scene.objects:
-        if obj not in cloth_objects and obj.type != 'MESH':
+        if obj.type != 'MESH':
             bpy.data.objects.remove(obj, do_unlink=True)
 
-    # 6. Export .glb
+    # Export Sequence
+    print(f"[ENGINE] EXPORTING FINAL GLB: {output_path}", flush=True)
     bpy.ops.export_scene.gltf(filepath=output_path, use_selection=False)
+    
+    print("\n[ENGINE] ===============================================", flush=True)
+    print("[ENGINE] SUCCESS: AUTOMATED 3D GARMENT PIPELINE COMPLETE", flush=True)
+    print("[ENGINE] ===============================================\n", flush=True)
+
 
 if __name__ == "__main__":
-    # Ensure correct arguments are passed after '--'
     try:
+        # Standard Blender CLI arg parsing
         argv = sys.argv
         if "--" not in argv:
-            print("Error: '--' separator not found in arguments.")
+            print("[ENGINE] ERROR: No '--' separator found in command line.")
             sys.exit(1)
-
+            
         args = argv[argv.index("--") + 1:]
         if len(args) < 3:
-            print("Usage: blender -b -P script.py -- <avatar.glb> <pattern.svg> <output.glb>")
+            print("[ENGINE] ERROR: Missing arguments. Required: <avatar> <svg> <output>")
             sys.exit(1)
-
-        avatar_path = args[0]
-        svg_path = args[1]
-        output_path = args[2]
-
-        setup_cloth_simulation(avatar_path, svg_path, output_path)
-        print("Cloth simulation completed successfully.")
-
+            
+        setup_cloth_simulation(args[0], args[1], args[2])
+        
     except Exception as e:
-        print(f"Error during simulation: {e}")
+        print(f"\n[ENGINE] CRITICAL FAILURE IN PIPELINE: {str(e)}")
+        import traceback
+        traceback.print_exc()
         sys.exit(1)

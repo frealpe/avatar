@@ -41,7 +41,8 @@ const _nav = [
   {
     component: CNavItem,
     name: 'Ajustes',
-    to: '/settings',
+    to: '/avatar/ajustes',
+
     icon: <CIcon icon={cilSettings} customClassName="nav-icon" />,
     materialIcon: 'settings'
   },

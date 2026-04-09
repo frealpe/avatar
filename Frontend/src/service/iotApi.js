@@ -7,7 +7,9 @@ const API_BASE = (typeof window !== 'undefined' && window.location.hostname !== 
 const API_URL = `${API_BASE}/api/avatar`;
 
 const iotApi = {
+    API_BASE,
     generateAvatar: async (imageBase64, userId, target = 'both') => {
+
         try {
             const response = await axios.post(`${API_URL}/generate`, { imageBase64, userId, target });
             return response.data;
@@ -27,10 +29,16 @@ const iotApi = {
         }
     },
 
-    recalculateAvatar: async (betas, gender = 'neutral', poseType = 't-pose') => {
+    recalculateAvatar: async (betas, gender = 'neutral', poseType = 't-pose', poseParams = {}) => {
         try {
-            const response = await axios.post(`${API_URL}/recalculate`, { betas, gender, poseType });
+            const response = await axios.post(`${API_URL}/recalculate`, { 
+                betas, 
+                gender, 
+                poseType,
+                ...poseParams 
+            });
             return response.data;
+
         } catch (error) {
             console.error('Error recalculating avatar', error);
             throw error;

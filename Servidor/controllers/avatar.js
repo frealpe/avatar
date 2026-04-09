@@ -43,8 +43,9 @@ const generateAvatar = async (req, res) => {
 
 const recalculateAvatar = async (req, res) => {
     try {
-        const { betas, gender = 'neutral', poseType = 't-pose' } = req.body;
+        const { betas, gender = 'neutral', poseType = 't-pose', poseLShoulder, poseRShoulder, poseLElbow, poseRElbow } = req.body;
         if (!betas || !Array.isArray(betas)) {
+
             return res.status(400).json({ ok: false, msg: 'Se requiere un vector de 12 betas.' });
         }
 
@@ -60,9 +61,16 @@ const recalculateAvatar = async (req, res) => {
         
         // Usamos el path completo de Python del entorno que sabemos que funciona
         const pythonPath = "/home/fabio/miniconda3/bin/python3";
-        const pythonCmd = `"${pythonPath}" "${scriptPath}" --model_dir "${modelDir}" --betas ${betas.join(' ')} --gender ${gender} --pose_type ${poseType} --output_glb "${outputGlb}" --output_vit "${outputVit}"`;
+        let pythonCmd = `"${pythonPath}" "${scriptPath}" --model_dir "${modelDir}" --betas ${betas.join(' ')} --gender ${gender} --pose_type ${poseType} --output_glb "${outputGlb}" --output_vit "${outputVit}"`;
+
+        // Añadir parámetros opcionales de pose
+        if (poseLShoulder !== undefined) pythonCmd += ` --shoulder_l_z ${poseLShoulder}`;
+        if (poseRShoulder !== undefined) pythonCmd += ` --shoulder_r_z ${poseRShoulder}`;
+        if (poseLElbow !== undefined) pythonCmd += ` --elbow_l_x ${poseLElbow}`;
+        if (poseRElbow !== undefined) pythonCmd += ` --elbow_r_x ${poseRElbow}`;
 
         console.log(`🤖 [RECALCULATE] Ejecutando: ${pythonCmd}`);
+
 
         exec(pythonCmd, (error, stdout, stderr) => {
             if (error) {
@@ -71,14 +79,18 @@ const recalculateAvatar = async (req, res) => {
                 return res.status(500).json({ ok: false, msg: 'Error de motor 3D.', detail: error.message, stderr });
             }
             try {
-                const lines = stdout.trim().split('\n');
-                const lastLine = lines.pop(); 
-                const resultJson = JSON.parse(lastLine);
+                // Extraer el bloque JSON de stdout (ignorando advertencias de CUDA u otro texto)
+                const jsonMatch = stdout.match(/\{[\s\S]*\}/);
+                if (!jsonMatch) throw new Error("No se encontró JSON válido en la salida del script.");
+                
+                const resultJson = JSON.parse(jsonMatch[0]);
                 res.json({ ok: true, meshUrl: `/temp/recalc_${jobId}.glb`, measurements: resultJson, modelType: 'SMPLX_Custom' });
             } catch (e) { 
                 console.error("❌ [RECALCULATE] Error parseando JSON:", stdout);
                 res.status(500).json({ ok: false, msg: 'Error parseando biométricos.', stdout }); 
             }
+
+
         });
     } catch (err) { res.status(500).json({ ok: false, msg: 'Fallo en motor de recalculo.' }); }
 };
@@ -89,12 +101,47 @@ const uploadModel = async (req, res) => {
 
 const getClothesCatalog = (req, res) => {
     const catalogoMock = [
-        { id: 1, name: "Oversized Hoodie", category: "Core Collection", img: "/placeholder_hoodie.png" },
-        { id: 2, name: "Tapered Denim", category: "Essential Fit", img: "/placeholder_pants.png" },
-        { id: 3, name: "Puffer Jacket", category: "Thermal Tech", img: "/placeholder_jacket.png" }
+        { 
+            _id: "saco_neo_2026", 
+            titulo: "Saco Neo-Refraction", 
+            categoria: "Sacos", 
+            talla: "UNISEX",
+            prenda3D: "/patterns/Saco.glb",
+            img: "/patterns/patron_base_layout_01.svg"
+        },
+        { 
+            _id: "blusa_cyber_01", 
+            titulo: "Blusa Cyber-Silk", 
+            categoria: "Bluzas", 
+            talla: "S",
+            img: "/placeholder_hoodie.png" 
+        },
+        { 
+            _id: "pant_tectonic_01", 
+            titulo: "Pantalon Tectonic", 
+            categoria: "Pantalones", 
+            talla: "M",
+            img: "/placeholder_pants.png" 
+        },
+        { 
+            _id: "falda_orbital_01", 
+            titulo: "Falda Orbital", 
+            categoria: "Faldas", 
+            talla: "S",
+            img: "/patterns/patron_base_layout_01.svg"
+        },
+        { 
+            _id: "hoodie_core_01", 
+            titulo: "Oversized Hoodie", 
+            categoria: "Sacos", 
+            talla: "L",
+            img: "/placeholder_hoodie.png" 
+        }
     ];
     res.json({ ok: true, data: catalogoMock });
 };
+
+
 
 const getAvatarById = async (req, res) => {
     try {
