@@ -145,19 +145,17 @@ function generarArchivoVIT(parametros, outputPath) {
     // 2. Generar XML de medidas
     let medicionesXML = '';
     for (const [name, value] of Object.entries(cleanParams)) {
-        medicionesXML += `        <m name="${name}" value="${value}" description="" full_description=""/>\n`;
+        medicionesXML += `    <m name="${name}" value="${value}"/>\n`;
     }
 
-    // 3. Ensamblar plantilla .vit
-    const xmlTemplate = `<?xml version="1.0" encoding="UTF-8"?>
+    // 3. Ensamblar plantilla .vit — formato IDÉNTICO al de smplx_extractor.py que funciona
+    const xmlTemplate = `<?xml version='1.0' encoding='UTF-8'?>
 <vit>
-    <version>0.3.3</version>
-    <read-only>false</read-only>
-    <unit>cm</unit>
-    <pm_system>998</pm_system>
-    <personal>
+  <version>0.3.3</version>
+  <unit>cm</unit>
+  <body-measurements>
 ${medicionesXML.trimEnd()}
-    </personal>
+  </body-measurements>
 </vit>`;
 
     // 4. Validar XML final
