@@ -40,15 +40,31 @@ def setup_cloth_simulation(avatar_path, svg_path, output_path):
             # Convert to Mesh
             bpy.ops.object.convert(target='MESH')
             
-            # 3.1 Basic Mesh Quality (Merge by distance)
+            # --- INDUSTRIAL MESH RECONSTRUCTION ---
             bpy.ops.object.mode_set(mode='EDIT')
             bpy.ops.mesh.select_all(action='SELECT')
-            bpy.ops.mesh.remove_doubles()
+            
+            # 3.1 Create faces (Required for Cloth)
+            # Try to build faces from the SVG outlines
+            bpy.ops.mesh.edge_face_add() 
+            
+            # Triangulate to ensure good topology for simulation
+            bpy.ops.mesh.quads_convert_to_tris(quad_method='BEAUTY', poly_method='BEAUTY')
+            
+            # Basic Mesh Quality (Merge by distance)
+            bpy.ops.mesh.remove_doubles(threshold=0.001)
             
             # Add thickness (Solidify)
             bpy.ops.object.mode_set(mode='OBJECT')
+            
+            # Scale fix: Seamly2D SVGs are often in points/pixels. 
+            # We scale them to be roughly 10-50cm wide if they are too small.
+            # Default SVG import in Blender is often 0.001 scale.
+            obj.scale = (10.0, 10.0, 10.0) # 10x scale jump for visibility
+            bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+
             bpy.ops.object.modifier_add(type='SOLIDIFY')
-            obj.modifiers["Solidify"].thickness = 0.005 # 5mm
+            obj.modifiers["Solidify"].thickness = 0.002 # 2mm is enough for simulations
             
             # 3.2 Position around Avatar (Torso alignment)
             if avatar_obj:
