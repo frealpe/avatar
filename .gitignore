@@ -32,3 +32,6 @@ Frontend/node_modules/
 Servidor/node_modules/
 Servidor/models/smplx/
 Servidor/helpers/__pycache__/
+
+# virtualenv
+env_anny/
