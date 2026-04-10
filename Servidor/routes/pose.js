@@ -1,5 +1,5 @@
 const { Router } = require('express');
-const { savePose, getPosesByAvatar, deletePose } = require('../controllers/pose');
+const { savePose, getPosesByAvatar, deletePose, setDefaultPose } = require('../controllers/pose');
 
 const router = Router();
 

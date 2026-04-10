@@ -4,6 +4,7 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, useGLTF, PerspectiveCamera, Stage } from '@react-three/drei';
 import iotApi from '../../service/iotApi';
 import { SocketContext } from '../../context/SocketContext';
+import * as THREE from 'three';
 
 // --- Helpers ---
 const getFullUrl = (url) => {
@@ -152,6 +153,55 @@ const ProbadorAvatar = () => {
                             </Suspense>
                             <OrbitControls enablePan={false} enableZoom={true} minDistance={1.5} maxDistance={8} />
                         </Canvas>
+                    </div>
+
+                    {/* HUD de Orientación y Alineación */}
+                    <div className="absolute top-32 left-10 z-20 flex flex-col gap-2">
+                        {(() => {
+                            const selectedPrenda = prendas.find(p => p._id === wornClothId || p.id === wornClothId);
+                            if (!selectedPrenda && !liveAvatar.normal) return null;
+
+                            const vAv = new THREE.Vector3(
+                                liveAvatar.normal?.x ?? 0,
+                                liveAvatar.normal?.y ?? 0,
+                                liveAvatar.normal?.z ?? 1
+                            ).normalize();
+
+                            const vPr = new THREE.Vector3(
+                                selectedPrenda?.normal?.x ?? 0,
+                                selectedPrenda?.normal?.y ?? 0,
+                                selectedPrenda?.normal?.z ?? 1
+                            ).normalize();
+
+                            const dot = vAv.dot(vPr);
+                            const angleRad = Math.acos(THREE.MathUtils.clamp(dot, -1, 1));
+                            const angleDeg = (angleRad * 180) / Math.PI;
+
+                            return (
+                                <div className="bg-black/40 backdrop-blur-md border border-white/10 p-4 rounded-2xl flex flex-col gap-1 min-w-[180px]">
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-[8px] text-white/40 font-bold uppercase tracking-widest">Alignment / Normal</span>
+                                        <div className={`w-2 h-2 rounded-full ${Math.abs(dot - 1) < 0.01 ? 'bg-green-500 shadow-[0_0_10px_#22c55e]' : 'bg-yellow-500'}`} />
+                                    </div>
+                                    <div className="flex items-end justify-between mt-1">
+                                        <div className="flex flex-col">
+                                            <span className="text-[12px] font-black text-white leading-none">{(dot).toFixed(4)}</span>
+                                            <span className="text-[6px] text-[#00f1fe] font-bold uppercase">Dot Product</span>
+                                        </div>
+                                        <div className="flex flex-col items-end">
+                                            <span className="text-[12px] font-black text-white leading-none">{angleDeg.toFixed(1)}°</span>
+                                            <span className="text-[6px] text-[#00f1fe] font-bold uppercase">Angle Offset</span>
+                                        </div>
+                                    </div>
+                                    <div className="w-full bg-white/5 h-1 rounded-full mt-2 overflow-hidden">
+                                        <div
+                                            className="h-full bg-[#00f1fe] transition-all duration-500"
+                                            style={{ width: `${(dot * 100).toFixed(0)}%` }}
+                                        />
+                                    </div>
+                                </div>
+                            );
+                        })()}
                     </div>
 
                     {selectedCollection && (

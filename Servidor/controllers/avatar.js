@@ -116,35 +116,40 @@ const getClothesCatalog = (req, res) => {
             categoria: "Sacos", 
             talla: "UNISEX",
             prenda3D: "/patterns/Saco.glb",
-            img: "/patterns/patron_base_layout_01.svg"
+            img: "/patterns/patron_base_layout_01.svg",
+            normal: { x: 0, y: 0, z: 1 }
         },
         { 
             _id: "blusa_cyber_01", 
             titulo: "Blusa Cyber-Silk", 
             categoria: "Bluzas", 
             talla: "S",
-            img: "/placeholder_hoodie.png" 
+            img: "/placeholder_hoodie.png",
+            normal: { x: 0, y: 0, z: 1 }
         },
         { 
             _id: "pant_tectonic_01", 
             titulo: "Pantalon Tectonic", 
             categoria: "Pantalones", 
             talla: "M",
-            img: "/placeholder_pants.png" 
+            img: "/placeholder_pants.png",
+            normal: { x: 0, y: 0, z: 1 }
         },
         { 
             _id: "falda_orbital_01", 
             titulo: "Falda Orbital", 
             categoria: "Faldas", 
             talla: "S",
-            img: "/patterns/patron_base_layout_01.svg"
+            img: "/patterns/patron_base_layout_01.svg",
+            normal: { x: 0, y: 0, z: 1 }
         },
         { 
             _id: "hoodie_core_01", 
             titulo: "Oversized Hoodie", 
             categoria: "Sacos", 
             talla: "L",
-            img: "/placeholder_hoodie.png" 
+            img: "/placeholder_hoodie.png",
+            normal: { x: 0, y: 0, z: 1 }
         }
     ];
     res.json({ ok: true, data: catalogoMock });
@@ -183,7 +188,8 @@ const getPredefinedAvatars = (req, res) => {
             description: 'Perfil muscular hombros anchos',
             meshUrl: '/avatars/standard_male.glb', 
             betas: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            measurements: { height: 180, chest: 104, waist: 82, hips: 98 } 
+            measurements: { height: 180, chest: 104, waist: 82, hips: 98 },
+            normal: { x: 0, y: 0, z: 1 }
         },
         { 
             id: 'std_slim', 
@@ -191,7 +197,8 @@ const getPredefinedAvatars = (req, res) => {
             description: 'Perfil delgado y espigado',
             meshUrl: '/avatars/standard_female.glb', 
             betas: [0.5, -1, 0, 0, 0, 0, 0, 0, 0, 0],
-            measurements: { height: 170, chest: 88, waist: 64, hips: 92 } 
+            measurements: { height: 170, chest: 88, waist: 64, hips: 92 },
+            normal: { x: 0, y: 0, z: 1 }
         },
         { 
             id: 'std_curvy', 
@@ -199,7 +206,8 @@ const getPredefinedAvatars = (req, res) => {
             description: 'Perfil con curvas pronunciadas',
             meshUrl: '/avatars/standard_curvy.glb', 
             betas: [2.0, 0.5, 0, 0, 0, 0, 0, 0, 0, 0],
-            measurements: { height: 165, chest: 98, waist: 72, hips: 105 } 
+            measurements: { height: 165, chest: 98, waist: 72, hips: 105 },
+            normal: { x: 0, y: 0, z: 1 }
         }
     ];
     res.json({ ok: true, data: predefined });
