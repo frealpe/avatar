@@ -5,6 +5,18 @@ import { useLocation } from 'react-router-dom'
 import iotApi from '../../service/iotApi'
 import { SocketContext } from '../../context/SocketContext'
 
+// --- Helpers ---
+const getFullUrl = (url) => {
+    if (!url) return '';
+    if (url.startsWith('http')) return url;
+    const base = iotApi.API_BASE || 'http://localhost:8080';
+    let cleanUrl = url.replace(/\/\//g, '/');
+    if (cleanUrl.startsWith('/api/') && (cleanUrl.includes('/patterns/') || cleanUrl.includes('/temp/') || cleanUrl.includes('/avatars/'))) {
+        cleanUrl = cleanUrl.replace('/api/', '/');
+    }
+    return `${base}${cleanUrl.startsWith('/') ? '' : '/'}${cleanUrl}`;
+};
+
 const LaboratorioIA = () => {
     const location = useLocation();
     const bodyInputRef = useRef(null);
@@ -54,7 +66,7 @@ const LaboratorioIA = () => {
         if (location.state?.predefined) {
             const model = location.state.predefined;
             const newResult = {
-                meshUrl: model.meshUrl.startsWith('http') ? model.meshUrl : `http://localhost:8080${model.meshUrl}`,
+                meshUrl: getFullUrl(model.meshUrl),
                 measurements: model.measurements,
                 betas: model.betas || [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                 modelType: model.name || 'SMPLX_Standard'
@@ -158,8 +170,7 @@ const LaboratorioIA = () => {
         try {
             const res = await iotApi.recalculateAvatar(newBetas || betas, 'neutral');
             if (res.ok) {
-                const absoluteMeshUrl = res.meshUrl.startsWith('http') ? res.meshUrl : `http://localhost:8080${res.meshUrl}`;
-                const finalResult = { ...bodyState.result, ...res, meshUrl: absoluteMeshUrl, betas: newBetas || betas };
+                const finalResult = { ...bodyState.result, ...res, meshUrl: getFullUrl(res.meshUrl), betas: newBetas || betas };
                 setBodyState(prev => ({
                     ...prev,
                     result: finalResult
@@ -237,7 +248,7 @@ const LaboratorioIA = () => {
                                             <PerspectiveCamera makeDefault position={[0, 1, 4]} fov={45} />
                                             <Suspense fallback={null}>
                                                 <Stage environment="city" intensity={0.5} contactShadow={{ opacity: 0.2, blur: 2 }}>
-                                                    <Model key={bodyState.result.meshUrl} url={bodyState.result.meshUrl} />
+                                                    <Model key={getFullUrl(bodyState.result.meshUrl)} url={getFullUrl(bodyState.result.meshUrl)} />
                                                 </Stage>
                                             </Suspense>
                                             <OrbitControls makeDefault />
@@ -394,7 +405,7 @@ const LaboratorioIA = () => {
                                             <PerspectiveCamera makeDefault position={[0, 0, 2]} fov={45} />
                                             <Suspense fallback={null}>
                                                 <Stage environment="city" intensity={0.5} contactShadow={{ opacity: 0.2, blur: 2 }}>
-                                                    <Model key={garmentState.result.prenda3D} url={garmentState.result.prenda3D} />
+                                                    <Model key={getFullUrl(garmentState.result.prenda3D)} url={getFullUrl(garmentState.result.prenda3D)} />
                                                 </Stage>
                                             </Suspense>
                                             <OrbitControls makeDefault />

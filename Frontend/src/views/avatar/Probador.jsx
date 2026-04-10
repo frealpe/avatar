@@ -5,7 +5,20 @@ import { OrbitControls, useGLTF, PerspectiveCamera, Stage } from '@react-three/d
 import iotApi from '../../service/iotApi';
 import { SocketContext } from '../../context/SocketContext';
 
+// --- Helpers ---
+const getFullUrl = (url) => {
+    if (!url) return '';
+    if (url.startsWith('http')) return url;
+    const base = iotApi.API_BASE || 'http://localhost:8080';
+    let cleanUrl = url.replace(/\/\//g, '/');
+    if (cleanUrl.startsWith('/api/') && (cleanUrl.includes('/patterns/') || cleanUrl.includes('/temp/') || cleanUrl.includes('/avatars/'))) {
+        cleanUrl = cleanUrl.replace('/api/', '/');
+    }
+    return `${base}${cleanUrl.startsWith('/') ? '' : '/'}${cleanUrl}`;
+};
+
 // --- Componentes 3D ---
+
 function AvatarRealGLB({ url, targetScale = [1, 1, 1] }) {
     const { scene } = useGLTF(url);
     const group = useRef();

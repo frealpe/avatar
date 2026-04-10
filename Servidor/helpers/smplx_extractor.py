@@ -80,36 +80,48 @@ def euler_to_axis_angle(euler_angles):
 
 def build_pose(pose_type, device, pose_data=None, **kwargs):
     body_pose = torch.zeros((1, 63), device=device)
+    global_orient = torch.zeros((1, 3), device=device)
 
     if pose_data:
+        # Standard SMPL-X (0=Pelvis, 1-21 are body_pose)
+        # body_pose index = (Joint_ID - 1) * 3
+        
+        # Shoulders (16, 17) -> body_pose [15, 16]
         if 'shoulder_l' in pose_data and pose_data['shoulder_l']:
-            body_pose[0, 16*3 : 16*3+3] = torch.tensor(euler_to_axis_angle(pose_data['shoulder_l']))
+            body_pose[0, 15*3 : 15*3+3] = torch.tensor(euler_to_axis_angle(pose_data['shoulder_l']))
         if 'shoulder_r' in pose_data and pose_data['shoulder_r']:
-            body_pose[0, 17*3 : 17*3+3] = torch.tensor(euler_to_axis_angle(pose_data['shoulder_r']))
+            body_pose[0, 16*3 : 16*3+3] = torch.tensor(euler_to_axis_angle(pose_data['shoulder_r']))
+            
+        # Elbows (18, 19) -> body_pose [17, 18]
         if 'elbow_l' in pose_data and pose_data['elbow_l']:
-            body_pose[0, 18*3 : 18*3+3] = torch.tensor(euler_to_axis_angle(pose_data['elbow_l']))
+            body_pose[0, 17*3 : 17*3+3] = torch.tensor(euler_to_axis_angle(pose_data['elbow_l']))
         if 'elbow_r' in pose_data and pose_data['elbow_r']:
-            body_pose[0, 19*3 : 19*3+3] = torch.tensor(euler_to_axis_angle(pose_data['elbow_r']))
+            body_pose[0, 18*3 : 18*3+3] = torch.tensor(euler_to_axis_angle(pose_data['elbow_r']))
+        
+        # Spine/Neck/Head (3, 12, 15)
+        if 'spine' in pose_data and pose_data['spine']:
+            body_pose[0, 2*3 : 2*3+3] = torch.tensor(euler_to_axis_angle(pose_data['spine']))
+        if 'head' in pose_data and pose_data['head']:
+            body_pose[0, 14*3 : 14*3+3] = torch.tensor(euler_to_axis_angle(pose_data['head']))
+            
+        # Hips (0) -> Global Orient
+        if 'hips' in pose_data and pose_data['hips']:
+            global_orient[0, :] = torch.tensor(euler_to_axis_angle(pose_data['hips']))
+            
+        # Legs: Knee(4,5), Ankle(7,8) -> body_pose [3,4], [6,7]
+        if 'knee_l' in pose_data and pose_data['knee_l']:
+            body_pose[0, 3*3 : 3*3+3] = torch.tensor(euler_to_axis_angle(pose_data['knee_l']))
+        if 'knee_r' in pose_data and pose_data['knee_r']:
+            body_pose[0, 4*3 : 4*3+3] = torch.tensor(euler_to_axis_angle(pose_data['knee_r']))
+        if 'ankle_l' in pose_data and pose_data['ankle_l']:
+            body_pose[0, 6*3 : 6*3+3] = torch.tensor(euler_to_axis_angle(pose_data['ankle_l']))
+        if 'ankle_r' in pose_data and pose_data['ankle_r']:
+            body_pose[0, 7*3 : 7*3+3] = torch.tensor(euler_to_axis_angle(pose_data['ankle_r']))
     else:
-        # Defaults for 'modeling' / 'a-pose'
-        shoulder_l_z = kwargs.get('shoulder_l_z', -1.3)
-        shoulder_r_z = kwargs.get('shoulder_r_z', -1.3)
-        elbow_l_x = kwargs.get('elbow_l_x', 0.0)
-        elbow_r_x = kwargs.get('elbow_r_x', 0.0)
+        # Defaults remain simplified or can be adjusted
+        pass
 
-        if pose_type in ['a-pose', 'modeling', 'relaxed']:
-            body_pose[0, 16*3 + 2] = shoulder_l_z
-            body_pose[0, 17*3 + 2] = shoulder_r_z
-            body_pose[0, 18*3 + 0] = elbow_l_x
-            body_pose[0, 19*3 + 0] = elbow_r_x
-
-            if 'shoulder_l_x' not in kwargs: body_pose[0, 16*3 + 0] = 0.1
-            if 'shoulder_r_x' not in kwargs: body_pose[0, 17*3 + 0] = 0.1
-
-    return body_pose
-
-
-
+    return body_pose, global_orient
 
 # =========================
 # MAIN
@@ -190,10 +202,9 @@ def run_extraction(model_path, betas_vector, gender='neutral',
     # =========================
     # POSE FINAL
     # =========================
-    body_pose = build_pose(pose_type, device, pose_data=pose_data, **kwargs)
+    body_pose, global_orient = build_pose(pose_type, device, pose_data=pose_data, **kwargs)
 
-
-    output_p = model(betas=betas, body_pose=body_pose)
+    output_p = model(betas=betas, body_pose=body_pose, global_orient=global_orient)
     vertices_p = output_p.vertices[0].detach().cpu().numpy()
 
     # =========================

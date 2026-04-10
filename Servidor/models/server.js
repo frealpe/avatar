@@ -86,6 +86,7 @@ class Server {
     routes() {
         this.app.use( this.usuariosPath, require('../routes/usuarios'));
         this.app.use( '/api/avatar', require('../routes/avatar'));
+        this.app.use( '/api/pose', require('../routes/pose'));
         this.app.use( this.patternsPath, require('../routes/patterns'));
     }
 
