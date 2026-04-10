@@ -11,9 +11,17 @@ const savePose = async (req, res) => {
         // Use findOneAndUpdate with upsert: true to support re-recording (overwrite)
         const pose = await Pose.findOneAndUpdate(
             { avatarId, name },
-            { poseData },
+            { poseData, isDefault: req.body.isDefault || false },
             { new: true, upsert: true }
         );
+
+        // If this is set as default, unset others for this avatar
+        if (req.body.isDefault) {
+            await Pose.updateMany(
+                { avatarId, _id: { $ne: pose._id } },
+                { isDefault: false }
+            );
+        }
 
         res.json({
             ok: true,
@@ -55,8 +63,29 @@ const deletePose = async (req, res) => {
     }
 };
 
+const setDefaultPose = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const pose = await Pose.findById(id);
+        if (!pose) return res.status(404).json({ ok: false, msg: 'Pose no encontrada.' });
+
+        const { avatarId } = pose;
+
+        // Unset all and set current as default
+        await Pose.updateMany({ avatarId }, { isDefault: false });
+        pose.isDefault = true;
+        await pose.save();
+
+        res.json({ ok: true, msg: 'Pose establecida como predeterminada.' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ ok: false, msg: 'Error al establecer pose predeterminada.' });
+    }
+};
+
 module.exports = {
     savePose,
     getPosesByAvatar,
+    setDefaultPose,
     deletePose
 };

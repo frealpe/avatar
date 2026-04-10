@@ -82,6 +82,44 @@ const iotApi = {
             console.error('Error fetching predefined avatars', error);
             throw error;
         }
+    },
+
+    // --- Pose Persistence ---
+    savePose: async (avatarId, name, poseData, isDefault = false) => {
+        try {
+            const response = await axios.post(`${API_BASE}/api/pose`, { avatarId, name, poseData, isDefault });
+            return response.data;
+        } catch (error) {
+            console.error('Error saving pose', error);
+            throw error;
+        }
+    },
+    getPosesByAvatar: async (avatarId) => {
+        try {
+            const response = await axios.get(`${API_BASE}/api/pose/avatar/${avatarId}`);
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching poses', error);
+            throw error;
+        }
+    },
+    deletePose: async (id) => {
+        try {
+            const response = await axios.delete(`${API_BASE}/api/pose/${id}`);
+            return response.data;
+        } catch (error) {
+            console.error('Error deleting pose', error);
+            throw error;
+        }
+    },
+    setDefaultPose: async (id) => {
+        try {
+            const response = await axios.patch(`${API_BASE}/api/pose/default/${id}`);
+            return response.data;
+        } catch (error) {
+            console.error('Error setting default pose', error);
+            throw error;
+        }
     }
 };
 

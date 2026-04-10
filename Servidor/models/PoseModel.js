@@ -14,6 +14,10 @@ const PoseSchema = Schema({
         type: Object, // Stores joint names as keys and [x, y, z] arrays as values
         required: true
     },
+    isDefault: {
+        type: Boolean,
+        default: false
+    },
     createdAt: {
         type: Date,
         default: Date.now

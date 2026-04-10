@@ -305,66 +305,66 @@ const AjustesPose = () => {
     const fetchPoses = useCallback(async () => {
         if (!avatarData?._id) return;
         try {
-            const base = iotApi.API_BASE || 'http://localhost:8080';
-            const res = await fetch(`${base}/api/pose/avatar/${avatarData._id}`);
-            const data = await res.json();
-            if (data.ok) setSavedPoses(data.poses);
-        } catch (e) { console.error('Error fetching poses:', e); }
+            const res = await iotApi.getPosesByAvatar(avatarData._id);
+            if (res.ok) setSavedPoses(res.poses);
+        } catch (e) {
+            console.error('Error fetching poses:', e);
+        }
     }, [avatarData?._id]);
 
     useEffect(() => {
-        fetchPoses();
+        const init = async () => {
+            await fetchPoses();
+        };
+        init();
     }, [fetchPoses]);
+
+    // Auto-load default pose
+    useEffect(() => {
+        if (savedPoses.length > 0) {
+            const defaultPose = savedPoses.find(p => p.isDefault);
+            if (defaultPose && !lastPosedBetas.current) {
+                setPoseData(defaultPose.poseData);
+            }
+        }
+    }, [savedPoses]);
 
     const handleSavePose = async () => {
         if (!newPoseName.trim() || !avatarData?._id) return;
         setIsSaving(true);
         try {
-            const base = iotApi.API_BASE || 'http://localhost:8080';
-            const res = await fetch(`${base}/api/pose`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    avatarId: avatarData._id,
-                    name: newPoseName,
-                    poseData
-                })
-            });
-            const data = await res.json();
-            if (data.ok) {
+            const res = await iotApi.savePose(avatarData._id, newPoseName, poseData);
+            if (res.ok) {
                 setNewPoseName('');
                 fetchPoses();
             }
-        } catch (e) { console.error('Error saving pose:', e); }
-        finally { setIsSaving(false); }
+        } catch (e) {
+            console.error('Error saving pose:', e);
+        } finally {
+            setIsSaving(false);
+        }
     };
 
-    const handleUpdatePose = async (name) => {
+    const handleUpdatePose = async (name, isDefault = false) => {
         setIsSaving(true);
         try {
-            const base = iotApi.API_BASE || 'http://localhost:8080';
-            const res = await fetch(`${base}/api/pose`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    avatarId: avatarData._id,
-                    name,
-                    poseData
-                })
-            });
-            const data = await res.json();
-            if (data.ok) fetchPoses();
-        } catch (e) { console.error('Error updating pose:', e); }
-        finally { setIsSaving(false); }
+            const res = await iotApi.savePose(avatarData._id, name, poseData, isDefault);
+            if (res.ok) fetchPoses();
+        } catch (e) {
+            console.error('Error updating pose:', e);
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     const handleDeletePose = async (id, e) => {
         e.stopPropagation();
         try {
-            const base = iotApi.API_BASE || 'http://localhost:8080';
-            await fetch(`${base}/api/pose/${id}`, { method: 'DELETE' });
+            await iotApi.deletePose(id);
             fetchPoses();
-        } catch (e) { console.error('Error deleting pose:', e); }
+        } catch (e) {
+            console.error('Error deleting pose:', e);
+        }
     };
 
     useEffect(() => {
@@ -477,24 +477,43 @@ const AjustesPose = () => {
                                             </tr>
                                         )}
                                         {savedPoses.map(p => (
-                                            <tr key={p._id} className="border-b border-white/[0.02] hover:bg-white/[0.02] transition-all group">
+                                            <tr key={p._id} className={`border-b border-white/[0.02] hover:bg-white/[0.02] transition-all group ${p.isDefault ? 'bg-[#00f1fe]/5' : ''}`}>
                                                 <td className="py-1.5">
-                                                    <span className="text-[9px] font-bold text-white/50 group-hover:text-white transition-all">{p.name}</span>
+                                                    <div className="flex flex-col">
+                                                        <span className="text-[9px] font-bold text-white/50 group-hover:text-white transition-all">
+                                                            {p.name} {p.isDefault && <span className="text-[6px] text-[#00f1fe] ml-1">[DEFAULT]</span>}
+                                                        </span>
+                                                        <span className="text-[5px] text-white/10 uppercase">{new Date(p.createdAt).toLocaleDateString()}</span>
+                                                    </div>
                                                 </td>
                                                 <td className="py-1.5 text-right">
                                                     <div className="flex justify-end gap-1">
                                                         <button
                                                             onClick={() => setPoseData(p.poseData)}
-                                                            className="text-[6px] font-black px-1.5 py-0.5 rounded bg-[#00f1fe]/10 text-[#00f1fe] hover:bg-[#00f1fe] hover:text-black transition-all"
+                                                            className="text-[6px] font-black px-1.5 py-0.5 rounded bg-white/5 text-white/40 hover:bg-[#00f1fe] hover:text-black transition-all"
                                                         >
                                                             LOAD
                                                         </button>
                                                         <button
-                                                            onClick={() => handleUpdatePose(p.name)}
+                                                            onClick={() => handleUpdatePose(p.name, p.isDefault)}
                                                             className="text-[6px] font-black px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500 hover:text-black transition-all"
+                                                            title="Sobrescribir con pose actual"
                                                         >
-                                                            UPDATE
+                                                            REC
                                                         </button>
+                                                        {!p.isDefault && (
+                                                            <button
+                                                                onClick={async () => {
+                                                                    try {
+                                                                        await iotApi.setDefaultPose(p._id);
+                                                                        fetchPoses();
+                                                                    } catch (e) { console.error(e); }
+                                                                }}
+                                                                className="text-[6px] font-black px-1.5 py-0.5 rounded bg-[#39ff14]/10 text-[#39ff14] hover:bg-[#39ff14] hover:text-black transition-all"
+                                                            >
+                                                                DEF
+                                                            </button>
+                                                        )}
                                                         <button
                                                             onClick={(e) => handleDeletePose(p._id, e)}
                                                             className="text-[6px] font-black px-1.5 py-0.5 rounded bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all"

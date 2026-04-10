@@ -12,4 +12,7 @@ router.get('/avatar/:avatarId', getPosesByAvatar);
 // Delete a pose
 router.delete('/:id', deletePose);
 
+// Set a pose as default
+router.patch('/default/:id', setDefaultPose);
+
 module.exports = router;
