@@ -548,7 +548,7 @@ const AjustesPose = () => {
 
                         <div className="flex flex-col justify-around py-1">
                             <PoseSlider
-                                label={selectedJoint.startsWith('elbow') ? "Flexión / Ángulo" : "Rotación X / Pitch"}
+                                label={selectedJoint.startsWith('elbow') ? "Flexión / Ángulo" : (selectedJoint.startsWith('shoulder') || selectedJoint.startsWith('hand')) ? "Rotación X / Roll (Giro)" : "Rotación X / Pitch (Adelante-Atrás)"}
                                 value={poseData[selectedJoint]?.[0] || 0} min={JOINT_LIMITS[selectedJoint]?.x[0] || -10} max={JOINT_LIMITS[selectedJoint]?.x[1] || 10} color="#00f1fe"
                                 onChange={v => setPoseData(p => {
                                     const current = p[selectedJoint] || [0, 0, 0];
@@ -557,12 +557,12 @@ const AjustesPose = () => {
 
                             {!selectedJoint.startsWith('elbow') && (
                                 <>
-                                    <PoseSlider label="Rotación Y / Yaw" value={poseData[selectedJoint]?.[1] || 0} min={JOINT_LIMITS[selectedJoint]?.y[0] || -10} max={JOINT_LIMITS[selectedJoint]?.y[1] || 10} color="#00f1fe"
+                                    <PoseSlider label={(selectedJoint.startsWith('shoulder') || selectedJoint.startsWith('hand')) ? "Rotación Y / Yaw (Adelante-Atrás)" : "Rotación Y / Yaw (Giro Izq-Der)"} value={poseData[selectedJoint]?.[1] || 0} min={JOINT_LIMITS[selectedJoint]?.y[0] || -10} max={JOINT_LIMITS[selectedJoint]?.y[1] || 10} color="#00f1fe"
                                         onChange={v => setPoseData(p => {
                                             const current = p[selectedJoint] || [0, 0, 0];
                                             return { ...p, [selectedJoint]: [current[0], v, current[2]] };
                                         })} />
-                                    <PoseSlider label="Rotación Z / Roll" value={poseData[selectedJoint]?.[2] || 0} min={JOINT_LIMITS[selectedJoint]?.z[0] || -10} max={JOINT_LIMITS[selectedJoint]?.z[1] || 10} color="#00f1fe"
+                                    <PoseSlider label={(selectedJoint.startsWith('shoulder') || selectedJoint.startsWith('hand')) ? "Rotación Z / Pitch (Arriba-Abajo)" : "Rotación Z / Roll (Inclinación)"} value={poseData[selectedJoint]?.[2] || 0} min={JOINT_LIMITS[selectedJoint]?.z[0] || -10} max={JOINT_LIMITS[selectedJoint]?.z[1] || 10} color="#00f1fe"
                                         onChange={v => setPoseData(p => {
                                             const current = p[selectedJoint] || [0, 0, 0];
                                             return { ...p, [selectedJoint]: [current[0], current[1], v] };
