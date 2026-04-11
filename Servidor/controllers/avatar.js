@@ -99,6 +99,11 @@ const recalculateAvatar = async (req, res) => {
             '--output_vit', outputVit
         ];
 
+        if (poseData) {
+            args.push('--pose_data');
+            args.push(JSON.stringify(poseData));
+        }
+
         console.log(`🤖 [RECALCULATE] Ejecutando: ${pythonPath} ${args.join(' ')}`);
 
         execFile(pythonPath, args, (error, stdout, stderr) => {
