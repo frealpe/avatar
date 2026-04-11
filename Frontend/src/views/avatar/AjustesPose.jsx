@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo, useCallback, Suspense } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback, Suspense, useContext } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import {
     OrbitControls,
@@ -13,6 +13,7 @@ import {
 import * as THREE from 'three';
 import useStore from '../../store';
 import iotApi from '../../service/iotApi';
+import { SocketContext } from '../../context/SocketContext';
 
 // --- Helpers ---
 const getFullUrl = (url) => {
@@ -54,13 +55,19 @@ function solveIK2Bone(rootWorldPos, targetWorldPos, l1, l2, side, constraints, d
     const root = rootWorldPos.clone();
     const target = targetWorldPos.clone();
     const dir = new THREE.Vector3().subVectors(target, root);
-    const dist = Math.min(dir.length(), l1 + l2 - 0.01);
+    // Preserve bone lengths: clamp distance to the reachable annulus [|l1-l2|, l1+l2]
+    const rawDist = dir.length();
+    const minDist = Math.abs(l1 - l2) + 0.001;
+    const maxDist = l1 + l2 - 0.001;
+    const dist = Math.max(Math.min(rawDist, maxDist), minDist);
     const sign = side === 'left' ? 1 : -1;
 
+    // Yaw around the vertical axis (point the shoulder toward the target horizontally)
     let shoulderY = -Math.atan2(dir.z, sign * dir.x);
     if (debugInv?.flip180) shoulderY += Math.PI;
 
     const horizontalDist = Math.sqrt(dir.x * dir.x + dir.z * dir.z);
+    // Elevation (pitch) from shoulder toward the target
     let baseElevation = Math.atan2(dir.y, horizontalDist);
 
     const cosElbow = (l1 * l1 + l2 * l2 - dist * dist) / (2 * l1 * l2);
@@ -68,9 +75,11 @@ function solveIK2Bone(rootWorldPos, targetWorldPos, l1, l2, side, constraints, d
     const cosShoulder = (dist * dist + l1 * l1 - l2 * l2) / (2 * dist * l1);
     const shoulderOffset = Math.acos(THREE.MathUtils.clamp(cosShoulder, -1, 1));
 
+    // Compose shoulder rotation: we keep X as 0 (handled by other controls), Y as yaw, Z as elevation+offset
     let shoulderZ = -sign * (baseElevation + shoulderOffset);
     // SMPL-X standard: Elbow flexion is on the X-axis. 
     // For Left, positive X bends. For Right, negative X bends (due to mirroring).
+    // Elbow flexion preserves bone lengths; choose fold direction consistent with side
     let elbowX = sign * (Math.PI - elbowAngle);
 
     const sKey = side === 'left' ? 'shoulder_l' : 'shoulder_r';
@@ -88,6 +97,51 @@ function AvatarModel({ url }) {
     const { scene } = useGLTF(url);
     // Elevamos el avatar y restauramos la rotación 180 para que mire al frente
     return <primitive object={scene} position={[0, -0.6, 0]} rotation={[0, Math.PI, 0]} />;
+}
+
+// Avatar model that applies poseData rotations to bones for real-time pose visualization
+function AvatarModelWithPose({ url, poseData }) {
+    const { scene } = useGLTF(url);
+    const groupRef = useRef();
+
+    // Apply poseData rotations to bones in the scene
+    useEffect(() => {
+        if (!groupRef.current || !poseData || !scene) return;
+
+        const boneMap = {
+            'shoulder_l': ['ArmatureL|Shoulder', 'Armature|Shoulder.L', 'Shoulder_L'],
+            'shoulder_r': ['ArmatureR|Shoulder', 'Armature|Shoulder.R', 'Shoulder_R'],
+            'elbow_l': ['ArmatureL|Elbow', 'Armature|Elbow.L', 'Elbow_L'],
+            'elbow_r': ['ArmatureR|Elbow', 'Armature|Elbow.R', 'Elbow_R'],
+            'hand_l': ['ArmatureL|Hand', 'Armature|Hand.L', 'Hand_L'],
+            'hand_r': ['ArmatureR|Hand', 'Armature|Hand.R', 'Hand_R'],
+            'head': ['ArmatureHead|Head', 'Armature|Head', 'Head'],
+            'spine': ['ArmatureSpine|Spine', 'Armature|Spine', 'Spine'],
+            'hips': ['ArmatureHips|Hips', 'Armature|Hips', 'Hips'],
+            'knee_l': ['ArmatureL|Knee', 'Armature|Knee.L', 'Knee_L'],
+            'knee_r': ['ArmatureR|Knee', 'Armature|Knee.R', 'Knee_R'],
+            'ankle_l': ['ArmatureL|Ankle', 'Armature|Ankle.L', 'Ankle_L'],
+            'ankle_r': ['ArmatureR|Ankle', 'Armature|Ankle.R', 'Ankle_R'],
+        };
+
+        // Traverse scene to find and update bones
+        scene.traverse((child) => {
+            for (const [poseKey, boneNames] of Object.entries(boneMap)) {
+                if (boneNames.includes(child.name)) {
+                    const rotation = poseData[poseKey] || [0, 0, 0];
+                    child.rotation.order = 'XYZ';
+                    child.rotation.set(...rotation);
+                    break;
+                }
+            }
+        });
+    }, [poseData, scene]);
+
+    return (
+        <group ref={groupRef} position={[0, -0.6, 0]} rotation={[0, Math.PI, 0]}>
+            <primitive object={scene} />
+        </group>
+    );
 }
 
 function Bone({ from, to, color = '#00f1fe', opacity = 0.5 }) {
@@ -236,14 +290,25 @@ function IKHandle({ side, rootPosArr, poseData, onChange, active, debugInv }) {
     const l2 = BONE_LENGTHS.forearm;
 
     const initialPos = useMemo(() => {
-        const s = poseData[side === 'left' ? 'shoulder_l' : 'shoulder_r'] || [0, 0, 0];
-        const sRot = new THREE.Euler(...s, 'XYZ');
-        return root.clone().add(new THREE.Vector3(side === 'left' ? l1 + l2 : -l1 - l2, 0, 0).applyEuler(sRot));
+        // Compute forward kinematics from current poseData to place the handle at the actual hand world position
+        const sKey = side === 'left' ? 'shoulder_l' : 'shoulder_r';
+        const eKey = side === 'left' ? 'elbow_l' : 'elbow_r';
+        const s = poseData[sKey] || [0, 0, 0];
+        const e = poseData[eKey] || [0, 0, 0];
+        const sQuat = new THREE.Quaternion().setFromEuler(new THREE.Euler(...s, 'XYZ'));
+        const eQuat = new THREE.Quaternion().setFromEuler(new THREE.Euler(...e, 'XYZ'));
+        // Upper arm vector (local X), forearm vector (local X)
+        const upper = new THREE.Vector3(side === 'left' ? l1 : -l1, 0, 0).applyQuaternion(sQuat);
+        const fore = new THREE.Vector3(side === 'left' ? l2 : -l2, 0, 0).applyQuaternion(sQuat.multiply(eQuat));
+        return root.clone().add(upper).add(fore);
     }, []);
 
     const onDrag = useCallback(() => {
         if (!handleRef.current) return;
-        const { shoulderEuler, elbowEuler } = solveIK2Bone(root, handleRef.current.position, l1, l2, side, JOINT_LIMITS, debugInv);
+        // TransformControls may change local/world transforms; read world position for the IK solver
+        const worldPos = new THREE.Vector3();
+        handleRef.current.getWorldPosition(worldPos);
+        const { shoulderEuler, elbowEuler } = solveIK2Bone(root, worldPos, l1, l2, side, JOINT_LIMITS, debugInv);
         const sKey = side === 'left' ? 'shoulder_l' : 'shoulder_r';
         const eKey = side === 'left' ? 'elbow_l' : 'elbow_r';
         onChange(prev => ({ ...prev, [sKey]: shoulderEuler, [eKey]: elbowEuler }));
@@ -302,15 +367,50 @@ const AjustesPose = () => {
     const [newPoseName, setNewPoseName] = useState('');
     const [isSaving, setIsSaving] = useState(false);
 
-    const fetchPoses = useCallback(async () => {
-        if (!avatarData?._id) return;
+    useEffect(() => {
+        if (!avatarData && typeof window !== 'undefined') {
+            try {
+                const savedBody = window.localStorage.getItem('modavatar_active_body');
+                if (savedBody) {
+                    setAvatar(JSON.parse(savedBody));
+                }
+            } catch (e) {
+                console.error('Error restoring avatar in pose settings:', e);
+            }
+        }
+    }, [avatarData, setAvatar]);
+
+    const ensureAvatarRecord = useCallback(async () => {
+        const sourceAvatar = avatarData || liveAvatar;
+        if (!sourceAvatar) return null;
+
+        if (sourceAvatar._id) return sourceAvatar._id;
+
         try {
-            const res = await iotApi.getPosesByAvatar(avatarData._id);
+            const res = await iotApi.ensureAvatar(sourceAvatar);
+            if (res?.ok && res.avatar?._id) {
+                const persistedAvatar = { ...sourceAvatar, ...res.avatar, _id: res.avatar._id };
+                setAvatar(persistedAvatar);
+                setLiveAvatar(persistedAvatar);
+                return res.avatar._id;
+            }
+        } catch (e) {
+            console.error('Error ensuring avatar record:', e);
+        }
+
+        return null;
+    }, [avatarData, liveAvatar, setAvatar]);
+
+    const fetchPoses = useCallback(async () => {
+        const avatarId = await ensureAvatarRecord();
+        if (!avatarId) return;
+        try {
+            const res = await iotApi.getPosesByAvatar(avatarId);
             if (res.ok) setSavedPoses(res.poses);
         } catch (e) {
             console.error('Error fetching poses:', e);
         }
-    }, [avatarData?._id]);
+    }, [ensureAvatarRecord]);
 
     useEffect(() => {
         const init = async () => {
@@ -330,10 +430,12 @@ const AjustesPose = () => {
     }, [savedPoses]);
 
     const handleSavePose = async () => {
-        if (!newPoseName.trim() || !avatarData?._id) return;
+        if (!newPoseName.trim()) return;
         setIsSaving(true);
         try {
-            const res = await iotApi.savePose(avatarData._id, newPoseName, poseData);
+            const avatarId = await ensureAvatarRecord();
+            if (!avatarId) return;
+            const res = await iotApi.savePose(avatarId, newPoseName, poseData);
             if (res.ok) {
                 setNewPoseName('');
                 fetchPoses();
@@ -348,7 +450,9 @@ const AjustesPose = () => {
     const handleUpdatePose = async (name, isDefault = false) => {
         setIsSaving(true);
         try {
-            const res = await iotApi.savePose(avatarData._id, name, poseData, isDefault);
+            const avatarId = await ensureAvatarRecord();
+            if (!avatarId) return;
+            const res = await iotApi.savePose(avatarId, name, poseData, isDefault);
             if (res.ok) fetchPoses();
         } catch (e) {
             console.error('Error updating pose:', e);
@@ -371,24 +475,34 @@ const AjustesPose = () => {
         if (avatarData) setLiveAvatar(avatarData);
     }, [avatarData]);
 
+    const { socket } = useContext(SocketContext);
+
     useEffect(() => {
         const recalculate = async () => {
             if (!liveAvatar.betas) return;
             const stateStr = JSON.stringify({ b: liveAvatar.betas, p: poseData });
             if (lastPosedBetas.current === stateStr) return;
+
+            // Emit a lightweight preview of the pose for real-time preview in other clients
+            try {
+                if (socket) socket.emit('pose:preview', { poseData, betas: liveAvatar.betas, avatarId: liveAvatar._id || null });
+            } catch (err) {
+                console.error('Error emitiendo pose:preview:', err);
+            }
+
             try {
                 const res = await iotApi.recalculateAvatar(liveAvatar.betas, 'neutral', 'modeling', { poseData });
                 if (res?.ok) {
                     const url = getFullUrl(res.meshUrl);
                     setPosedMeshUrl(url);
-                    setAvatar({ ...liveAvatar, meshUrl: url });
+                    setAvatar({ ...liveAvatar, ...res, meshUrl: url, poseData });
                     lastPosedBetas.current = stateStr;
                 }
             } catch (e) { console.error(e); }
         };
         const timer = setTimeout(recalculate, 250);
         return () => clearTimeout(timer);
-    }, [liveAvatar.betas, poseData]);
+    }, [liveAvatar.betas, poseData, socket]);
 
     return (
         <div className="flex-1 flex bg-black relative overflow-hidden font-['Inter']">
@@ -404,7 +518,12 @@ const AjustesPose = () => {
                     <ambientLight intensity={0.5} />
                     <axesHelper args={[2]} />
                     <Suspense fallback={null}>
-                        {posedMeshUrl && <AvatarModel url={posedMeshUrl} />}
+                        {posedMeshUrl && <AvatarModelWithPose url={posedMeshUrl} poseData={poseData} />}
+                        {/* Mostrar esqueleto sincronizado sobre la malla para previsualización inmediata */}
+                        <IKSkeleton poseData={poseData} selectedJoint={selectedJoint} onSelectJoint={(j) => { setSelectedJoint(j); setIkMode(j.startsWith('hand')); }} />
+                        {/* IK handles en la vista principal (activos solo si ikMode está on) */}
+                        <IKHandle side="left" rootPosArr={[0.45, 1.5, 0]} poseData={poseData} onChange={setPoseData} active={ikMode && selectedJoint === 'hand_l'} debugInv={debugInv} />
+                        <IKHandle side="right" rootPosArr={[-0.45, 1.5, 0]} poseData={poseData} onChange={setPoseData} active={ikMode && selectedJoint === 'hand_r'} debugInv={debugInv} />
                         <Stage environment="city" intensity={0.5} contactShadow={false} />
                     </Suspense>
                     <GizmoHelper alignment="top-right" margin={[80, 80]}><GizmoViewport /></GizmoHelper>

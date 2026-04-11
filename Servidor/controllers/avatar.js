@@ -4,6 +4,37 @@ const path = require('path');
 const fs = require('fs');
 const { execFile } = require('child_process');
 const v4 = require('uuid').v4;
+const { Types } = require('mongoose');
+
+const normalizeAvatarPayload = (payload = {}) => {
+    const inputMeasurements = payload.measurements || {};
+    const betas = Array.isArray(payload.betas)
+        ? payload.betas
+        : Array.isArray(payload.shapeParams)
+            ? payload.shapeParams
+            : [];
+
+    return {
+        userId: payload.userId || 'guest_user',
+    modelType: payload.modelType || payload.name || 'SAM3D_Standard',
+        meshUrl: payload.meshUrl || null,
+        measurements: {
+            height: Number(inputMeasurements.height) || 170,
+            weight: Number(inputMeasurements.weight) || 70,
+            chest: inputMeasurements.chest ?? null,
+            waist: inputMeasurements.waist ?? null,
+            hips: inputMeasurements.hips ?? null,
+            shoulders: inputMeasurements.shoulders ?? null,
+            inseam: inputMeasurements.inseam ?? null
+        },
+        shapeParams: betas,
+        poseParams: Array.isArray(payload.poseParams) ? payload.poseParams : [],
+        patternUrl: payload.patternUrl || null,
+        garmentParams: payload.garmentParams || {},
+        prenda3D: payload.prenda3D || null,
+        status: payload.status || 'READY'
+    };
+};
 
 const generateAvatar = async (req, res) => {
     try {
@@ -41,67 +72,85 @@ const generateAvatar = async (req, res) => {
     }
 };
 
+const AnnyPipeline = require('../services/annyPipeline');
+
 const recalculateAvatar = async (req, res) => {
     try {
-        const { betas, gender = 'neutral', poseType = 't-pose', poseLShoulder, poseRShoulder, poseLElbow, poseRElbow, poseData } = req.body;
+        const { betas, measurements, gender = 'neutral', poseType = 't-pose', poseData } = req.body;
         if (!betas || !Array.isArray(betas)) {
-
-            return res.status(400).json({ ok: false, msg: 'Se requiere un vector de 12 betas.' });
+            return res.status(400).json({ ok: false, msg: 'Se requiere un vector de betas (array).' });
         }
 
         const jobId = v4();
         const tempDir = path.join(process.cwd(), 'public', 'temp');
-        const outputGlb = path.join(tempDir, `recalc_${jobId}.glb`);
-        const outputVit = path.join(tempDir, `recalc_${jobId}.vit`);
-        
         if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
 
-        const scriptPath = path.join(process.cwd(), 'helpers', 'smplx_extractor.py');
-        const modelDir = path.join(process.cwd(), 'models', 'smplx');
-        
-        // Usamos el path completo de Python del entorno que sabemos que funciona
+        const outputGlb = path.join(tempDir, `recalc_${jobId}.glb`);
+        const outputVit = path.join(tempDir, `recalc_${jobId}.vit`);
+
         const pythonPath = "/home/fabio/miniconda3/bin/python3";
+        const scriptPath = path.join(process.cwd(), 'helpers', 'smplx_extractor.py');
+
         const args = [
             scriptPath,
-            "--model_dir", modelDir,
-            "--betas", ...betas.map(String),
-            "--gender", String(gender),
-            "--pose_type", String(poseType),
-            "--output_glb", outputGlb,
-            "--output_vit", outputVit
+            '--betas', ...betas.map(String),
+            '--gender', gender,
+            '--output_glb', outputGlb,
+            '--output_vit', outputVit
         ];
-
-        if (poseLShoulder !== undefined) args.push("--shoulder_l_z", String(poseLShoulder));
-        if (poseRShoulder !== undefined) args.push("--shoulder_r_z", String(poseRShoulder));
-        if (poseLElbow !== undefined) args.push("--elbow_l_x", String(poseLElbow));
-        if (poseRElbow !== undefined) args.push("--elbow_r_x", String(poseRElbow));
-        if (poseData !== undefined) {
-            args.push("--pose_json", JSON.stringify(poseData));
-        }
 
         console.log(`🤖 [RECALCULATE] Ejecutando: ${pythonPath} ${args.join(' ')}`);
 
         execFile(pythonPath, args, (error, stdout, stderr) => {
             if (error) {
                 console.error(`❌ [RECALCULATE] Error: ${error.message}`);
-                console.error(`❌ [RECALCULATE] Stderr: ${stderr}`);
-                return res.status(500).json({ ok: false, msg: 'Error de motor 3D.', detail: error.message, stderr });
+                console.error(`STDERR: ${stderr}`);
+                return res.status(500).json({ ok: false, msg: 'Error ejecutando motor de recalculo.', detail: error.message });
             }
+
             try {
-                // Extraer el bloque JSON de stdout (ignorando advertencias de CUDA u otro texto)
-                const jsonMatch = stdout.match(/\{[\s\S]*\}/);
-                if (!jsonMatch) throw new Error("No se encontró JSON válido en la salida del script.");
+                // El script puede imprimir logs de inicialización de Warp/Anny.
+                // Buscamos la línea que empieza por '{' y termina por '}'
+                const lines = stdout.split('\n');
+                let pythonOutput = null;
                 
-                const resultJson = JSON.parse(jsonMatch[0]);
-                res.json({ ok: true, meshUrl: `/temp/recalc_${jobId}.glb`, measurements: resultJson, modelType: 'SMPLX_Custom' });
-            } catch (e) { 
-                console.error("❌ [RECALCULATE] Error parseando JSON:", stdout);
-                res.status(500).json({ ok: false, msg: 'Error parseando biométricos.', stdout }); 
+                for (const line of lines) {
+                    const trimmed = line.trim();
+                    if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
+                        try {
+                            pythonOutput = JSON.parse(trimmed);
+                            break;
+                        } catch (e) { continue; }
+                    }
+                }
+
+                if (!pythonOutput) {
+                    // Fallback al regex por si el JSON está en varias líneas
+                    const jsonMatch = stdout.match(/\{.*\}/s);
+                    if (jsonMatch) pythonOutput = JSON.parse(jsonMatch[0].trim());
+                }
+
+                if (!pythonOutput) throw new Error("No valid JSON found in output");
+                
+                // Url para el frontend
+                const meshUrl = `/temp/recalc_${jobId}.glb`;
+
+                return res.json({
+                    ok: true,
+                    meshUrl,
+                    measurements: pythonOutput,
+                    betas: betas
+                });
+            } catch (parseErr) {
+                console.error(`❌ [RECALCULATE] Error parseando salida: ${stdout}`);
+                return res.status(500).json({ ok: false, msg: 'Error procesando resultado del motor.' });
             }
-
-
         });
-    } catch (err) { res.status(500).json({ ok: false, msg: 'Fallo en motor de recalculo.' }); }
+
+    } catch (err) {
+        console.error('❌ [RECALCULATE] Error crítico:', err);
+        return res.status(500).json({ ok: false, msg: 'Fallo interno en recalculo.' });
+    }
 };
 
 const uploadModel = async (req, res) => {
@@ -180,11 +229,50 @@ const tryOnClothes = async (req, res) => {
     }, 2500);
 };
 
+const ensureAvatar = async (req, res) => {
+    try {
+        const incomingAvatar = req.body || {};
+
+        if (incomingAvatar._id && Types.ObjectId.isValid(incomingAvatar._id)) {
+            const existingAvatar = await Avatar.findById(incomingAvatar._id);
+            if (existingAvatar) {
+                const updatedData = normalizeAvatarPayload({ ...existingAvatar.toObject(), ...incomingAvatar });
+                const avatar = await Avatar.findByIdAndUpdate(existingAvatar._id, updatedData, {
+                    new: true,
+                    runValidators: true
+                });
+
+                return res.json({
+                    ok: true,
+                    avatar: {
+                        ...avatar.toObject(),
+                        betas: incomingAvatar.betas || avatar.shapeParams || []
+                    }
+                });
+            }
+        }
+
+        const avatarData = normalizeAvatarPayload(incomingAvatar);
+        const avatar = await Avatar.create(avatarData);
+
+        res.status(201).json({
+            ok: true,
+            avatar: {
+                ...avatar.toObject(),
+                betas: incomingAvatar.betas || avatar.shapeParams || []
+            }
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ ok: false, msg: 'Error asegurando avatar en base de datos.' });
+    }
+};
+
 const getPredefinedAvatars = (req, res) => {
     const predefined = [
         { 
             id: 'std_athletic', 
-            name: 'Atlético', 
+            name: 'hombre', 
             description: 'Perfil muscular hombros anchos',
             meshUrl: '/avatars/standard_male.glb', 
             betas: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -193,7 +281,7 @@ const getPredefinedAvatars = (req, res) => {
         },
         { 
             id: 'std_slim', 
-            name: 'Esbelto', 
+            name: 'mujer', 
             description: 'Perfil delgado y espigado',
             meshUrl: '/avatars/standard_female.glb', 
             betas: [0.5, -1, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -202,7 +290,7 @@ const getPredefinedAvatars = (req, res) => {
         },
         { 
             id: 'std_curvy', 
-            name: 'Curvilíneo', 
+            name: 'niño', 
             description: 'Perfil con curvas pronunciadas',
             meshUrl: '/avatars/standard_curvy.glb', 
             betas: [2.0, 0.5, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -219,6 +307,7 @@ module.exports = {
     uploadModel,
     getClothesCatalog,
     getPredefinedAvatars,
+    ensureAvatar,
     getAvatarById,
     tryOnClothes
 };

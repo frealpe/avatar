@@ -70,30 +70,21 @@ const setupWorker = (io) => {
           garmentParams = patternResult.value.params;
           absoluteSvgPath = patternResult.value.absoluteSvgPath;
       } else {
-          console.warn(`[WARNING] Fallo en Pipeline Seamly2D: ${patternResult.reason || 'No data'}`);
+          console.warn(`[WARNING] Fallo en Pipeline de patrones (Seamly2D disabled): ${patternResult.reason || 'No data'}`);
       }
 
       // 4. Promesa C: Generación de Prenda 3D en Blender (Fallback Industrial)
       if (!absoluteAvatarPath || !fs.existsSync(absoluteAvatarPath)) {
-          console.log(`[STATUS] BUSCANDO FALLBACK: Avatar no disponible, localizando SMPL-X reciente...`);
-          const tempDir = path.join(process.cwd(), 'public', 'temp');
-          if (fs.existsSync(tempDir)) {
-              const recalcFiles = fs.readdirSync(tempDir)
-                  .filter(f => f.startsWith('recalc_') && f.endsWith('.glb'))
-                  .map(f => ({ name: f, mtime: fs.statSync(path.join(tempDir, f)).mtimeMs }))
-                  .sort((a, b) => b.mtime - a.mtime);
-              
-              if (recalcFiles.length > 0) {
-                  absoluteAvatarPath = path.join(tempDir, recalcFiles[0].name);
-                  console.log(`[STATUS] SUCCESS: Usando fallback SMPL-X: ${recalcFiles[0].name}`);
-              } else {
-                  // Fallback final a estándar
-                  const standardAvatar = path.join(process.cwd(), 'public', 'avatars', 'standard_male.glb');
-                  if (fs.existsSync(standardAvatar)) {
-                      absoluteAvatarPath = standardAvatar;
-                      console.log(`[STATUS] SUCCESS: Usando fallback estándar: standard_male.glb`);
-                  }
-              }
+          // SMPL-X local removed: no buscamos archivos recalc_*.glb generados localmente.
+          // Simple fallback a los avatares estándar incluidos en el repo.
+          console.log(`[STATUS] Avatar no disponible - usando avatar estándar como fallback.`);
+          const standardCandidates = [
+              path.join(process.cwd(), 'public', 'avatars', 'standard_male.glb'),
+              path.join(process.cwd(), 'public', 'avatars', 'standard_female.glb'),
+              path.join(process.cwd(), 'public', 'avatars', 'standard_curvy.glb')
+          ];
+          for (const candidate of standardCandidates) {
+              if (fs.existsSync(candidate)) { absoluteAvatarPath = candidate; console.log(`[STATUS] SUCCESS: Usando fallback estándar: ${path.basename(candidate)}`); break; }
           }
       }
 
@@ -141,7 +132,7 @@ const setupWorker = (io) => {
       if (target === 'both' || target === 'body') modelsUsed.push('SAM 3D / Anny v2');
       if (target === 'both' || target === 'garment') {
           modelsUsed.push('LLaVA v1.5');
-          modelsUsed.push('Seamly2D CLI');
+          // Seamly2D removed: pattern generation disabled in this build
       }
       if (prenda3DUrl) modelsUsed.push('Blender Cycles (Sim)');
 

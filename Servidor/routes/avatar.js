@@ -4,6 +4,7 @@ const {
     uploadModel, 
     getClothesCatalog, 
     getPredefinedAvatars,
+    ensureAvatar,
     getAvatarById, 
     tryOnClothes,
     recalculateAvatar
@@ -25,6 +26,7 @@ router.post('/generate', generateAvatar);
  * Recalcula los parámetros del avatar.
  */
 router.post('/recalculate', recalculateAvatar);
+router.post('/ensure', ensureAvatar);
 
 /**
  * @route POST /api/avatar/upload

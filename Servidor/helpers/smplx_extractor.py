@@ -1,286 +1,162 @@
 import os
+os.environ['WARP_LOG_LEVEL'] = 'ERR'
 import sys
-import numpy as np
-import trimesh
-import smplx
-import torch
-import lxml.etree as ET
 import json
 import argparse
+import numpy as np
+import torch
+import trimesh
+import anny
+from anny.anthropometry import Anthropometry
 
-
-# =========================
-# XML GENERATOR
-# =========================
-def generate_vit_xml(measurements, output_path):
-    root = ET.Element("vit")
-    
-    ET.SubElement(root, "version").text = "0.3.3"
-    ET.SubElement(root, "unit").text = "cm"
-    
-    body_measurements = ET.SubElement(root, "body-measurements")
-    
-    for name, value in measurements.items():
-        m = ET.SubElement(body_measurements, "m")
-        m.set("name", name)
-        m.set("value", f"{value:.2f}")
-    
-    tree = ET.ElementTree(root)
-    tree.write(output_path, encoding='utf-8', xml_declaration=True, pretty_print=True)
-
-
-# =========================
-# SAFE SECTION
-# =========================
-def safe_section_length(mesh, y_level):
-    try:
-        section = mesh.section(
-            plane_origin=[0, y_level, 0],
-            plane_normal=[0, 1, 0]
-        )
-        if section is None:
-            return 0.0
-        return float(section.length)
-    except:
-        return 0.0
-
-
-# =========================
-# POSE BUILDER (FIX REAL 🔥)
-# =========================
-
-def euler_to_axis_angle(euler_angles):
-    import numpy as np
-    import math
-    x, y, z = euler_angles
-
-    cx, sx = math.cos(x), math.sin(x)
-    cy, sy = math.cos(y), math.sin(y)
-    cz, sz = math.cos(z), math.sin(z)
-
-    Rx = np.array([[1, 0, 0], [0, cx, -sx], [0, sx, cx]])
-    Ry = np.array([[cy, 0, sy], [0, 1, 0], [-sy, 0, cy]])
-    Rz = np.array([[cz, -sz, 0], [sz, cz, 0], [0, 0, 1]])
-
-    R_mat = Rz @ Ry @ Rx
-
-    angle = math.acos(np.clip((np.trace(R_mat) - 1) / 2, -1.0, 1.0))
-    if angle < 1e-6:
-        return [0.0, 0.0, 0.0]
-
-    x_axis = R_mat[2, 1] - R_mat[1, 2]
-    y_axis = R_mat[0, 2] - R_mat[2, 0]
-    z_axis = R_mat[1, 0] - R_mat[0, 1]
-
-    norm = math.sqrt(x_axis**2 + y_axis**2 + z_axis**2)
-    if norm < 1e-6:
-        return [0.0, 0.0, 0.0]
-
-    return [angle * x_axis/norm, angle * y_axis/norm, angle * z_axis/norm]
-
-def build_pose(pose_type, device, pose_data=None, **kwargs):
-    body_pose = torch.zeros((1, 63), device=device)
-    global_orient = torch.zeros((1, 3), device=device)
-
-    if pose_data:
-        # Standard SMPL-X (0=Pelvis, 1-21 are body_pose)
-        # body_pose index = (Joint_ID - 1) * 3
-        
-        # Shoulders (16, 17) -> body_pose [15, 16]
-        if 'shoulder_l' in pose_data and pose_data['shoulder_l']:
-            body_pose[0, 15*3 : 15*3+3] = torch.tensor(euler_to_axis_angle(pose_data['shoulder_l']))
-        if 'shoulder_r' in pose_data and pose_data['shoulder_r']:
-            body_pose[0, 16*3 : 16*3+3] = torch.tensor(euler_to_axis_angle(pose_data['shoulder_r']))
-            
-        # Elbows (18, 19) -> body_pose [17, 18]
-        if 'elbow_l' in pose_data and pose_data['elbow_l']:
-            body_pose[0, 17*3 : 17*3+3] = torch.tensor(euler_to_axis_angle(pose_data['elbow_l']))
-        if 'elbow_r' in pose_data and pose_data['elbow_r']:
-            body_pose[0, 18*3 : 18*3+3] = torch.tensor(euler_to_axis_angle(pose_data['elbow_r']))
-        
-        # Spine/Neck/Head (3, 12, 15)
-        if 'spine' in pose_data and pose_data['spine']:
-            body_pose[0, 2*3 : 2*3+3] = torch.tensor(euler_to_axis_angle(pose_data['spine']))
-        if 'head' in pose_data and pose_data['head']:
-            body_pose[0, 14*3 : 14*3+3] = torch.tensor(euler_to_axis_angle(pose_data['head']))
-            
-        # Hips (0) -> Global Orient
-        if 'hips' in pose_data and pose_data['hips']:
-            global_orient[0, :] = torch.tensor(euler_to_axis_angle(pose_data['hips']))
-            
-        # Legs: Knee(4,5), Ankle(7,8) -> body_pose [3,4], [6,7]
-        if 'knee_l' in pose_data and pose_data['knee_l']:
-            body_pose[0, 3*3 : 3*3+3] = torch.tensor(euler_to_axis_angle(pose_data['knee_l']))
-        if 'knee_r' in pose_data and pose_data['knee_r']:
-            body_pose[0, 4*3 : 4*3+3] = torch.tensor(euler_to_axis_angle(pose_data['knee_r']))
-        if 'ankle_l' in pose_data and pose_data['ankle_l']:
-            body_pose[0, 6*3 : 6*3+3] = torch.tensor(euler_to_axis_angle(pose_data['ankle_l']))
-        if 'ankle_r' in pose_data and pose_data['ankle_r']:
-            body_pose[0, 7*3 : 7*3+3] = torch.tensor(euler_to_axis_angle(pose_data['ankle_r']))
-    else:
-        # Defaults remain simplified or can be adjusted
-        pass
-
-    return body_pose, global_orient
-
-# =========================
-# MAIN
-# =========================
-def run_extraction(model_path, betas_vector, gender='neutral',
-                   pose_type='t-pose', output_vit=None, output_glb=None, pose_data=None, **kwargs):
-
-
-    device = torch.device('cpu')
-
-
-    # =========================
-    # BETAS
-    # =========================
-    full_betas = list(betas_vector)[:10]  # SMPL-X standard uses 10 betas
-    if len(full_betas) < 10:
-        full_betas += [0.0] * (10 - len(full_betas))
-
-
-    betas = torch.tensor([full_betas], dtype=torch.float32, device=device)
-
-    # =========================
-    # MODEL
-    # =========================
-    # =========================
-    # MODEL (With Auto-Fallback)
-    # =========================
-    try:
-        model = smplx.create(
-            model_path,
-            model_type='smplx',
-            gender=gender,
-            use_pca=False,
-            num_betas=len(full_betas)
-        ).to(device)
-    except Exception as e:
-        print(f"⚠️ Warning: CUDA error detector: {str(e)}. Falling back to CPU.", file=sys.stderr)
-        device = torch.device('cpu')
-        model = smplx.create(
-            model_path,
-            model_type='smplx',
-            gender=gender,
-            use_pca=False,
-            num_betas=len(full_betas)
-        ).to(device)
-
-
-    # =========================
-    # T-POSE MEDIDAS
-    # =========================
-    output_t = model(betas=betas)
-
-    vertices_t = output_t.vertices[0].detach().cpu().numpy()
-    vertices_cm = vertices_t * 100
-
-    mesh_cm = trimesh.Trimesh(vertices_cm, model.faces, process=False)
-
-    max_y = np.max(vertices_cm[:, 1])
-    min_y = np.min(vertices_cm[:, 1])
-    height = max_y - min_y
-
-    chest_y = min_y + (height * 0.72)
-    waist_y = min_y + (height * 0.60)
-    hips_y = min_y + (height * 0.48)
-
-    joints_cm = output_t.joints[0].detach().cpu().numpy() * 100
-
-    measurements = {
-        "height": float(height),
-        "chest": safe_section_length(mesh_cm, chest_y),
-        "waist": safe_section_length(mesh_cm, waist_y),
-        "hips": safe_section_length(mesh_cm, hips_y),
-        "shoulder_width": float(
-            np.linalg.norm(joints_cm[16] - joints_cm[17])
-        )
-    }
-
-    # =========================
-    # POSE FINAL
-    # =========================
-    body_pose, global_orient = build_pose(pose_type, device, pose_data=pose_data, **kwargs)
-
-    output_p = model(betas=betas, body_pose=body_pose, global_orient=global_orient)
-    vertices_p = output_p.vertices[0].detach().cpu().numpy()
-
-    # =========================
-    # EXPORT GLB
-    # =========================
-    if output_glb:
-        mesh = trimesh.Trimesh(vertices_p, model.faces, process=False)
-        mesh.export(output_glb)
-
-    # =========================
-    # EXPORT VIT
-    # =========================
-    if output_vit:
-        generate_vit_xml(measurements, output_vit)
-
-    return measurements
-
-
-# =========================
-# CLI
-# =========================
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument('--model_dir', type=str, required=True)
-    parser.add_argument('--betas', type=float, nargs='+', required=True)
-    parser.add_argument('--gender', type=str, default='neutral')
-    parser.add_argument('--pose_type', type=str, default='t-pose')
-    parser.add_argument('--output_vit', type=str)
-
-    parser.add_argument('--output_glb', type=str)
-    
-    # Dynamic Pose Args
-    parser.add_argument('--shoulder_l_z', type=float)
-    parser.add_argument('--shoulder_r_z', type=float)
-    parser.add_argument('--elbow_l_x', type=float)
-    parser.add_argument('--elbow_r_x', type=float)
-
-    parser.add_argument('--pose_json', type=str, help='JSON string with full euler joint angles')
-
+def main():
+    parser = argparse.ArgumentParser(description="Anny Model Extractor")
+    parser.add_argument("--model_dir", type=str, help="Path to models (not used by anny but kept for compatibility)")
+    parser.add_argument("--betas", type=float, nargs="+", help="10-12 shape parameters")
+    parser.add_argument("--gender", type=str, default="neutral", help="male, female or neutral")
+    parser.add_argument("--pose_type", type=str, default="t-pose", help="t-pose, a-pose")
+    parser.add_argument("--output_glb", type=str, required=True, help="Output GLB path")
+    parser.add_argument("--output_vit", type=str, help="Output VIT path (optional)")
+    parser.add_argument("--scales", type=str, help="Local scales in JSON format (head, torso, arms, legs)")
+    parser.add_argument("--shoulder_l_z", type=float)
+    parser.add_argument("--shoulder_r_z", type=float)
+    parser.add_argument("--elbow_l_x", type=float)
+    parser.add_argument("--elbow_r_x", type=float)
 
     args = parser.parse_args()
 
-    try:
+    # 1. Initialize ANNY model with all phenotypes (needed for cupsize/firmness)
+    model = anny.create_fullbody_model(all_phenotypes=True)
+    anthro = Anthropometry(model)
 
+    # 2. Map Betas to ANNY Phenotypes
+    # ['gender', 'age', 'muscle', 'weight', 'height', 'proportions', 'cupsize', 'firmness', ...]
+    def normalize_beta(idx, default=0.5, invert=False):
+        if args.betas and len(args.betas) > idx:
+            val = args.betas[idx]
+            if invert: val = -val
+            # Normalize [-5, 5] to [0, 1]
+            return float(np.clip((val + 2) / 4, 0.0, 1.0))
+        return default
 
-        pose_kwargs = {
-            'shoulder_l_z': args.shoulder_l_z,
-            'shoulder_r_z': args.shoulder_r_z,
-            'elbow_l_x': args.elbow_l_x,
-            'elbow_r_x': args.elbow_r_x
-        }
-        pose_kwargs = {k: v for k, v in pose_kwargs.items() if v is not None}
+    gender_val = 0.5 # Default neutral
+    if args.gender == "male" or args.gender == "male-only": gender_val = 0.0
+    elif args.gender == "female": gender_val = 1.0
+    
+    phenotypes = {
+        'gender': gender_val,
+        'height': normalize_beta(0),   # Beta 0 -> Estatura
+        'weight': normalize_beta(1),   # Beta 1 -> Peso
+        'muscle': normalize_beta(2),   # Beta 2 -> Complexión
+        'proportions': normalize_beta(3, invert=True), # Beta 3 -> Hombros
+        'age': normalize_beta(4, 0.5), # Beta 4 -> Cadera (mapped to age/global for now)
+        'cupsize': normalize_beta(11, 0.5), # Beta 11 -> Busto / Pecho
+        'firmness': 0.5
+    }
 
-        pose_data = None
-        if args.pose_json:
-            try:
-                pose_data = json.loads(args.pose_json)
-            except Exception as e:
-                pass
+    # Set default values for race if not provided
+    for race in ['african', 'asian', 'caucasian']:
+        phenotypes[race] = 1.0/3.0
 
-        result = run_extraction(
-            args.model_dir,
-            args.betas,
-            args.gender,
-            args.pose_type,
-            args.output_vit,
-            args.output_glb,
-            pose_data=pose_data,
-            **pose_kwargs
-        )
+    # 2.1 Extract implicit scales from additional betas if --scales not provided
+    implicit_scales = {}
+    if args.betas:
+        def beta_to_scale(idx, default=1.0):
+            if len(args.betas) > idx:
+                val = args.betas[idx]
+                # Map [-5, 5] to [0.7, 1.3]
+                return float(np.clip(1.0 + (val * 0.06), 0.7, 1.3))
+            return default
+            
+        implicit_scales['head'] = beta_to_scale(9)  # Beta 9 -> Cabeza
+        implicit_scales['head'] *= (beta_to_scale(7) * 0.5 + 0.5) # Beta 7 (Cuello) impacts head too
+        implicit_scales['legs'] = beta_to_scale(5)  # Beta 5 -> Piernas
+        implicit_scales['arms'] = beta_to_scale(10) # Beta 10 -> Brazos
+        implicit_scales['torso'] = beta_to_scale(6) # Beta 6 -> Cintura
+        implicit_scales['torso'] *= (beta_to_scale(8) * 0.5 + 0.5) # Beta 8 (Profundidad) impacts torso
+        # Cadera (4) is handled by Age/Proportions mostly, but could impact Torso-Lower or Legs-Upper
 
+    # 3. Generate Mesh
+    with torch.no_grad():
+        result = model.forward(phenotype_kwargs=phenotypes)
+        vertices = result['vertices'][0].detach().cpu().numpy()
+        faces = model.faces.detach().cpu().numpy()
 
-        print(json.dumps(result))
+    # 3.1 Apply Local Scales if provided
+    active_scales = None
+    if args.scales:
+        try:
+            active_scales = json.loads(args.scales)
+        except Exception as e:
+            print(f"Error parsing scales argument: {e}", file=sys.stderr)
+    elif implicit_scales:
+        active_scales = implicit_scales
 
+    if active_scales:
+        try:
+            # Define regions (Anny is Z-up, height ~1.6m, hips at ~0)
+            # Head: > 0.55
+            # Torso: -0.1 to 0.55
+            # Legs: < -0.1
+            # Arms: |X| > 0.25 (and Z > -0.1)
+            
+            s_head = active_scales.get('head', 1.0)
+            s_torso = active_scales.get('torso', 1.0)
+            s_arms = active_scales.get('arms', 1.0)
+            s_legs = active_scales.get('legs', 1.0)
 
-    except Exception as e:
-        print(json.dumps({"error": str(e)}))
-        sys.exit(1)
+            # Apply Head
+            head_mask = vertices[:, 2] > 0.55
+            vertices[head_mask] *= s_head
+            
+            # Apply Arms (Rough approximation by X distance)
+            arms_mask = (np.abs(vertices[:, 0]) > 0.25) & (vertices[:, 2] > -0.1)
+            vertices[arms_mask] *= s_arms
+            
+            # Apply Legs
+            legs_mask = vertices[:, 2] < -0.1
+            vertices[legs_mask] *= s_legs
+            
+            # Apply Torso (The rest)
+            torso_mask = ~(head_mask | arms_mask | legs_mask)
+            vertices[torso_mask] *= s_torso
+
+        except Exception as e:
+            print(f"Error applying scales: {e}", file=sys.stderr)
+
+    # 4. Create Trimesh and Export
+    mesh = trimesh.Trimesh(vertices=vertices, faces=faces)
+    
+    # Rotate -90 degrees around X to convert Z-up (Anny) to Y-up (Three.js/GLB)
+    rotation = trimesh.transformations.rotation_matrix(np.radians(-90), [1, 0, 0])
+    mesh.apply_transform(rotation)
+    
+    # Ensure directory exists
+    dir_name = os.path.dirname(args.output_glb)
+    if dir_name:
+        os.makedirs(dir_name, exist_ok=True)
+    mesh.export(args.output_glb)
+
+    # 5. Calculate Biometrics
+    measurements = anthro(result['vertices'])
+    
+    # result structure for controller
+    output_biometrics = {
+        "height": float(measurements['height'].item() * 100), # to cm
+        "waist": float(measurements['waist_circumference'].item() * 100),
+        "weight": float(measurements['mass'].item()),
+        "bmi": float(measurements['bmi'].item()),
+        "chest": float(measurements['waist_circumference'].item() * 1.1 * 100), # Mocked relation
+        "hips": float(measurements['waist_circumference'].item() * 1.2 * 100)  # Mocked relation
+    }
+
+    # 6. Save VIT if requested
+    if args.output_vit:
+        with open(args.output_vit, 'w') as f:
+            json.dump(output_biometrics, f)
+
+    # Output JSON to stdout for the controller to pick up
+    print(json.dumps(output_biometrics))
+
+if __name__ == "__main__":
+    main()

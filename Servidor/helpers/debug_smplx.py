@@ -1,12 +1,10 @@
-import smplx
-import torch
+"""
+SMPL-X helper removed.
 
-model_path = 'models/smplx'
-model = smplx.create(model_path, model_type='smplx')
-print("Model created.")
-
-# SMPL-X has 55 joints
-# We want to see if 16 and 17 are what we think they are.
-# However, smplx doesn't directly give names easily without the J_regressor mapping.
-# But we can check the number of joints.
-print(f"Num joints: {model.J_regressor.shape[0]}")
+This file previously imported and used the `smplx` Python package. The project
+was refactored to rely exclusively on the remote Anny pipeline, so local
+SMPL-X usage was removed. This placeholder remains to avoid accidental
+imports failing in scripts. If you need to re-enable SMPL-X, restore the
+original implementation and ensure the smplx package and model files are
+installed under `models/smplx`.
+"""

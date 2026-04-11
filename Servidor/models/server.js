@@ -99,6 +99,25 @@ class Server {
             socket.on('disconnect', () => {
                 console.log('Cliente socket desconectado:', socket.id);
             });
+
+            // Reemitir vistas previas de avatar (betas) a otros clientes para preview en tiempo real
+            socket.on('avatar:preview', (payload) => {
+                try {
+                    // No hacemos procesamiento pesado aquí; simplemente reenviamos a otros clientes
+                    // para que el Probador / otros UIs muestren la previsualización en tiempo real.
+                    socket.broadcast.emit('avatar:preview', payload);
+                } catch (err) {
+                    console.error('Error re-emitiendo avatar:preview:', err);
+                }
+            });
+            // Reemitir vistas previas de pose a otros clientes para preview en tiempo real
+            socket.on('pose:preview', (payload) => {
+                try {
+                    socket.broadcast.emit('pose:preview', payload);
+                } catch (err) {
+                    console.error('Error re-emitiendo pose:preview:', err);
+                }
+            });
         });
     }
 

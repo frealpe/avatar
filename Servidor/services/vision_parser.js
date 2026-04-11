@@ -2,7 +2,7 @@ require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
 const { Ollama } = require('ollama');
-const { generarArchivoVIT } = require('./seamly_engine');
+// Seamly2D engine was removed; functions like generarArchivoVIT/generarSVG are no longer available.
 
 // Inicializar un cliente custom de Ollama apuntando al host configurado
 const ollama = new Ollama({ 
@@ -211,38 +211,9 @@ if (require.main === module) {
             console.log(JSON.stringify(res, null, 2));
             console.log('---------------');
             
-            // Exportar a Seamly2D (.vit format)
-            const baseDir = path.join(process.cwd(), 'public', 'patterns');
-            const vitPath = path.join(baseDir, `medidas_${Date.now()}.vit`);
-            const valPath = path.join(baseDir, `patron_avanzado_${Date.now()}.val`);
-            
-            try {
-                // 1. Guardar medidas .vit
-                const finalVitPath = generarArchivoVIT(res.parametros, vitPath);
-                console.log(`\n[SEAMLY2D] Exportado archivo de medidas (.vit): ${finalVitPath}`);
-                
-                // 2. Generar patrón .val avanzado con LLAMA3
-                generarEstructuraVAL(res.descripcion, res.parametros)
-                    .then(async xml => {
-                        if (xml) {
-                            fs.writeFileSync(valPath, xml, 'utf8');
-                            console.log(`[SEAMLY2D] Patrón avanzado (.val) generado por Llama3: ${valPath}`);
-                            
-                            // 3. Probar generación de SVG (Headless)
-                            const { generarSVG } = require('./seamly_engine');
-                            console.log(`[SEAMLY2D] Iniciando exportación a SVG (Modo Headless)...`);
-                            try {
-                                await generarSVG(finalVitPath, valPath, baseDir);
-                                console.log(`[SEAMLY2D] ¡SVG generado exitosamente sin abrir interfaz!`);
-                            } catch (svgErr) {
-                                console.error(`[SEAMLY2D ERROR] Falló exportación SVG:`, svgErr.message);
-                            }
-                        }
-                    });
-                    
-            } catch (vitErr) {
-                console.error('\n[SEAMLY2D ERROR] Falló la creación de archivos:', vitErr.message);
-            }
+            // Seamly2D functionality removed: saving .vit/.val/.svg is disabled.
+            console.warn('\n[SEAMLY2D] Funcionalidad de exportación a Seamly2D eliminada en esta versión.');
+            console.warn('Si necesitas generar .vit/.val/.svg instala o restaura el módulo seamly_engine.js');
         })
         .catch(err => {
             console.error('\n-- ERROR --');

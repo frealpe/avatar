@@ -1,5 +1,6 @@
 const { procesarPrenda, generarEstructuraVAL } = require('./vision_parser');
-const { generarArchivoVIT, generarArchivoVAL, generarSVG } = require('./seamly_engine');
+// Note: Seamly2D engine has been removed. Pattern generation that depended on
+// Seamly is disabled. Calls to PatternEngine.generatePattern will reject.
 const path = require('path');
 const fs = require('fs');
 
@@ -42,6 +43,10 @@ class PatternEngine {
      */
     static async generatePattern(imagePath, talla = 'M', patronBaseName = 'patron_base.val') {
         console.log('🧵 [PATTERN ENGINE] Starting garment pipeline...');
+
+        // FEATURE REMOVED: Seamly2D-dependent pattern generation is disabled.
+        // Fail fast so callers (Workers / scripts) can fallback or skip garment steps.
+        throw new Error('Seamly2D integration removed: Pattern generation is disabled in this build.');
         
         try {
             // 0. Verificar estado de los modelos de IA
@@ -85,31 +90,9 @@ class PatternEngine {
                 throw new Error(`Pipeline falló en Seamly2D: ${engineError.message}`);
             }
             
-            // 5. Detectar el SVG generado por Seamly2D (genera patron_base_layout_01.svg)
-            const svgFiles = fs.readdirSync(publicPatterns)
-                .filter(f => f.startsWith('patron_base') && f.endsWith('.svg'))
-                .sort((a, b) => {
-                    const statA = fs.statSync(path.join(publicPatterns, a));
-                    const statB = fs.statSync(path.join(publicPatterns, b));
-                    return statB.mtimeMs - statA.mtimeMs; // Más reciente primero
-                });
-
-            if (svgFiles.length === 0) {
-                throw new Error('Seamly2D no generó ningún archivo SVG.');
-            }
-
-            const svgName = svgFiles[0]; // El más reciente
-            console.log(`[ENGINE] STATUS: SVG detectado: ${svgName}`);
-            const svgURL = `/patterns/${svgName}`;
-            const absoluteSvgPath = path.join(publicPatterns, svgName);
-
-            return {
-                ok: true,
-                url: svgURL,
-                absoluteSvgPath,
-                params: resultIa.parametros,
-                description: resultIa.descripcion
-            };
+            // The original pipeline returned generated SVG data here, but since
+            // Seamly2D is removed we never reach this point. This branch kept for
+            // reference; the function fails earlier with a clear error.
 
         } catch (error) {
             console.error('[ENGINE] STATUS: Error global en Pattern Engine:', error.message);

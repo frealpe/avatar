@@ -55,6 +55,16 @@ const iotApi = {
         }
     },
 
+    ensureAvatar: async (avatarData) => {
+        try {
+            const response = await axios.post(`${API_URL}/ensure`, avatarData);
+            return response.data;
+        } catch (error) {
+            console.error('Error ensuring avatar', error);
+            throw error;
+        }
+    },
+
     getClothesCatalog: async () => {
         try {
             const response = await axios.get(`${API_URL}/clothes`);

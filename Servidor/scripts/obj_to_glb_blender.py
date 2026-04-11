@@ -1,0 +1,43 @@
+import bpy
+import sys
+import os
+
+# Usage: blender -b -P obj_to_glb_blender.py -- input.obj output.glb
+argv = sys.argv
+if "--" in argv:
+    argv = argv[argv.index("--") + 1:]
+else:
+    argv = []
+
+if len(argv) < 2:
+    print("Usage: blender -b -P obj_to_glb_blender.py -- <input.obj> <output.glb>")
+    sys.exit(1)
+
+input_path = os.path.abspath(argv[0])
+output_path = os.path.abspath(argv[1])
+
+print(f"Importing OBJ: {input_path}")
+print(f"Exporting GLB: {output_path}")
+
+# Start with an empty scene
+bpy.ops.wm.read_factory_settings(use_empty=True)
+
+# Import OBJ
+try:
+    bpy.ops.import_scene.obj(filepath=input_path)
+except Exception as e:
+    print('Failed to import OBJ:', e)
+    sys.exit(2)
+
+# Optionally, you can apply transformations or recenter
+# Select all objects
+for obj in bpy.context.scene.objects:
+    obj.select_set(True)
+
+# Export to GLB
+try:
+    bpy.ops.export_scene.gltf(filepath=output_path, export_format='GLB', export_apply=True)
+    print('Export successful')
+except Exception as e:
+    print('Failed to export GLB:', e)
+    sys.exit(3)

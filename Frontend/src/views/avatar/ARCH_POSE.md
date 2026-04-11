@@ -13,10 +13,10 @@ graph TD
     end
 
     subgraph "Backend (Node.js + Python)"
-        C -- "HTTP POST (betas + pose)" --> D[Express Controller]
-        D -- "CLI Execution" --> G[smplx_extractor.py]
-        G -- "SMPL-X Forward Pass" --> H[Generación de Malla .glb]
-        H -- "Return URL" --> C
+    C -- "HTTP POST (betas + pose)" --> D[Express Controller]
+    D -- "Inference/Service Call" --> G[Anny / Remote Space]
+    G -- "Reconstrucción 3D (SAM3D)" --> H[Generación de Malla .glb]
+    H -- "Return URL" --> C
     end
 
     C -- "Update Global Store" --> E

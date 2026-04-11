@@ -27,6 +27,8 @@ const LaboratorioIA = () => {
     const [bodyState, setBodyState] = useState({ loading: false, result: null, telemetry: null, timer: 0 });
     const [garmentState, setGarmentState] = useState({ loading: false, result: null, telemetry: null, timer: 0 });
     const [garmentView, setGarmentView] = useState('2D'); // '2D' or '3D'
+    const [editableMeasurements, setEditableMeasurements] = useState(null);
+    const [betas, setBetas] = useState([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
 
     // 1. Cargar desde localStorage al montar si no hay datos en location
     useEffect(() => {
@@ -69,7 +71,7 @@ const LaboratorioIA = () => {
                 meshUrl: getFullUrl(model.meshUrl),
                 measurements: model.measurements,
                 betas: model.betas || [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                modelType: model.name || 'SMPLX_Standard'
+                modelType: model.name || 'SAM3D_Standard'
             };
             setBodyState({
                 loading: false,
@@ -160,9 +162,35 @@ const LaboratorioIA = () => {
         reader.readAsDataURL(file);
     };
 
-    const [editableMeasurements, setEditableMeasurements] = useState(null);
-    const [betas, setBetas] = useState([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
     const [recalculating, setRecalculating] = useState(false);
+    const [activePart, setActivePart] = useState('TORSO'); // 'CABEZA', 'TORSO', 'BRAZOS', 'PIERNAS'
+
+    const bodyPartGroups = {
+        CABEZA: {
+            indices: [7, 9],
+            icon: 'face',
+            label: 'Cabeza & Cuello',
+            color: '#00f1fe'
+        },
+        TORSO: {
+            indices: [0, 1, 2, 3, 4, 6, 8, 11],
+            icon: 'accessibility_new',
+            label: 'Tronco & Proporción',
+            color: '#d800ff'
+        },
+        BRAZOS: {
+            indices: [10],
+            icon: 'fitness_center',
+            label: 'Ext. Superiores',
+            color: '#facd2e'
+        },
+        PIERNAS: {
+            indices: [5],
+            icon: 'directions_run',
+            label: 'Ext. Inferiores',
+            color: '#00fe85'
+        }
+    };
 
     // ... handleSaveMeasurements ...
     const handleRecalculate = async (newBetas) => {
@@ -277,29 +305,45 @@ const LaboratorioIA = () => {
                                             <h4 className="text-[10px] font-black uppercase tracking-widest text-[#00f1fe] w-full text-center">Consola Bio-Métrica</h4>
                                         </div>
 
-                                        <div className="flex-1 overflow-y-auto p-3 custom-scrollbar space-y-3 mt-2">
-                                            {/* SECCIÓN: SHAPE BETAS (PAREJAS) */}
-                                            <div className="grid grid-cols-2 gap-3">
-                                                {betas.map((v, i) => {
-                                                    const labels = ["Estatura", "Peso", "Músculo", "Hombros", "Cadera", "Piernas", "Torso", "Cuello", "Fondo (Prof.)", "Cabeza", "Brazos", "Muslo"];
+                                        <div className="flex-1 overflow-y-auto p-3 custom-scrollbar space-y-4 mt-2">
+                                            {/* SELECTOR DE CATEGORÍAS (TARJETAS) */}
+                                            <div className="grid grid-cols-4 gap-2 px-1">
+                                                {Object.entries(bodyPartGroups).map(([id, group]) => (
+                                                    <button
+                                                        key={id}
+                                                        onClick={() => setActivePart(id)}
+                                                        className={`flex flex-col items-center gap-1.5 p-2 rounded-xl border transition-all ${activePart === id
+                                                            ? `bg-white/5 border-[${group.color}]/50 shadow-[0_0_15px_${group.color}22]`
+                                                            : 'bg-[#161a1e]/40 border-white/5 hover:bg-white/5'
+                                                            }`}
+                                                    >
+                                                        <span className={`material-symbols-outlined text-lg ${activePart === id ? '' : 'text-gray-600'}`} style={{ color: activePart === id ? group.color : '' }}>{group.icon}</span>
+                                                        <span className={`text-[7px] font-black uppercase tracking-widest ${activePart === id ? 'text-white' : 'text-gray-500'}`}>{id}</span>
+                                                    </button>
+                                                ))}
+                                            </div>
+
+                                            {/* LISTADO DE SLIDERS FILTRADOS */}
+                                            <div className="space-y-3 pt-2">
+                                                {bodyPartGroups[activePart].indices.map((i) => {
+                                                    const labels = ["Estatura", "Peso", "Complexión", "Hombros", "Cadera", "Piernas", "Cintura", "Cuello", "Profundidad", "Cabeza", "Brazos", "Busto / Pecho"];
                                                     const METRIC_CONFIG = {
                                                         0: { base: 170.0, delta: 7.0, unit: "cm" }, // Estatura
                                                         1: { base: 72.0, delta: 6.0, unit: "kg" },  // Peso
-                                                        2: { base: 95.0, delta: 5.0, unit: "cm" },  // Músculo (Pecho)
+                                                        2: { base: 95.0, delta: 5.0, unit: "cm" },  // Complexión
                                                         3: { base: 42.0, delta: 2.5, unit: "cm" },  // Hombros
                                                         4: { base: 100.0, delta: 6.0, unit: "cm" }, // Cadera
                                                         5: { base: 85.0, delta: 4.0, unit: "cm" },  // Piernas
-                                                        6: { base: 82.0, delta: 5.0, unit: "cm" },  // Torso (Cintura)
+                                                        6: { base: 82.0, delta: 5.0, unit: "cm" },  // Cintura
                                                         7: { base: 38.0, delta: 2.0, unit: "cm" },  // Cuello
                                                         8: { base: 22.0, delta: 3.0, unit: "cm" },  // Fondo (Profundidad)
                                                         9: { base: 56.0, delta: 1.5, unit: "cm" },  // Cabeza
                                                         10: { base: 65.0, delta: 3.0, unit: "cm" }, // Brazos
-                                                        11: { base: 56.0, delta: 3.5, unit: "cm" }, // Muslo
+                                                        11: { base: 92.0, delta: 6.0, unit: "cm" }, // Busto
                                                     };
 
                                                     const config = METRIC_CONFIG[i];
-
-                                                    // Valor a mostrar: Si hay config, calculamos el valor en CM, si no, mostramos el Beta crudo (sigma)
+                                                    const v = betas[i];
                                                     const displayValue = config
                                                         ? (config.base + (v * config.delta)).toFixed(1)
                                                         : v.toFixed(2);
@@ -307,20 +351,22 @@ const LaboratorioIA = () => {
                                                     const handleInputChange = (val) => {
                                                         const num = parseFloat(val) || 0;
                                                         if (config) {
-                                                            // Transformación Inversa: Beta = (ValorCM - Base) / Delta
                                                             const newBeta = (num - config.base) / config.delta;
                                                             updateBeta(i, newBeta);
                                                         } else {
                                                             updateBeta(i, num);
                                                         }
                                                     };
+
+                                                    const currentColor = bodyPartGroups[activePart].color;
+
                                                     return (
-                                                        <div key={i} className="bg-black/40 p-2 rounded-xl border border-white/5 space-y-1">
+                                                        <div key={i} className="bg-black/40 p-3 rounded-2xl border border-white/5 space-y-2 group hover:border-white/10 transition-all">
                                                             <div className="flex justify-between items-center">
                                                                 <div className="flex flex-col">
-                                                                    <span className="text-[8px] font-black uppercase text-gray-500">{labels[i] || `BETA ${i}`}</span>
+                                                                    <span className="text-[8px] font-black uppercase text-gray-500 tracking-wider font-['Space_Grotesk']">{labels[i] || `BETA ${i}`}</span>
                                                                     {config && (
-                                                                        <span className="text-[10px] font-bold text-[#00f1fe]">{displayValue} {config.unit}</span>
+                                                                        <span className="text-xs font-black text-white">{displayValue} <span className="text-[8px] text-gray-600 ml-0.5">{config.unit}</span></span>
                                                                     )}
                                                                 </div>
                                                                 <div className="flex items-center gap-2">
@@ -330,17 +376,21 @@ const LaboratorioIA = () => {
                                                                         value={displayValue}
                                                                         onChange={(e) => handleInputChange(e.target.value)}
                                                                         onBlur={() => handleRecalculate()}
-                                                                        className="w-16 bg-white/5 border border-white/10 rounded-md py-0.5 px-1 text-[10px] font-mono text-[#d800ff] text-right focus:border-[#d800ff] outline-none"
+                                                                        className="w-16 bg-white/5 border border-white/10 rounded-lg py-1 px-2 text-[10px] font-mono text-right focus:border-[#00f1fe] outline-none transition-colors"
+                                                                        style={{ color: currentColor }}
                                                                     />
-                                                                    <span className="text-[8px] text-gray-600 font-bold uppercase">{config ? 'cm' : 'σ'}</span>
                                                                 </div>
                                                             </div>
-                                                            <input
-                                                                type="range" min="-5" max="5" step="0.1" value={v}
-                                                                onChange={(e) => updateBeta(i, e.target.value)}
-                                                                onMouseUp={() => handleRecalculate()}
-                                                                className="w-full h-1 bg-white/10 rounded-lg appearance-none accent-[#d800ff]"
-                                                            />
+                                                            <div className="relative h-1.5 flex items-center">
+                                                                <div className="absolute w-full h-1 bg-white/5 rounded-full"></div>
+                                                                <input
+                                                                    type="range" min="-5" max="5" step="0.1" value={v}
+                                                                    onChange={(e) => updateBeta(i, e.target.value)}
+                                                                    onMouseUp={() => handleRecalculate()}
+                                                                    className="w-full h-1.5 bg-transparent rounded-lg appearance-none cursor-pointer relative z-10 accent-white"
+                                                                    style={{ accentColor: currentColor }}
+                                                                />
+                                                            </div>
                                                         </div>
                                                     );
                                                 })}

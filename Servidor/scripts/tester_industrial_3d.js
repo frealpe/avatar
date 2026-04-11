@@ -2,7 +2,9 @@ const path = require('path');
 const fs = require('fs');
 require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 
-const { generarArchivoVIT, generarArchivoVAL, generarSVG } = require('../services/seamly_engine');
+// Seamly2D was removed; pattern generation and SVG export are disabled.
+// Require the stub module only to provide a clear error if accidentally called.
+const seamlyEngine = require('../services/seamly_engine');
 const { generarPrenda3D } = require('../services/blender_engine');
 const TrellisService = require('../services/trellis_service');
 
@@ -54,39 +56,9 @@ async function runTest() {
     const outputName = `test_result_${timestamp}.glb`;
 
     try {
-        // Step 1: Generate Seamly2D Files
-        console.log('🧵 [TESTER] Step 1: Generating Seamly2D pattern files...');
-        generarArchivoVIT(params, vitPath);
-        generarArchivoVAL(params, path.basename(vitPath), valPath);
-
-        // Step 2: Export SVG
-        console.log('🎨 [TESTER] Step 2: Exporting SVG from Seamly2D...');
-        await generarSVG(vitPath, valPath, outputDir, params);
-
-        // Find the generated SVG
-        const svgFiles = fs.readdirSync(outputDir)
-            .filter(f => f.startsWith(`test_pattern_${timestamp}`) && f.endsWith('.svg'));
-        
-        if (svgFiles.length === 0) {
-            throw new Error('SVG generation failed or file not found.');
-        }
-        const svgPath = path.join(outputDir, svgFiles[0]);
-        console.log(`✅ [TESTER] SVG Ready: ${svgPath}`);
-
-        // Step 3: Run Blender Simulation
-        console.log('🤖 [TESTER] Step 3: Triggering Blender simulation...');
-        const result = await generarPrenda3D({
-            avatarPath,
-            svgPath,
-            outputName
-        });
-
-        console.log('\n================================================');
-        console.log('🎉 [TESTER] PIPELINE TEST SUCCESSFUL');
-        console.log(`📍 FINAL GLB URL: ${result.glbPrendaUrl}`);
-        console.log(`📍 LOCAL PATH: ${path.join(outputDir, outputName)}`);
-        console.log('================================================\n');
-
+        console.warn('🧵 [TESTER] Seamly2D functionality has been removed. Skipping pattern generation and SVG export.');
+        console.warn('If you need to run this test, restore the seamly_engine module or re-enable Seamly2D support.');
+        return;
     } catch (error) {
         console.error('❌ [TESTER] Pipeline failed:', error.message);
     }
