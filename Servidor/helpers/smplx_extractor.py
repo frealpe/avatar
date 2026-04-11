@@ -15,6 +15,7 @@ def main():
     parser.add_argument("--betas", type=float, nargs="+", help="10-12 shape parameters")
     parser.add_argument("--gender", type=str, default="neutral", help="male, female or neutral")
     parser.add_argument("--pose_type", type=str, default="t-pose", help="t-pose, a-pose")
+    parser.add_argument("--pose_data", type=str, help="JSON string of poseData (Euler angles per joint)")
     parser.add_argument("--output_glb", type=str, required=True, help="Output GLB path")
     parser.add_argument("--output_vit", type=str, help="Output VIT path (optional)")
     parser.add_argument("--scales", type=str, help="Local scales in JSON format (head, torso, arms, legs)")
@@ -76,9 +77,67 @@ def main():
         implicit_scales['torso'] *= (beta_to_scale(8) * 0.5 + 0.5) # Beta 8 (Profundidad) impacts torso
         # Cadera (4) is handled by Age/Proportions mostly, but could impact Torso-Lower or Legs-Upper
 
+    # 2.2 Process Pose
+    pose_params = None
+    if args.pose_data:
+        try:
+            pose_data = json.loads(args.pose_data)
+            # Anny expects BxJx4x4
+            # model.bone_labels contains 163 bones
+            num_bones = len(model.bone_labels)
+            pose_tensor = torch.eye(4).unsqueeze(0).repeat(1, num_bones, 1, 1).float()
+
+            # Map frontend names to Anny bone names
+            # Frontend uses: shoulder_l, shoulder_r, elbow_l, elbow_r, hand_l, hand_r, head, spine, hips, knee_l, knee_r, ankle_l, ankle_r
+            bone_map = {
+                'hips': 'pelvis',
+                'spine': 'spine01',
+                'head': 'head',
+                'shoulder_l': 'upperarm01.L', # frontend shoulder acts as upper arm
+                'shoulder_r': 'upperarm01.R',
+                'elbow_l': 'lowerarm01.L',
+                'elbow_r': 'lowerarm01.R',
+                'hand_l': 'wrist.L',
+                'hand_r': 'wrist.R',
+                'knee_l': 'lowerleg01.L',
+                'knee_r': 'lowerleg01.R',
+                'ankle_l': 'foot.L',
+                'ankle_r': 'foot.R'
+            }
+
+            from scipy.spatial.transform import Rotation
+
+            for key, euler in pose_data.items():
+                if key in bone_map:
+                    anny_bone_name = bone_map[key]
+                    # Find exact match or partial match in bone_labels
+                    idx = -1
+                    if anny_bone_name in model.bone_labels:
+                        idx = model.bone_labels.index(anny_bone_name)
+                    else:
+                        # try partial matching
+                        for i, name in enumerate(model.bone_labels):
+                            if anny_bone_name in name:
+                                idx = i
+                                break
+
+                    if idx != -1:
+                        # euler is [x, y, z] in radians, sequence XYZ (same as frontend)
+                        r = Rotation.from_euler('xyz', euler, degrees=False)
+                        rot_mat = torch.from_numpy(r.as_matrix()).float()
+                        pose_tensor[0, idx, :3, :3] = rot_mat
+
+            pose_params = pose_tensor
+        except Exception as e:
+            print(f"Error parsing pose_data: {e}", file=sys.stderr)
+
     # 3. Generate Mesh
     with torch.no_grad():
-        result = model.forward(phenotype_kwargs=phenotypes)
+        if pose_params is not None:
+            model = model.float() # ensure model is float to match pose_params
+            result = model.forward(phenotype_kwargs=phenotypes, pose_parameters=pose_params)
+        else:
+            result = model.forward(phenotype_kwargs=phenotypes)
         vertices = result['vertices'][0].detach().cpu().numpy()
         faces = model.faces.detach().cpu().numpy()
 
