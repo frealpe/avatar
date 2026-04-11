@@ -438,6 +438,9 @@ const AjustesPose = () => {
             const res = await iotApi.savePose(avatarId, newPoseName, poseData);
             if (res.ok) {
                 setNewPoseName('');
+                // 🎨 Pose guardada en la BD, pero NO sobrescribir el avatar por defecto
+                // El avatar por defecto solo cambia cuando GUARDAS en Laboratorio
+                console.log("📌 [AjustesPose] Pose guardada:", newPoseName);
                 fetchPoses();
             }
         } catch (e) {
@@ -453,7 +456,11 @@ const AjustesPose = () => {
             const avatarId = await ensureAvatarRecord();
             if (!avatarId) return;
             const res = await iotApi.savePose(avatarId, name, poseData, isDefault);
-            if (res.ok) fetchPoses();
+            if (res.ok) {
+                // 🎨 Pose actualizada en la BD, pero NO sobrescribir el avatar por defecto
+                console.log("📌 [AjustesPose] Pose actualizada:", name);
+                fetchPoses();
+            }
         } catch (e) {
             console.error('Error updating pose:', e);
         } finally {
@@ -519,11 +526,6 @@ const AjustesPose = () => {
                     <axesHelper args={[2]} />
                     <Suspense fallback={null}>
                         {posedMeshUrl && <AvatarModelWithPose url={posedMeshUrl} poseData={poseData} />}
-                        {/* Mostrar esqueleto sincronizado sobre la malla para previsualización inmediata */}
-                        <IKSkeleton poseData={poseData} selectedJoint={selectedJoint} onSelectJoint={(j) => { setSelectedJoint(j); setIkMode(j.startsWith('hand')); }} />
-                        {/* IK handles en la vista principal (activos solo si ikMode está on) */}
-                        <IKHandle side="left" rootPosArr={[0.45, 1.5, 0]} poseData={poseData} onChange={setPoseData} active={ikMode && selectedJoint === 'hand_l'} debugInv={debugInv} />
-                        <IKHandle side="right" rootPosArr={[-0.45, 1.5, 0]} poseData={poseData} onChange={setPoseData} active={ikMode && selectedJoint === 'hand_r'} debugInv={debugInv} />
                         <Stage environment="city" intensity={0.5} contactShadow={false} />
                     </Suspense>
                     <GizmoHelper alignment="top-right" margin={[80, 80]}><GizmoViewport /></GizmoHelper>
@@ -573,99 +575,19 @@ const AjustesPose = () => {
                                 {isSaving ? '...' : 'GRABAR POSE'}
                             </button>
                         </div>
-
-                        {/* Library Table View */}
-                        <div className="flex flex-col gap-2 pt-2 border-t border-white/5 min-h-0 flex-1">
-                            <div className="flex justify-between items-center mb-1">
-                                <span className="text-[7px] text-white/40 font-black uppercase tracking-widest">Biblioteca de Poses</span>
-                                <span className="text-[6px] text-[#00f1fe] opacity-50 underline cursor-pointer" onClick={fetchPoses}>Refrescar</span>
-                            </div>
-
-                            <div className="flex-1 overflow-y-auto pr-1 custom-scrollbar">
-                                <table className="w-full text-left border-collapse">
-                                    <thead className="sticky top-0 bg-[#111] z-10">
-                                        <tr className="border-b border-white/5">
-                                            <th className="text-[6px] text-white/20 font-black uppercase py-1">Nombre</th>
-                                            <th className="text-[6px] text-white/20 font-black uppercase py-1 text-right">Acciones</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {savedPoses.length === 0 && (
-                                            <tr>
-                                                <td colSpan="2" className="py-4 text-center text-[8px] text-white/5 italic">Sin poses guardadas</td>
-                                            </tr>
-                                        )}
-                                        {savedPoses.map(p => (
-                                            <tr key={p._id} className={`border-b border-white/[0.02] hover:bg-white/[0.02] transition-all group ${p.isDefault ? 'bg-[#00f1fe]/5' : ''}`}>
-                                                <td className="py-1.5">
-                                                    <div className="flex flex-col">
-                                                        <span className="text-[9px] font-bold text-white/50 group-hover:text-white transition-all">
-                                                            {p.name} {p.isDefault && <span className="text-[6px] text-[#00f1fe] ml-1">[DEFAULT]</span>}
-                                                        </span>
-                                                        <span className="text-[5px] text-white/10 uppercase">{new Date(p.createdAt).toLocaleDateString()}</span>
-                                                    </div>
-                                                </td>
-                                                <td className="py-1.5 text-right">
-                                                    <div className="flex justify-end gap-1">
-                                                        <button
-                                                            onClick={() => setPoseData(p.poseData)}
-                                                            className="text-[6px] font-black px-1.5 py-0.5 rounded bg-white/5 text-white/40 hover:bg-[#00f1fe] hover:text-black transition-all"
-                                                        >
-                                                            LOAD
-                                                        </button>
-                                                        <button
-                                                            onClick={() => handleUpdatePose(p.name, p.isDefault)}
-                                                            className="text-[6px] font-black px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500 hover:text-black transition-all"
-                                                            title="Sobrescribir con pose actual"
-                                                        >
-                                                            REC
-                                                        </button>
-                                                        {!p.isDefault && (
-                                                            <button
-                                                                onClick={async () => {
-                                                                    try {
-                                                                        await iotApi.setDefaultPose(p._id);
-                                                                        fetchPoses();
-                                                                    } catch (e) { console.error(e); }
-                                                                }}
-                                                                className="text-[6px] font-black px-1.5 py-0.5 rounded bg-[#39ff14]/10 text-[#39ff14] hover:bg-[#39ff14] hover:text-black transition-all"
-                                                            >
-                                                                DEF
-                                                            </button>
-                                                        )}
-                                                        <button
-                                                            onClick={(e) => handleDeletePose(p._id, e)}
-                                                            className="text-[6px] font-black px-1.5 py-0.5 rounded bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all"
-                                                        >
-                                                            DEL
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
                     </div>
 
-                    {/* HUD Area (Dynamic height) */}
-                    <div className="flex-1 bg-white/[0.02] rounded-3xl relative border border-white/5 overflow-hidden shadow-inner">
-                        <CameraPresets onSelect={setCameraTarget} />
-                        <Canvas dpr={[1, 2]}>
-                            <PerspectiveCamera makeDefault position={cameraTarget} fov={33} />
-                            <ambientLight intensity={1.2} />
-                            <axesHelper args={[1]} />
-                            <Suspense fallback={null}>
-                                <IKSkeleton poseData={poseData} selectedJoint={selectedJoint} onSelectJoint={(j) => { setSelectedJoint(j); setIkMode(j.startsWith('hand')); }} />
-                                <IKHandle side="left" rootPosArr={[0.45, 1.5, 0]} poseData={poseData} onChange={setPoseData} active={ikMode && selectedJoint === 'hand_l'} debugInv={debugInv} />
-                                <IKHandle side="right" rootPosArr={[-0.45, 1.5, 0]} poseData={poseData} onChange={setPoseData} active={ikMode && selectedJoint === 'hand_r'} debugInv={debugInv} />
-                            </Suspense>
-                            <OrbitControls enablePan={false} enableZoom={false} />
-                        </Canvas>
+                    {/* Botones de Selección Rápida de Articulación */}
+                    <div className="bg-white/[0.04] rounded-2xl p-3 border border-white/5 flex flex-wrap gap-1 justify-center">
+                        {['head', 'spine', 'hips', 'shoulder_l', 'elbow_l', 'hand_l', 'shoulder_r', 'elbow_r', 'hand_r', 'knee_l', 'ankle_l', 'knee_r', 'ankle_r'].map(key => (
+                            <button key={key} onClick={() => { setSelectedJoint(key); if (key.startsWith('hand')) setIkMode(true); else setIkMode(false); }}
+                                className={`flex-shrink-0 px-2 py-1 rounded-lg border text-[7px] font-black uppercase tracking-widest transition-all ${selectedJoint === key ? 'border-[#00f1fe] bg-[#00f1fe]/10 text-[#00f1fe]' : 'border-white/5 text-white/20 hover:text-white/40'}`}>
+                                {key.replace('shoulder', 'H').replace('elbow', 'C').replace('hand', 'M').replace('head', 'Cab').replace('spine', 'Pec').replace('hips', 'Cad').replace('knee', 'R').replace('ankle', 'T').replace('_l', 'I').replace('_r', 'D')}
+                            </button>
+                        ))}
                     </div>
 
-                    {/* Inspector de Articulación (Individual) */}
+                    {/* Inspector de Articulación (Individual) - Sliders de la articulación seleccionada */}
                     <div className="bg-white/[0.04] backdrop-blur-3xl rounded-3xl p-4 border border-white/10 flex flex-col gap-4 shadow-2xl">
                         <div className="flex items-center justify-between border-b border-white/5 pb-2">
                             <div className="flex flex-col">
@@ -709,15 +631,147 @@ const AjustesPose = () => {
                             )}
                         </div>
                     </div>
+
+                    {/* Biblioteca de Poses (contraíble) */}
+                    <div className="bg-white/[0.05] rounded-2xl p-3 border border-white/10 flex flex-col gap-3 shadow-xl">
+                        <div className="flex items-center justify-between">
+                            <div className="flex flex-col">
+                                <span className="text-[10px] font-black uppercase text-[#00f1fe] tracking-widest">Biblioteca de Poses</span>
+                                <span className="text-[7px] text-white/30 font-bold uppercase">Poses Guardadas</span>
+                            </div>
+                            <span className="text-[6px] text-[#00f1fe] opacity-50 underline cursor-pointer" onClick={fetchPoses}>Refrescar</span>
+                        </div>
+
+                        <div className="flex-1 overflow-y-auto pr-1 custom-scrollbar max-h-[200px]">
+                            <table className="w-full text-left border-collapse">
+                                <thead className="sticky top-0 bg-[#111] z-10">
+                                    <tr className="border-b border-white/5">
+                                        <th className="text-[6px] text-white/20 font-black uppercase py-1">Nombre</th>
+                                        <th className="text-[6px] text-white/20 font-black uppercase py-1 text-right">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {savedPoses.length === 0 && (
+                                        <tr>
+                                            <td colSpan="2" className="py-4 text-center text-[8px] text-white/5 italic">Sin poses guardadas</td>
+                                        </tr>
+                                    )}
+                                    {savedPoses.map(p => (
+                                        <tr key={p._id} className={`border-b border-white/[0.02] hover:bg-white/[0.02] transition-all group ${p.isDefault ? 'bg-[#00f1fe]/5' : ''}`}>
+                                            <td className="py-1.5">
+                                                <div className="flex flex-col">
+                                                    <span className="text-[9px] font-bold text-white/50 group-hover:text-white transition-all">
+                                                        {p.name} {p.isDefault && <span className="text-[6px] text-[#00f1fe] ml-1">[DEFAULT]</span>}
+                                                    </span>
+                                                    <span className="text-[5px] text-white/10 uppercase">{new Date(p.createdAt).toLocaleDateString()}</span>
+                                                </div>
+                                            </td>
+                                            <td className="py-1.5 text-right">
+                                                <div className="flex justify-end gap-1">
+                                                    <button
+                                                        onClick={() => {
+                                                            setPoseData(p.poseData);
+                                                            // 🎨 Cargar pose temporalmente, NO sobrescribir avatar por defecto
+                                                            console.log("📌 [AjustesPose] Pose cargada:", p.name);
+                                                        }}
+                                                        className="text-[6px] font-black px-1.5 py-0.5 rounded bg-white/5 text-white/40 hover:bg-[#00f1fe] hover:text-black transition-all"
+                                                    >
+                                                        LOAD
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleUpdatePose(p.name, p.isDefault)}
+                                                        className="text-[6px] font-black px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500 hover:text-black transition-all"
+                                                        title="Sobrescribir con pose actual"
+                                                    >
+                                                        REC
+                                                    </button>
+                                                    {!p.isDefault && (
+                                                        <button
+                                                            onClick={async () => {
+                                                                try {
+                                                                    await iotApi.setDefaultPose(p._id);
+                                                                    fetchPoses();
+                                                                } catch (e) { console.error(e); }
+                                                                }}
+                                                            className="text-[6px] font-black px-1.5 py-0.5 rounded bg-[#39ff14]/10 text-[#39ff14] hover:bg-[#39ff14] hover:text-black transition-all"
+                                                        >
+                                                            DEF
+                                                        </button>
+                                                    )}
+                                                    <button
+                                                        onClick={(e) => handleDeletePose(p._id, e)}
+                                                        className="text-[6px] font-black px-1.5 py-0.5 rounded bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all"
+                                                    >
+                                                        DEL
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
 
-                <div className="h-16 bg-black/60 border-t border-white/5 flex items-center px-5 gap-2 overflow-x-auto no-scrollbar">
-                    {['head', 'spine', 'hips', 'shoulder_l', 'elbow_l', 'hand_l', 'shoulder_r', 'elbow_r', 'hand_r', 'knee_l', 'ankle_l', 'knee_r', 'ankle_r'].map(key => (
-                        <button key={key} onClick={() => { setSelectedJoint(key); if (key.startsWith('hand')) setIkMode(true); else setIkMode(false); }}
-                            className={`flex-shrink-0 px-3 py-1.5 rounded-lg border text-[8px] font-black uppercase tracking-widest transition-all ${selectedJoint === key ? 'border-[#00f1fe] bg-[#00f1fe]/10 text-[#00f1fe]' : 'border-white/5 text-white/20 hover:text-white/40'}`}>
-                            {key.replace('shoulder', 'H').replace('elbow', 'C').replace('hand', 'M').replace('head', 'Cab').replace('spine', 'Pec').replace('hips', 'Cad').replace('knee', 'R').replace('ankle', 'T').replace('_l', 'I').replace('_r', 'D')}
-                        </button>
-                    ))}
+                {/* Tarjetas agrupadas por extremidad */}
+                <div className="w-full flex flex-wrap gap-4 justify-center items-start py-6 bg-black/60 border-t border-white/5">
+                    {/* EXTREMIDAD DERECHA */}
+                    <div className="bg-white/5 rounded-xl p-4 min-w-[140px] flex flex-col items-center shadow-md">
+                        <h4 className="text-xs font-black text-[#00f1fe] mb-2 uppercase tracking-widest">Extremidad Derecha</h4>
+                        <div className="flex flex-col gap-2 w-full">
+                            <button onClick={() => { setSelectedJoint('shoulder_r'); setIkMode(false); }}
+                                className={`w-full px-3 py-1 rounded-lg border text-[10px] font-black uppercase tracking-widest transition-all ${selectedJoint === 'shoulder_r' ? 'border-[#00f1fe] bg-[#00f1fe]/10 text-[#00f1fe]' : 'border-white/10 text-white/40 hover:text-white/80'}`}>HD</button>
+                            <button onClick={() => { setSelectedJoint('elbow_r'); setIkMode(false); }}
+                                className={`w-full px-3 py-1 rounded-lg border text-[10px] font-black uppercase tracking-widest transition-all ${selectedJoint === 'elbow_r' ? 'border-[#00f1fe] bg-[#00f1fe]/10 text-[#00f1fe]' : 'border-white/10 text-white/40 hover:text-white/80'}`}>CD</button>
+                            <button onClick={() => { setSelectedJoint('hand_r'); setIkMode(true); }}
+                                className={`w-full px-3 py-1 rounded-lg border text-[10px] font-black uppercase tracking-widest transition-all ${selectedJoint === 'hand_r' ? 'border-[#00f1fe] bg-[#00f1fe]/10 text-[#00f1fe]' : 'border-white/10 text-white/40 hover:text-white/80'}`}>MD</button>
+                        </div>
+                    </div>
+                    {/* EXTREMIDAD IZQUIERDA */}
+                    <div className="bg-white/5 rounded-xl p-4 min-w-[140px] flex flex-col items-center shadow-md">
+                        <h4 className="text-xs font-black text-[#d800ff] mb-2 uppercase tracking-widest">Extremidad Izquierda</h4>
+                        <div className="flex flex-col gap-2 w-full">
+                            <button onClick={() => { setSelectedJoint('shoulder_l'); setIkMode(false); }}
+                                className={`w-full px-3 py-1 rounded-lg border text-[10px] font-black uppercase tracking-widest transition-all ${selectedJoint === 'shoulder_l' ? 'border-[#d800ff] bg-[#d800ff]/10 text-[#d800ff]' : 'border-white/10 text-white/40 hover:text-white/80'}`}>HI</button>
+                            <button onClick={() => { setSelectedJoint('elbow_l'); setIkMode(false); }}
+                                className={`w-full px-3 py-1 rounded-lg border text-[10px] font-black uppercase tracking-widest transition-all ${selectedJoint === 'elbow_l' ? 'border-[#d800ff] bg-[#d800ff]/10 text-[#d800ff]' : 'border-white/10 text-white/40 hover:text-white/80'}`}>CI</button>
+                            <button onClick={() => { setSelectedJoint('hand_l'); setIkMode(true); }}
+                                className={`w-full px-3 py-1 rounded-lg border text-[10px] font-black uppercase tracking-widest transition-all ${selectedJoint === 'hand_l' ? 'border-[#d800ff] bg-[#d800ff]/10 text-[#d800ff]' : 'border-white/10 text-white/40 hover:text-white/80'}`}>MI</button>
+                        </div>
+                    </div>
+                    {/* PIERNA DERECHA */}
+                    <div className="bg-white/5 rounded-xl p-4 min-w-[120px] flex flex-col items-center shadow-md">
+                        <h4 className="text-xs font-black text-[#00f1fe] mb-2 uppercase tracking-widest">Pierna Derecha</h4>
+                        <div className="flex flex-col gap-2 w-full">
+                            <button onClick={() => { setSelectedJoint('knee_r'); setIkMode(false); }}
+                                className={`w-full px-3 py-1 rounded-lg border text-[10px] font-black uppercase tracking-widest transition-all ${selectedJoint === 'knee_r' ? 'border-[#00f1fe] bg-[#00f1fe]/10 text-[#00f1fe]' : 'border-white/10 text-white/40 hover:text-white/80'}`}>RD</button>
+                            <button onClick={() => { setSelectedJoint('ankle_r'); setIkMode(false); }}
+                                className={`w-full px-3 py-1 rounded-lg border text-[10px] font-black uppercase tracking-widest transition-all ${selectedJoint === 'ankle_r' ? 'border-[#00f1fe] bg-[#00f1fe]/10 text-[#00f1fe]' : 'border-white/10 text-white/40 hover:text-white/80'}`}>TD</button>
+                        </div>
+                    </div>
+                    {/* PIERNA IZQUIERDA */}
+                    <div className="bg-white/5 rounded-xl p-4 min-w-[120px] flex flex-col items-center shadow-md">
+                        <h4 className="text-xs font-black text-[#d800ff] mb-2 uppercase tracking-widest">Pierna Izquierda</h4>
+                        <div className="flex flex-col gap-2 w-full">
+                            <button onClick={() => { setSelectedJoint('knee_l'); setIkMode(false); }}
+                                className={`w-full px-3 py-1 rounded-lg border text-[10px] font-black uppercase tracking-widest transition-all ${selectedJoint === 'knee_l' ? 'border-[#d800ff] bg-[#d800ff]/10 text-[#d800ff]' : 'border-white/10 text-white/40 hover:text-white/80'}`}>RI</button>
+                            <button onClick={() => { setSelectedJoint('ankle_l'); setIkMode(false); }}
+                                className={`w-full px-3 py-1 rounded-lg border text-[10px] font-black uppercase tracking-widest transition-all ${selectedJoint === 'ankle_l' ? 'border-[#d800ff] bg-[#d800ff]/10 text-[#d800ff]' : 'border-white/10 text-white/40 hover:text-white/80'}`}>TI</button>
+                        </div>
+                    </div>
+                    {/* TRONCO */}
+                    <div className="bg-white/5 rounded-xl p-4 min-w-[120px] flex flex-col items-center shadow-md">
+                        <h4 className="text-xs font-black text-white mb-2 uppercase tracking-widest">Tronco</h4>
+                        <div className="flex flex-col gap-2 w-full">
+                            <button onClick={() => { setSelectedJoint('head'); setIkMode(false); }}
+                                className={`w-full px-3 py-1 rounded-lg border text-[10px] font-black uppercase tracking-widest transition-all ${selectedJoint === 'head' ? 'border-white bg-white/10 text-white' : 'border-white/10 text-white/40 hover:text-white/80'}`}>Cab</button>
+                            <button onClick={() => { setSelectedJoint('spine'); setIkMode(false); }}
+                                className={`w-full px-3 py-1 rounded-lg border text-[10px] font-black uppercase tracking-widest transition-all ${selectedJoint === 'spine' ? 'border-white bg-white/10 text-white' : 'border-white/10 text-white/40 hover:text-white/80'}`}>Pec</button>
+                            <button onClick={() => { setSelectedJoint('hips'); setIkMode(false); }}
+                                className={`w-full px-3 py-1 rounded-lg border text-[10px] font-black uppercase tracking-widest transition-all ${selectedJoint === 'hips' ? 'border-white bg-white/10 text-white' : 'border-white/10 text-white/40 hover:text-white/80'}`}>Cad</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

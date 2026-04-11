@@ -1,0 +1,118 @@
+[{
+  "_id": {
+    "$oid": "693895cfa60579565a5b7242"
+  },
+  "nombre": "Fabio Hernan Realpe",
+  "dni": "87248875",
+  "correo": "frealpe@gmail.com",
+  "celular": "3113449655",
+  "password": "$2a$10$qALyAEKKQCvAK/NwPvp3AeuDHMpY1HaF8kBt3NLFsrmyF276q14ry",
+  "rol": "ADMIN_ROLE",
+  "estado": true,
+  "google": false,
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "6938c36c2302f6f7629cef66"
+  },
+  "nombre": "Weimar Obando ",
+  "dni": "123456",
+  "correo": "weimaro@hotmail.com",
+  "celular": "3146784071",
+  "password": "$2a$10$gAsCxXtAPl5nQDEfjcZVX.z9PqZdRtNJwFsFhJhM0DORdCesi80Yu",
+  "rol": "ADMIN_ROLE",
+  "estado": true,
+  "google": false,
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "6938c552ed3894f742a5d754"
+  },
+  "nombre": "Jose Guillermo Vidal",
+  "dni": "18153045",
+  "correo": "joseguillermo@gmail.com",
+  "celular": "3217488744",
+  "password": "$2a$10$ilcpmckEtQgAaS4OhScE6ezSSa/F/RW5/uhLGeOpZYkjLezTb5IR.",
+  "rol": "USER",
+  "estado": true,
+  "google": false,
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "6938c5a5ed3894f742a5d75b"
+  },
+  "nombre": "Edison Ferney Rosero",
+  "dni": "1004438580",
+  "correo": "edisonferney@gmail.com",
+  "celular": "3116289362",
+  "password": "$2a$10$uuAM3dBaaHrKPuRXWZoNi.dNDzLA/8PPDMPQ2DEAhPZZHIMR1OIPe",
+  "rol": "USER",
+  "estado": true,
+  "google": false,
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "6938c5d9ed3894f742a5d765"
+  },
+  "nombre": "Carlos Alberto Inchima",
+  "dni": "87473874",
+  "correo": "carlosalberto@gmail.com",
+  "celular": "3102749407",
+  "password": "$2a$10$5tO6ifWA0J0tGO3Ntx009OXULYv4agrq7OrsabNQAzxtG.CqL8qCy",
+  "rol": "USER",
+  "estado": true,
+  "google": false,
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "6938c604ed3894f742a5d76c"
+  },
+  "nombre": "Flor Alba Urresti",
+  "dni": "1084224089",
+  "correo": "floraalba@gmail.com",
+  "celular": "3217730155",
+  "password": "$2a$10$FQlaUSB/weyFmqDZjq7Sc.Lodj5bjeCprWajkqEtFe.lG1k8AoxY6",
+  "rol": "USER",
+  "estado": true,
+  "google": false,
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "6938c62fed3894f742a5d773"
+  },
+  "nombre": "Katherin Madeiler Navarro",
+  "dni": "19810282",
+  "correo": "katherin@gmail.com",
+  "celular": "3238157710",
+  "password": "$2a$10$/qdIKWjXNlmHM1LN1XrgkubLiFeO1Y4ixsuF7fpsItV0fKeP.cvaO",
+  "rol": "USER",
+  "estado": true,
+  "google": false,
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "6938c652ed3894f742a5d77a"
+  },
+  "nombre": "Aura Lijia Urresty",
+  "dni": "1007304894",
+  "correo": "auralijia@gmail.com",
+  "celular": "3104603082",
+  "password": "$2a$10$1QsnOY5KkzbLRr96L9zu6.L.khF/uEjPXS6JyR7QCXXpv15n2QIEC",
+  "rol": "USER",
+  "estado": true,
+  "google": false,
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "6938c67aed3894f742a5d781"
+  },
+  "nombre": "Gustavo Adolfo ruene",
+  "dni": "1065999733",
+  "correo": "gustavoadolfo@gmail.com",
+  "celular": "3106708468",
+  "password": "$2a$10$nK4zWSikOBPkQ0E4Q4Y8VOmatXJZoD9guprSMxgL7b0dKQkMYNv5C",
+  "rol": "ADMIN_USER",
+  "estado": true,
+  "google": false,
+  "__v": 0
+}]

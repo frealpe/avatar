@@ -1,0 +1,442 @@
+# 🎬 GUÍA VISUAL PASO A PASO
+
+**Fecha:** 11 Abril 2026  
+**Status:** ✅ Deployed
+
+---
+
+## 🏠 HOME - Punto de Entrada
+
+```
+┌─────────────────────────────────┐
+│                                 │
+│        Moda Avatar              │
+│        Sistema de Prueba        │
+│                                 │
+│  ┌─────────────────────────┐    │
+│  │ 🧬 Escaneo              │    │
+│  │ (Seleccionar avatar)    │    │
+│  └─────────────────────────┘    │
+│                                 │
+│  ┌─────────────────────────┐    │
+│  │ 👕 Probador             │    │ ← AQUÍ: Avatar + Try-on
+│  │ (Probar ropa)           │    │
+│  └─────────────────────────┘    │
+│                                 │
+│  ┌─────────────────────────┐    │
+│  │ 🛍️ Coleccion           │    │ ← AQUÍ: Catálogo
+│  │ (Explorar catálogo)     │    │
+│  └─────────────────────────┘    │
+│                                 │
+│  ┌─────────────────────────┐    │
+│  │ ⚙️ Pose                 │    │
+│  │ (Ajustar posición)      │    │
+│  └─────────────────────────┘    │
+│                                 │
+└─────────────────────────────────┘
+```
+
+---
+
+## 🧬 FLUJO 1: PROBADOR (Avatar + Try-on)
+
+### PASO 1: Ir a Escaneo
+```
+Home → Click "🧬 Escaneo"
+         ↓
+┌─────────────────────────────────┐
+│ Escaneo - Seleccionar Avatar    │
+│                                 │
+│  [Hombre] [Mujer]               │
+│                                 │
+│  O carga de cámara              │
+│                                 │
+└─────────────────────────────────┘
+
+✓ Selecciona: Hombre O Mujer
+```
+
+### PASO 2: Ir a Laboratorio
+```
+Escaneo → Click avatar seleccionado → Laboratorio IA
+                                        ↓
+┌─────────────────────────────────┐
+│ Laboratorio IA - Configurar     │
+│                                 │
+│ Avatar en preview               │
+│ [RECALCULAR] [GUARDAR]          │
+│                                 │
+└─────────────────────────────────┘
+
+✓ Click "GUARDAR como por defecto"
+  💾 Se guarda en localStorage
+```
+
+### PASO 3: Ir a Probador
+```
+Laboratorio → (Navega a) Probador
+                           ↓
+┌──────────────────────────────────────────┐
+│ Probador - Virtual Fitting Room          │
+│                                          │
+│ ┌────────────────────────┐ ┌──────────┐ │
+│ │                        │ │          │ │
+│ │     🧬 AVATAR          │ │ CERRADO  │ │
+│ │                        │ │          │ │
+│ │  (canvas 3D)           │ │          │ │
+│ │                        │ │          │ │
+│ │                        │ │          │ │
+│ └────────────────────────┘ └──────────┘ │
+│                                          │
+│ [Camisas] [Pantalones] [Zapatos] ...    │
+│                                          │
+└──────────────────────────────────────────┘
+
+✓ Avatar visible (el guardado)
+✓ Panel CERRADO (derecha vacía)
+✓ Footer: categorías visibles
+```
+
+### PASO 4: Click en Categoría
+```
+Probador → Click "Camisas"
+                 ↓
+┌──────────────────────────────────────────┐
+│                                          │
+│ ┌────────────────────────┐ ┌──────────┐ │
+│ │                        │ │ CAMISAS  │ │
+│ │                        │ │ 12 items │ │
+│ │     🧬 AVATAR          │ ├──────────┤ │
+│ │                        │ │┌─────┐┌─┐│ │
+│ │  (2/3 pantalla)        │ ││Img ││ ││ │
+│ │                        │ │├─────┤│ ││ │
+│ │                        │ ││Azul ││ ││ │
+│ │                        │ │└─────┘│ ││ │
+│ │                        │ │┌─────┐└─┘│ │
+│ │                        │ ││Img ││   ││ │
+│ └────────────────────────┘ ├─────┤   ││ │
+│                            │Roja ││...││ │
+│                            └─────┴───┘│ │
+│ [Camisas*] [Pantalones]...           │ │
+│ * = abierto (borde cian)             │ │
+│                                       │ │
+└──────────────────────────────────────┘
+Panel ABIERTO (derecha)
+Grid 2 columnas con prendas
+Canvas se ajusta a 2/3
+```
+
+### PASO 5: Click en Prenda
+```
+Panel → Click en prenda (ej: "Camisa Azul")
+                        ↓
+┌──────────────────────────────────────────┐
+│                                          │
+│ ┌────────────────────────┐ ┌──────────┐ │
+│ │                        │ │ CAMISAS  │ │
+│ │                        │ │ 12 items │ │
+│ │   🧬 AVATAR + 👕      │ ├──────────┤ │
+│ │   (PRENDA EN 3D)       │ │┌─────┐   │ │
+│ │                        │ ││Azul ● ◄─── ● = indicador
+│ │   Animado              │ │├─────┤   │   (punto cian)
+│ │   Preview en tiempo    │ ││Roja │   │
+│ │   real                 │ │└─────┘   │
+│ │                        │ │...       │
+│ │                        │ │          │
+│ │                        │ │          │
+│ │                        │ │          │
+│ └────────────────────────┘ └──────────┘ │
+│                                          │
+│ [Camisas*] [Pantalones]...              │
+│                                          │
+└──────────────────────────────────────────┘
+
+✓ Prenda aparece en 3D sobre avatar
+✓ Punto cian en tarjeta (está seleccionada)
+✓ Animación suave
+```
+
+### PASO 6: Cambiar a otra Prenda
+```
+Panel → Click otra prenda (ej: "Camisa Roja")
+                         ↓
+┌──────────────────────────────────────────┐
+│                                          │
+│ ┌────────────────────────┐ ┌──────────┐ │
+│ │                        │ │ CAMISAS  │ │
+│ │                        │ │ 12 items │ │
+│ │   🧬 AVATAR + 👕      │ ├──────────┤ │
+│ │   (NUEVA PRENDA)       │ │┌─────┐   │ │
+│ │                        │ ││Azul │   │
+│ │   (ROJA ahora)         │ │├─────┤   │
+│ │                        │ ││Roja ●   │ ◄── Movió indicador
+│ │   Cambio suave         │ │└─────┘   │
+│ │                        │ │...       │
+│ │                        │ │          │
+│ │                        │ │          │
+│ │                        │ │          │
+│ └────────────────────────┘ └──────────┘ │
+│                                          │
+│ [Camisas*] [Pantalones]...              │
+│                                          │
+└──────────────────────────────────────────┘
+
+✓ Prenda anterior desaparece
+✓ Nueva prenda aparece (roja)
+✓ Indicador se mueve
+✓ Avatar + nueva prenda animado
+```
+
+### PASO 7: Cerrar Panel [X]
+```
+Panel → Click botón [X]
+                    ↓
+┌──────────────────────────────────────────┐
+│                                          │
+│ ┌─────────────────────────────────────┐  │
+│ │                                     │  │
+│ │          🧬 AVATAR + 👕            │  │
+│ │                                     │  │
+│ │       (Fullscreen - 2/3)            │  │
+│ │                                     │  │
+│ │       Preview PERSISTE              │  │
+│ │       (todavía se ve la ropa)       │  │
+│ │                                     │  │
+│ │                                     │  │
+│ │                                     │  │
+│ │                                     │  │
+│ │                                     │  │
+│ │                                     │  │
+│ └─────────────────────────────────────┘  │
+│                                          │
+│ [Camisas] [Pantalones] [Zapatos]...     │
+│                                          │
+└──────────────────────────────────────────┘
+
+✓ Panel se cierra (transición 300ms)
+✓ Canvas vuelve a expandirse
+✓ Prenda sigue visible (preview)
+✓ Puedes seguir usando el avatar
+```
+
+### PASO 8: Abrir otra Categoría
+```
+Footer → Click "Pantalones"
+                        ↓
+┌──────────────────────────────────────────┐
+│ ┌────────────────────────┐ ┌──────────┐  │
+│ │                        │ │PANTALONES│  │
+│ │     🧬 AVATAR          │ │ 8 items  │  │
+│ │                        │ ├──────────┤  │
+│ │                        │ │Azul oscuro  │
+│ │                        │ │Gris        │ │
+│ │                        │ │Beige       │ │
+│ │                        │ │...         │ │
+│ │                        │ │          │  │
+│ └────────────────────────┘ └──────────┘  │
+│                                          │
+│ [Camisas] [Pantalones*] [Zapatos]...    │
+│                         * = ahora abierto│
+│                                          │
+└──────────────────────────────────────────┘
+
+✓ Panel cambia contenido
+✓ Anterior prenda (camisa) desaparece
+✓ Header cambió a "PANTALONES"
+✓ Grid muestra nuevas prendas
+```
+
+---
+
+## 🛍️ FLUJO 2: COLECCION (Catálogo sin Avatar)
+
+### PASO 1: Ir a Coleccion
+```
+Home → Click "🛍️ Coleccion"
+              ↓
+┌─────────────────────────────────────────┐
+│                                         │
+│      COLECCIONES                        │
+│      (Página Independiente)             │
+│                                         │
+│                                         │
+│      ┌──────────────┐  ┌──────────┐    │
+│      │    🧥       │  │    👖    │    │
+│      │   CAMISAS   │  │PANTALONES│    │
+│      │ Click ...   │  │ Click... │    │
+│      └──────────────┘  └──────────┘    │
+│                                         │
+│      ┌──────────────┐  ┌──────────┐    │
+│      │    👞       │  │    💍    │    │
+│      │   ZAPATOS   │  │ACCESORIOS│    │
+│      │ Click ...   │  │ Click... │    │
+│      └──────────────┘  └──────────┘    │
+│                                         │
+│      (Tarjetas CENTRADAS)               │
+│      (SIN avatar 3D)                    │
+│                                         │
+└─────────────────────────────────────────┘
+
+✓ Tarjetas centradas
+✓ Grid 2x2 o 3x2 según pantalla
+✓ NO hay avatar 3D
+✓ Cada tarjeta tiene icono + nombre
+```
+
+### PASO 2: Click en Categoría
+```
+Coleccion → Click en "CAMISAS"
+                        ↓
+┌─────────────────────────────────────────┐
+│ ← CAMISAS                               │
+│    Prendas Digitalizadas                │
+│    12 prendas                           │
+│ ─────────────────────────────────────   │
+│                                         │
+│  ┌────────┐ ┌────────┐ ┌────────┐      │
+│  │ Azul   │ │ Roja   │ │Blanca  │      │
+│  │ IMG... │ │ IMG... │ │ IMG... │      │
+│  │ $45    │ │ $50    │ │ $48    │      │
+│  │ [+Cart]│ │ [+Cart]│ │ [+Cart]│      │
+│  └────────┘ └────────┘ └────────┘      │
+│                                         │
+│  ┌────────┐ ┌────────┐ ┌────────┐      │
+│  │ Verde  │ │ Negra  │ │ Gris   │      │
+│  │ IMG... │ │ IMG... │ │ IMG... │      │
+│  │ $46    │ │ $52    │ │ $49    │      │
+│  │ [+Cart]│ │ [+Cart]│ │ [+Cart]│      │
+│  └────────┘ └────────┘ └────────┘      │
+│                                         │
+│  (Grid CENTRADO - Full Width)           │
+│  (SIN Avatar 3D)                        │
+│                                         │
+└─────────────────────────────────────────┘
+
+✓ Grid 3-4 columnas (desktop)
+✓ Cada prenda tiene imagen
+✓ Nombre + marca + precio
+✓ Botón "Agregar al Carrito"
+✓ SIN Avatar 3D
+✓ SIN Try-on
+```
+
+### PASO 3: Volver
+```
+Grid Prendas → Click botón ← (volver)
+                            ↓
+┌─────────────────────────────────────────┐
+│                                         │
+│      COLECCIONES                        │
+│                                         │
+│      ┌──────────────┐  ┌──────────┐    │
+│      │    🧥       │  │    👖    │    │
+│      │   CAMISAS   │  │PANTALONES│    │
+│      └──────────────┘  └──────────┘    │
+│                                         │
+│      ┌──────────────┐  ┌──────────┐    │
+│      │    👞       │  │    💍    │    │
+│      │   ZAPATOS   │  │ACCESORIOS│    │
+│      └──────────────┘  └──────────┘    │
+│                                         │
+│  (Regresa a tarjetas centradas)         │
+│                                         │
+└─────────────────────────────────────────┘
+
+✓ Vuelve a pantalla de categorías
+✓ Grid CENTRADO de nuevo
+```
+
+### PASO 4: Volver a Home
+```
+Coleccion → Click botón ← (volver)
+                       ↓
+┌─────────────────────────────────────────┐
+│                                         │
+│        Moda Avatar                      │
+│        Sistema de Prueba                │
+│                                         │
+│  ┌───────────────────────────────────┐  │
+│  │ 🧬 Escaneo                        │  │
+│  └───────────────────────────────────┘  │
+│                                         │
+│  ┌───────────────────────────────────┐  │
+│  │ 👕 Probador                       │  │
+│  └───────────────────────────────────┘  │
+│                                         │
+│  ┌───────────────────────────────────┐  │
+│  │ 🛍️ Coleccion                     │  │
+│  └───────────────────────────────────┘  │
+│                                         │
+│  ┌───────────────────────────────────┐  │
+│  │ ⚙️ Pose                           │  │
+│  └───────────────────────────────────┘  │
+│                                         │
+└─────────────────────────────────────────┘
+
+✓ Regresa a Home
+```
+
+---
+
+## 🔄 DECISIÓN: ¿Probador o Coleccion?
+
+```
+¿Quiero PROBAR ropa en mi avatar?
+   YES → Va a PROBADOR
+   NO  → Va a COLECCION
+
+PROBADOR:
+├─ Avatar visible
+├─ Try-on en tiempo real
+├─ Panel lateral
+└─ Sin navegar (solo abre panel)
+
+COLECCION:
+├─ SIN Avatar
+├─ Explorar catálogo
+├─ Tarjetas centradas
+└─ Navega entre vistas
+```
+
+---
+
+## 📱 RESPONSIVIDAD
+
+### Desktop (1920x1080):
+```
+PROBADOR:
+┌─────────────────┬─────────────────┐
+│      2/3        │      1/3        │
+│    Avatar       │  Grid 2 cols    │
+│                 │    Prendas      │
+└─────────────────┴─────────────────┘
+
+COLECCION:
+Grid 4 columnas de tarjetas
+```
+
+### Tablet (768x1024):
+```
+PROBADOR:
+┌────────────┬────────┐
+│    2/3     │  1/3   │
+│   Avatar   │ Prendas│
+└────────────┴────────┘
+
+COLECCION:
+Grid 2 columnas de tarjetas
+```
+
+### Mobile (375x667):
+```
+PROBADOR:
+Puede stack vertical o 60% / 40%
+
+COLECCION:
+Grid 1 columna de tarjetas
+```
+
+---
+
+**Este es el flujo visual completo. ¡Ya está listo para usar!** 🚀
+

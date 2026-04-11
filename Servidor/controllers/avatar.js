@@ -76,10 +76,10 @@ const AnnyPipeline = require('../services/annyPipeline');
 
 const recalculateAvatar = async (req, res) => {
     try {
-        const { betas, measurements, gender = 'neutral', poseType = 't-pose', poseData } = req.body;
-        if (!betas || !Array.isArray(betas)) {
-            return res.status(400).json({ ok: false, msg: 'Se requiere un vector de betas (array).' });
-        }
+        const { betas, gender = 'neutral', poseData } = req.body;
+        let betasToUse = Array.isArray(betas) && betas.length > 0 
+            ? betas 
+            : [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
         const jobId = v4();
         const tempDir = path.join(process.cwd(), 'public', 'temp');
@@ -93,7 +93,7 @@ const recalculateAvatar = async (req, res) => {
 
         const args = [
             scriptPath,
-            '--betas', ...betas.map(String),
+            '--betas', ...betasToUse.map(String),
             '--gender', gender,
             '--output_glb', outputGlb,
             '--output_vit', outputVit
@@ -166,43 +166,35 @@ const getClothesCatalog = (req, res) => {
     const catalogoMock = [
         { 
             _id: "saco_neo_2026", 
-            titulo: "Saco Neo-Refraction", 
-            categoria: "Sacos", 
+            name: "Saco Neo-Refraction", 
+            categoria: "SACOS", 
+            marca: "MODAVATAR",
             talla: "UNISEX",
-            prenda3D: "/patterns/Saco.glb",
-            img: "/patterns/patron_base_layout_01.svg",
+            prenda3D: "/clothes/sacos/Saco.glb",
+            image: "/clothes/sacos/Saco_preview.jpg",
+            price: 150,
             normal: { x: 0, y: 0, z: 1 }
         },
         { 
-            _id: "blusa_cyber_01", 
-            titulo: "Blusa Cyber-Silk", 
-            categoria: "Bluzas", 
+            _id: "blusa_silk_01", 
+            name: "Bluza Silk-Cyber", 
+            categoria: "BLUZAS", 
+            marca: "ETHEREAL",
             talla: "S",
-            img: "/placeholder_hoodie.png",
+            prenda3D: "/clothes/bluzas/Blusa_Silk.glb",
+            image: "/clothes/bluzas/Blusa_Silk_preview.jpg",
+            price: 65,
             normal: { x: 0, y: 0, z: 1 }
         },
         { 
-            _id: "pant_tectonic_01", 
-            titulo: "Pantalon Tectonic", 
-            categoria: "Pantalones", 
+            _id: "pant_cargo_01", 
+            name: "Pantalon Cargo T-800", 
+            categoria: "PANTALONES", 
+            marca: "INDUSTRIAL-WEAR",
             talla: "M",
-            img: "/placeholder_pants.png",
-            normal: { x: 0, y: 0, z: 1 }
-        },
-        { 
-            _id: "falda_orbital_01", 
-            titulo: "Falda Orbital", 
-            categoria: "Faldas", 
-            talla: "S",
-            img: "/patterns/patron_base_layout_01.svg",
-            normal: { x: 0, y: 0, z: 1 }
-        },
-        { 
-            _id: "hoodie_core_01", 
-            titulo: "Oversized Hoodie", 
-            categoria: "Sacos", 
-            talla: "L",
-            img: "/placeholder_hoodie.png",
+            prenda3D: "/clothes/pantalones/Pantalon_Cargo.glb",
+            image: "/clothes/pantalones/Pantalon_Cargo_preview.jpg",
+            price: 95,
             normal: { x: 0, y: 0, z: 1 }
         }
     ];
@@ -306,6 +298,24 @@ const getPredefinedAvatars = (req, res) => {
     res.json({ ok: true, data: predefined });
 };
 
+const updateAvatar = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const updateData = req.body;
+
+        const avatar = await Avatar.findByIdAndUpdate(id, updateData, { new: true });
+        
+        if (!avatar) {
+            return res.status(404).json({ ok: false, msg: 'Avatar no encontrado' });
+        }
+
+        res.json({ ok: true, avatar });
+    } catch (error) {
+        console.error('Error updating avatar:', error);
+        res.status(500).json({ ok: false, msg: 'Error interno actualizando avatar' });
+    }
+};
+
 module.exports = {
     generateAvatar,
     recalculateAvatar,
@@ -314,5 +324,6 @@ module.exports = {
     getPredefinedAvatars,
     ensureAvatar,
     getAvatarById,
-    tryOnClothes
+    tryOnClothes,
+    updateAvatar
 };

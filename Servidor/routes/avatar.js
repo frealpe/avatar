@@ -7,7 +7,8 @@ const {
     ensureAvatar,
     getAvatarById, 
     tryOnClothes,
-    recalculateAvatar
+    recalculateAvatar,
+    updateAvatar
 } = require('../controllers/avatar');
 
 const router = Router();
@@ -53,5 +54,11 @@ router.get('/:id', getAvatarById);
  */
 router.post('/try-on', tryOnClothes);
 router.post('/tryon', tryOnClothes);
+
+/**
+ * @route PATCH /api/avatar/:id
+ * Actualiza cualquier campo del avatar.
+ */
+router.patch('/:id', updateAvatar);
 
 module.exports = router;

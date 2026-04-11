@@ -44,8 +44,8 @@ function AvatarRealGLB({ url, targetScale = [1, 1, 1] }) {
                 group.current.scale.z += (targetScale[2] - group.current.scale.z) * lerpFactor;
             }
         });
-    // El GLB en disco ya viene corregido; no aplicar rotación en runtime.
-    return (<group ref={group} position={[0, -1, 0]} rotation={[0, 0, 0]}><primitive object={scene} /></group>);
+        // El GLB en disco ya viene corregido; no aplicar rotación en runtime.
+        return (<group ref={group} position={[0, -1, 0]} rotation={[0, 0, 0]}><primitive object={scene} /></group>);
     };
 
     return (
@@ -58,7 +58,7 @@ function AvatarRealGLB({ url, targetScale = [1, 1, 1] }) {
 function GarmentRealGLB({ url, targetScale = [1, 1, 1] }) {
     const group = useRef();
     if (!url) return null;
-    try { useGLTF.preload(url); } catch (e) {}
+    try { useGLTF.preload(url); } catch (e) { }
 
     const Inner = () => {
         const { scene } = useGLTF(url);
@@ -71,8 +71,8 @@ function GarmentRealGLB({ url, targetScale = [1, 1, 1] }) {
                 group.current.scale.z += (targetScale[2] - group.current.scale.z) * lerpFactor;
             }
         });
-    // El GLB en disco ya viene corregido; no aplicar rotación en runtime.
-    return (<group ref={group} position={[0, -1, 0]} rotation={[0, 0, 0]}><primitive object={scene} /></group>);
+        // El GLB en disco ya viene corregido; no aplicar rotación en runtime.
+        return (<group ref={group} position={[0, -1, 0]} rotation={[0, 0, 0]}><primitive object={scene} /></group>);
     };
 
     return (
@@ -112,6 +112,7 @@ function AnnyHumanBody({ measurements, targetScale = [1, 1, 1], isTryingOn }) {
             if (!isTryingOn) group.current.position.y = (-1 * group.current.scale.y) + Math.sin(state.clock.elapsedTime * 2) * 0.05;
         }
     });
+
     return (
         <group ref={group} position={[0, -1, 0]}>
             <mesh position={[0, 1.5, 0]}><boxGeometry args={[1.2, 2.5, 0.6]} /><meshStandardMaterial color={bodyColor} wireframe={!isTryingOn} opacity={0.6} transparent /></mesh>
@@ -120,70 +121,27 @@ function AnnyHumanBody({ measurements, targetScale = [1, 1, 1], isTryingOn }) {
     );
 }
 
-// Lightweight PoseOverlay: draws joints & bones based on poseData (compatible with AjustesPose IKSkeleton)
-function PoseOverlay({ poseData }) {
-    const L = useMemo(() => ({ spine: 0.3, neck: 0.2, head: 0.15, shoulder: 0.2, uArm: 0.35, fArm: 0.35, thigh: 0.4, calf: 0.4, foot: 0.1 }), []);
-    const getQ = (key) => new THREE.Quaternion().setFromEuler(new THREE.Euler(...(poseData[key] || [0, 0, 0]), 'XYZ'));
-    const rootP = new THREE.Vector3(0, 0.9, 0);
-    const qHips = getQ('hips');
-    const posSpine = rootP.clone().add(new THREE.Vector3(0, L.spine, 0).applyQuaternion(qHips));
-    const qSpine = qHips.clone().multiply(getQ('spine'));
-    const posNeck = posSpine.clone().add(new THREE.Vector3(0, L.neck, 0).applyQuaternion(qSpine));
-    const qHead = qSpine.clone().multiply(getQ('head'));
-    const posHead = posNeck.clone().add(new THREE.Vector3(0, L.head, 0).applyQuaternion(qHead));
-
-    // Left arm
-    const sL_Offset = new THREE.Vector3(L.shoulder, 0, 0).applyQuaternion(qSpine);
-    const posSL = posNeck.clone().add(sL_Offset);
-    const qSL = qSpine.clone().multiply(getQ('shoulder_l'));
-    const posEL = posSL.clone().add(new THREE.Vector3(L.uArm, 0, 0).applyQuaternion(qSL));
-    const qEL = qSL.clone().multiply(getQ('elbow_l'));
-    const posHL = posEL.clone().add(new THREE.Vector3(L.fArm, 0, 0).applyQuaternion(qEL));
-
-    // Right arm
-    const sR_Offset = new THREE.Vector3(-L.shoulder, 0, 0).applyQuaternion(qSpine);
-    const posSR = posNeck.clone().add(sR_Offset);
-    const qSR = qSpine.clone().multiply(getQ('shoulder_r'));
-    const posER = posSR.clone().add(new THREE.Vector3(-L.uArm, 0, 0).applyQuaternion(qSR));
-    const qER = qSR.clone().multiply(getQ('elbow_r'));
-    const posHR = posER.clone().add(new THREE.Vector3(-L.fArm, 0, 0).applyQuaternion(qER));
-
-    const Line = ({ start, end, color = '#00f1fe' }) => (
-        <line>
-            <bufferGeometry attach="geometry" onUpdate={(g) => g.setFromPoints([new THREE.Vector3(...start), new THREE.Vector3(...end)])} />
-            <lineBasicMaterial attach="material" color={color} linewidth={1} transparent opacity={0.85} />
-        </line>
-    );
-
-    const Joint = ({ pos, color = 'white' }) => (
-        <mesh position={pos}><sphereGeometry args={[0.04, 12, 12]} /><meshStandardMaterial color={color} emissive={color} emissiveIntensity={1} /></mesh>
-    );
-
+function MiniModelPreview({ url }) {
+    if (!url) return null;
     return (
-        <group rotation={[0, Math.PI, 0]} position={[0, -0.6, 0]}>
-            <Line start={rootP.toArray()} end={posSpine.toArray()} />
-            <Line start={posSpine.toArray()} end={posNeck.toArray()} />
-            <Line start={posNeck.toArray()} end={posHead.toArray()} />
-
-            <Line start={posNeck.toArray()} end={posSL.toArray()} />
-            <Line start={posSL.toArray()} end={posEL.toArray()} />
-            <Line start={posEL.toArray()} end={posHL.toArray()} />
-
-            <Line start={posNeck.toArray()} end={posSR.toArray()} />
-            <Line start={posSR.toArray()} end={posER.toArray()} />
-            <Line start={posER.toArray()} end={posHR.toArray()} />
-
-            <Joint pos={posHead.toArray()} />
-            <Joint pos={posNeck.toArray()} />
-            <Joint pos={posSL.toArray()} color={'#00f1fe'} />
-            <Joint pos={posEL.toArray()} color={'#00f1fe'} />
-            <Joint pos={posHL.toArray()} color={'#00f1fe'} />
-            <Joint pos={posSR.toArray()} color={'#d800ff'} />
-            <Joint pos={posER.toArray()} color={'#d800ff'} />
-            <Joint pos={posHR.toArray()} color={'#d800ff'} />
-        </group>
+        <Canvas camera={{ position: [0, 0, 2], fov: 40 }} gl={{ alpha: true }} style={{ height: '100%', width: '100%' }}>
+            <ambientLight intensity={0.5} />
+            <pointLight position={[5, 5, 5]} intensity={1} />
+            <Suspense fallback={null}>
+                <Stage environment="city" intensity={0.5} contactShadow={false}>
+                    <Model url={url} />
+                </Stage>
+            </Suspense>
+            <OrbitControls enableZoom={false} autoRotate autoRotateSpeed={4} />
+        </Canvas>
     );
 }
+
+function Model({ url }) {
+    const { scene } = useGLTF(url);
+    return <primitive object={scene} />;
+}
+
 
 // --- Componente Principal Probador ---
 const ProbadorAvatar = () => {
@@ -195,7 +153,7 @@ const ProbadorAvatar = () => {
     const [prendas, setPrendas] = useState([]);
     const [wornClothId, setWornClothId] = useState(null);
     const [targetScale, setTargetScale] = useState([1, 1, 1]);
-    const [selectedCollection, setSelectedCollection] = useState(null);
+    const [selectedCategoria, setSelectedCategoria] = useState(null);
 
     // 1. Cargar desde localStorage si el store está vacío (Persistencia)
     useEffect(() => {
@@ -239,7 +197,7 @@ const ProbadorAvatar = () => {
                 const measurements = {};
                 for (let i = 0; i <= 4; i++) {
                     const b = betas[i] || 0;
-                    if (METRIC_CONFIG[i]) measurements[['height','weight','chest','shoulders','hips'][i]] = parseFloat((METRIC_CONFIG[i].base + b * METRIC_CONFIG[i].delta).toFixed(1));
+                    if (METRIC_CONFIG[i]) measurements[['height', 'weight', 'chest', 'shoulders', 'hips'][i]] = parseFloat((METRIC_CONFIG[i].base + b * METRIC_CONFIG[i].delta).toFixed(1));
                 }
 
                 // Mapear betas a escalas para el render 3D (x, y, z). Y controla rangos razonables.
@@ -264,21 +222,6 @@ const ProbadorAvatar = () => {
         return () => { socket.off('avatar:preview', handlePreview); };
     }, [socket]);
 
-    // Listener para previsualizaciones de POSE en tiempo real (desde AjustesPose)
-    useEffect(() => {
-        if (!socket) return;
-        const handlePose = (data) => {
-            try {
-                if (!data || !data.poseData) return;
-                // Simple: attach poseData to liveAvatar for UI/overlay. Not regenerating mesh here.
-                setLiveAvatar(prev => ({ ...prev, poseData: data.poseData }));
-            } catch (e) {
-                console.error('Error procesando pose:preview:', e);
-            }
-        };
-        socket.on('pose:preview', handlePose);
-        return () => { socket.off('pose:preview', handlePose); };
-    }, [socket]);
 
 
 
@@ -302,13 +245,17 @@ const ProbadorAvatar = () => {
     const handleTryOn = (itemId) => {
         setWornClothId(itemId);
         const selectedPrenda = prendas.find(p => p._id === itemId || p.id === itemId);
-        setLiveAvatar(prev => ({ ...prev, prenda3D: selectedPrenda?.prenda3D || null }));
+        const updatedAvatar = { ...liveAvatar, prenda3D: selectedPrenda?.prenda3D || null };
+        setLiveAvatar(updatedAvatar);
+        // 👕 Mostrar prenda temporalmente (PREVIEW), pero NO guardar en store/localStorage
+        // La ropa es solo visual en Probador, no debe persistir en el avatar guardado
     };
 
     return (
         <div className="flex-1 flex flex-col h-full bg-[#0b0e11] relative overflow-hidden font-['Inter']">
             <div className="flex-1 flex overflow-hidden relative">
-                <section className="flex-1 relative blueprint-grid">
+                {/* Canvas Avatar - Izquierda */}
+                <section className={`relative blueprint-grid transition-all duration-300 ${selectedCategoria ? 'w-2/3' : 'flex-1'}`}>
                     <div className="absolute top-10 left-10 z-20">
                         <span className="text-[8px] text-[#00f1fe] uppercase tracking-[0.4em] font-black">Virtual Fitting Room / Probador</span>
                         <h2 className="text-4xl font-black text-white/10 tracking-tighter uppercase mt-2">{liveAvatar.modelType || 'Avatar_Anny'}</h2>
@@ -325,8 +272,6 @@ const ProbadorAvatar = () => {
                                         <GLBErrorBoundary fallback={<AnnyHumanBody measurements={liveAvatar.measurements} targetScale={targetScale} isTryingOn={wornClothId !== null} />}>
                                             <AvatarRealGLB url={getFullUrl(liveAvatar.meshUrl)} targetScale={targetScale} />
                                             {liveAvatar.prenda3D && <GarmentRealGLB url={getFullUrl(liveAvatar.prenda3D)} targetScale={targetScale} />}
-                                            {/* Pose overlay: simple skeleton drawn from poseData for live preview */}
-                                            {liveAvatar.poseData && <group position={[0, 0, 0]}><PoseOverlay poseData={liveAvatar.poseData} /></group>}
                                         </GLBErrorBoundary>
                                     ) : (
                                         <AnnyHumanBody measurements={liveAvatar.measurements} targetScale={targetScale} isTryingOn={wornClothId !== null} />
@@ -385,47 +330,109 @@ const ProbadorAvatar = () => {
                             );
                         })()}
                     </div>
+                </section>
 
-                    {selectedCollection && (
-                        <div className="absolute right-0 top-0 bottom-0 w-80 z-50 flex">
-                            <div className="flex-1 bg-black/60 backdrop-blur-3xl border-l border-white/10 p-8 flex flex-col animate-slide-left">
-                                <div className="flex justify-between items-center mb-8">
-                                    <h5 className="text-[10px] font-black text-[#00f1fe] uppercase tracking-[0.3em]">{selectedCollection}</h5>
-                                    <button onClick={() => setSelectedCollection(null)} className="text-gray-500 hover:text-white transition-colors">
-                                        <span className="material-symbols-outlined text-sm">close</span>
-                                    </button>
-                                </div>
-                                <div className="flex-1 overflow-y-auto no-scrollbar space-y-8 pb-10">
-                                    {collections[selectedCollection]?.map(prenda => (
-                                        <div key={prenda._id} onClick={() => handleTryOn(prenda._id)} className={`group relative rounded-2xl overflow-hidden cursor-pointer border transition-all duration-500 ${wornClothId === prenda._id ? 'border-[#00f1fe] bg-[#00f1fe]/10' : 'border-white/5 bg-white/5 hover:border-white/20'}`}>
-                                            <div className="aspect-[4/3] relative flex items-center justify-center bg-white/5">
-                                                {prenda.img && <img src={`${iotApi.API_BASE}${prenda.img}`} alt={prenda.titulo} className="w-full h-full object-contain p-4 group-hover:scale-110 transition-transform duration-500" />}
+                {/* Panel Lateral de Prendas - Derecha */}
+                {selectedCategoria && (
+                    <aside className="w-1/3 h-full bg-black/40 border-l border-white/5 flex flex-col overflow-hidden">
+                        {/* Header */}
+                        <div className="p-4 border-b border-white/5 bg-black/20">
+                            <div className="flex items-center justify-between mb-2">
+                                <h3 className="text-lg font-black text-white uppercase tracking-wider">
+                                    {selectedCategoria}
+                                </h3>
+                                <button
+                                    onClick={() => setSelectedCategoria(null)}
+                                    className="p-1 hover:bg-white/10 rounded-lg transition-colors"
+                                >
+                                    <span className="material-symbols-outlined text-xl">close</span>
+                                </button>
+                            </div>
+                            <p className="text-[10px] text-gray-400 uppercase tracking-widest">
+                                {prendas.filter(p => (p.categoria || 'Sin Categoría') === selectedCategoria).length} prendas
+                            </p>
+                        </div>
+
+                        {/* Grid de Prendas */}
+                        <div className="flex-1 overflow-y-auto custom-scrollbar p-4">
+                            <div className="grid grid-cols-2 gap-3">
+                                {prendas
+                                    .filter(p => (p.categoria || 'Sin Categoría') === selectedCategoria)
+                                    .map(prenda => (
+                                        <button
+                                            key={prenda._id || prenda.id}
+                                            onClick={() => handleTryOn(prenda._id || prenda.id)}
+                                            className={`group relative overflow-hidden rounded-lg border transition-all ${wornClothId === (prenda._id || prenda.id)
+                                                ? 'border-[#00f1fe] bg-[#00f1fe]/10'
+                                                : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10'
+                                                }`}
+                                        >
+                                            {/* Vista 3D / Imagen */}
+                                            <div className="w-full h-24 bg-black/60 overflow-hidden relative">
+                                                {prenda.prenda3D ? (
+                                                    <MiniModelPreview url={getFullUrl(prenda.prenda3D)} />
+                                                ) : prenda.image ? (
+                                                    <img
+                                                        src={getFullUrl(prenda.image)}
+                                                        alt={prenda.name}
+                                                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                                                        onError={(e) => {
+                                                            e.target.style.display = 'none';
+                                                        }}
+                                                    />
+                                                ) : (
+                                                    <div className="w-full h-full flex items-center justify-center">
+                                                        <span className="material-symbols-outlined text-2xl text-gray-600">
+                                                            image
+                                                        </span>
+                                                    </div>
+                                                )}
                                             </div>
-                                            <div className="p-4 bg-black/40">
-                                                <p className="text-[9px] font-black text-white uppercase tracking-wider mb-1">{prenda.titulo}</p>
-                                                <div className="flex justify-between items-center">
-                                                    <span className="text-[7px] text-gray-400 font-bold uppercase">{selectedCollection}</span>
-                                                    <span className="text-[7px] text-[#00f1fe] font-black">{prenda.talla}</span>
-                                                </div>
+
+                                            {/* Info */}
+                                            <div className="p-2">
+                                                <h4 className="font-bold text-white text-xs truncate">
+                                                    {prenda.name}
+                                                </h4>
+                                                <p className="text-[9px] text-gray-400 truncate">
+                                                    {prenda.marca || 'S/M'}
+                                                </p>
+                                                {prenda.price && (
+                                                    <p className="text-xs font-bold text-[#00f1fe] mt-1">
+                                                        ${prenda.price}
+                                                    </p>
+                                                )}
                                             </div>
-                                        </div>
+
+                                            {/* Indicator */}
+                                            {wornClothId === (prenda._id || prenda.id) && (
+                                                <div className="absolute top-1 right-1 w-2 h-2 bg-[#00f1fe] rounded-full shadow-[0_0_8px_#00f1fe]" />
+                                            )}
+                                        </button>
                                     ))}
-                                </div>
                             </div>
                         </div>
-                    )}
-                </section>
+                    </aside>
+                )}
             </div>
 
+            {/* Footer con Categorías */}
             <footer className="h-44 bg-black/60 border-t border-white/5 p-8 z-40 backdrop-blur-xl">
                 <div className="flex gap-6 overflow-x-auto pb-4 no-scrollbar px-4">
                     {Object.keys(collections).map(catName => (
-                        <div key={catName} onClick={() => setSelectedCollection(catName)} className={`flex-shrink-0 w-48 h-24 rounded-2xl relative overflow-hidden group cursor-pointer border transition-all duration-500 ${selectedCollection === catName ? 'border-[#00f1fe] bg-[#00f1fe]/5' : 'border-white/5 bg-white/5 hover:border-white/20'}`}>
+                        <button
+                            key={catName}
+                            onClick={() => setSelectedCategoria(catName)}
+                            className={`flex-shrink-0 w-48 h-24 rounded-2xl relative overflow-hidden group cursor-pointer border transition-all duration-500 ${selectedCategoria === catName
+                                ? 'border-[#00f1fe] bg-[#00f1fe]/10'
+                                : 'border-white/5 bg-white/5 hover:border-white/20 hover:bg-white/10'
+                                }`}
+                        >
                             <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
                                 <h5 className="text-[10px] font-black text-white uppercase tracking-widest">{catName}</h5>
                                 <span className="text-[7px] text-[#00f1fe] font-bold uppercase">{collections[catName].length} ITEMS</span>
                             </div>
-                        </div>
+                        </button>
                     ))}
                 </div>
             </footer>

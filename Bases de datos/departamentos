@@ -1,0 +1,232 @@
+[{
+  "_id": {
+    "$oid": "654c3f2dab281697d7c678d4"
+  },
+  "codigoDepartamento": "05",
+  "nombre": "Antioquia",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "654c3f2dab281697d7c678db"
+  },
+  "codigoDepartamento": "15",
+  "nombre": "Boyacá",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "654c3f2dab281697d7c678dd"
+  },
+  "codigoDepartamento": "11",
+  "nombre": "Bogotá, D.C.",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "654c3f2dab281697d7c678df"
+  },
+  "codigoDepartamento": "19",
+  "nombre": "Cauca",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "654c3f2dab281697d7c678e1"
+  },
+  "codigoDepartamento": "18",
+  "nombre": "Caquetá",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "654c3f2dab281697d7c678e3"
+  },
+  "codigoDepartamento": "17",
+  "nombre": "Caldas",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "654c3f2dab281697d7c678e5"
+  },
+  "codigoDepartamento": "08",
+  "nombre": "Atlántico",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "654c3f2dab281697d7c678e7"
+  },
+  "codigoDepartamento": "13",
+  "nombre": "Bolívar",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "654c3f2eab281697d7c678eb"
+  },
+  "codigoDepartamento": "27",
+  "nombre": "Chocó",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "654c3f2eab281697d7c678ed"
+  },
+  "codigoDepartamento": "23",
+  "nombre": "Córdoba",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "654c3f2eab281697d7c678ef"
+  },
+  "codigoDepartamento": "50",
+  "nombre": "Meta",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "654c3f2eab281697d7c678f1"
+  },
+  "codigoDepartamento": "47",
+  "nombre": "Magdalena",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "654c3f2eab281697d7c678f3"
+  },
+  "codigoDepartamento": "44",
+  "nombre": "La Guajira",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "654c3f2eab281697d7c678f6"
+  },
+  "codigoDepartamento": "41",
+  "nombre": "Huila",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "654c3f2eab281697d7c678f7"
+  },
+  "codigoDepartamento": "25",
+  "nombre": "Cundinamarca",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "654c3f2eab281697d7c678f9"
+  },
+  "codigoDepartamento": "20",
+  "nombre": "Cesar",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "654c3f2eab281697d7c678fd"
+  },
+  "codigoDepartamento": "63",
+  "nombre": "Quindio",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "654c3f2eab281697d7c678ff"
+  },
+  "codigoDepartamento": "68",
+  "nombre": "Santander",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "654c3f2eab281697d7c67902"
+  },
+  "codigoDepartamento": "52",
+  "nombre": "Nariño",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "654c3f2eab281697d7c67903"
+  },
+  "codigoDepartamento": "66",
+  "nombre": "Risaralda",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "654c3f2eab281697d7c67905"
+  },
+  "codigoDepartamento": "81",
+  "nombre": "Arauca",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "654c3f2eab281697d7c67907"
+  },
+  "codigoDepartamento": "76",
+  "nombre": "Valle Del Cauca",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "654c3f2eab281697d7c67909"
+  },
+  "codigoDepartamento": "73",
+  "nombre": "Tolima",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "654c3f2eab281697d7c6790b"
+  },
+  "codigoDepartamento": "70",
+  "nombre": "Sucre",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "654c3f2eab281697d7c6790d"
+  },
+  "codigoDepartamento": "54",
+  "nombre": "Norte De Santander",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "654c3f2fab281697d7c67911"
+  },
+  "codigoDepartamento": "86",
+  "nombre": "Putumayo",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "654c3f2fab281697d7c67913"
+  },
+  "codigoDepartamento": "97",
+  "nombre": "Vaupés",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "654c3f2fab281697d7c67915"
+  },
+  "codigoDepartamento": "95",
+  "nombre": "Guaviare",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "654c3f2fab281697d7c67918"
+  },
+  "codigoDepartamento": "99",
+  "nombre": "Vichada",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "654c3f2fab281697d7c67919"
+  },
+  "codigoDepartamento": "91",
+  "nombre": "Amazonas",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "654c3f2fab281697d7c6791b"
+  },
+  "codigoDepartamento": "85",
+  "nombre": "Casanare",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "654c3f2fab281697d7c6791d"
+  },
+  "codigoDepartamento": "88",
+  "nombre": "Archipiélago De San Andrés, Providencia Y Santa Catalina",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "654c3f2fab281697d7c67921"
+  },
+  "codigoDepartamento": "94",
+  "nombre": "Guainía",
+  "__v": 0
+}]

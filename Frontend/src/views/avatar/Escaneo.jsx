@@ -4,9 +4,10 @@ import { useNavigate } from 'react-router-dom';
 import { Canvas } from '@react-three/fiber';
 import { useGLTF, Stage } from '@react-three/drei';
 import iotApi from '../../service/iotApi';
+import useStore from '../../store';
 
 const ModelPreview = ({ url }) => {
-    const fullUrl = url.startsWith('http') ? url : `http://localhost:8080${url}`;
+    const fullUrl = url.startsWith('http') ? url : `${iotApi.API_BASE}${url}`;
     const { scene } = useGLTF(fullUrl);
     return (
         <Canvas shadows dpr={[1, 1.5]} camera={{ position: [0, 1, 3], fov: 40 }} gl={{ alpha: true }}>
@@ -20,6 +21,7 @@ const ModelPreview = ({ url }) => {
 
 const EscaneoAvatar = () => {
     const navigate = useNavigate();
+    const { setAvatar } = useStore();
     const [mode, setMode] = useState('CATALOG'); // 'SCAN' or 'CATALOG'
     const [scanning, setScanning] = useState(false);
     const [progress, setProgress] = useState(0);
@@ -114,6 +116,8 @@ const EscaneoAvatar = () => {
     };
 
     const handleSelectPredefined = (model) => {
+        // Solo navega a Laboratorio, NO guarda aún en el store
+        // El guardado se hace cuando presionas el botón GUARDAR en Laboratorio
         navigate('/avatar/laboratorio', { state: { predefined: model } });
     };
 
@@ -225,7 +229,7 @@ const EscaneoAvatar = () => {
 
                                                 <div className="absolute bottom-6 right-6 flex gap-2">
                                                     <a
-                                                        href={`http://localhost:8080${model.meshUrl}`}
+                                                        href={`${iotApi.API_BASE}${model.meshUrl}`}
                                                         download
                                                         onClick={(e) => e.stopPropagation()}
                                                         className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-[#00f1fe] hover:text-black transition-all"

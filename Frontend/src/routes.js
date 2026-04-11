@@ -8,6 +8,7 @@ const GeneracionAvatar = React.lazy(() => import('./views/avatar/Generacion'))
 const ProbadorAvatar = React.lazy(() => import('./views/avatar/Probador'))
 const LaboratorioIA = React.lazy(() => import('./views/avatar/LaboratorioIA'))
 const AjustesPose = React.lazy(() => import('./views/avatar/AjustesPose'))
+const ColeccionAvatar = React.lazy(() => import('./views/avatar/Coleccion'))
 
 const routes = [
   {
@@ -27,6 +28,7 @@ const routes = [
   { path: '/avatar/escaneo', name: 'Escaneo Corporal 3D', element: EscaneoAvatar, exact: true },
   { path: '/avatar/generacion', name: 'Generación Avatar', element: GeneracionAvatar, exact: true },
   { path: '/avatar/probador', name: 'Probador 3D Virtual', element: ProbadorAvatar, exact: true },
+  { path: '/avatar/coleccion', name: 'Colección de Prendas', element: ColeccionAvatar, exact: true },
   { path: '/avatar/laboratorio', name: 'Laboratorio de IA Integrado', element: LaboratorioIA, exact: true },
   { path: '/avatar/ajustes', name: 'Ajustes de Pose', element: AjustesPose, exact: true }
 ]

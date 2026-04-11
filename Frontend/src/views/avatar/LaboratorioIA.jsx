@@ -4,6 +4,7 @@ import { OrbitControls, useGLTF, PerspectiveCamera, Stage } from '@react-three/d
 import { useLocation } from 'react-router-dom'
 import iotApi from '../../service/iotApi'
 import { SocketContext } from '../../context/SocketContext'
+import useStore from '../../store'
 
 // --- Helpers ---
 const getFullUrl = (url) => {
@@ -22,6 +23,7 @@ const LaboratorioIA = () => {
     const bodyInputRef = useRef(null);
     const garmentInputRef = useRef(null);
     const { socket } = React.useContext(SocketContext);
+    const { setAvatar } = useStore();
 
     const [tab, setTab] = useState('BODY'); // 'BODY' or 'GARMENT'
     const [bodyState, setBodyState] = useState({ loading: false, result: null, telemetry: null, timer: 0 });
@@ -39,7 +41,8 @@ const LaboratorioIA = () => {
                     const parsed = JSON.parse(savedBody);
                     // Verificar que la URL del GLB es accesible antes de usarla
                     if (parsed.meshUrl) {
-                        fetch(parsed.meshUrl, { method: 'HEAD' })
+                        const fullGlbUrl = getFullUrl(parsed.meshUrl);
+                        fetch(fullGlbUrl, { method: 'HEAD' })
                             .then(r => {
                                 if (!r.ok) throw new Error('GLB stale');
                                 setBodyState(prev => ({ ...prev, result: parsed, loading: false }));
@@ -63,7 +66,7 @@ const LaboratorioIA = () => {
         }
     }, [location.state]);
 
-    // 2. Cargar modelo predefinido si viene de Escaneo y Guardar en local
+    // 2. Cargar modelo predefinido si viene de Escaneo (sin guardar aún en localStorage/store)
     useEffect(() => {
         if (location.state?.predefined) {
             const model = location.state.predefined;
@@ -79,14 +82,14 @@ const LaboratorioIA = () => {
                 telemetry: { totalExecutionTime: 'Instantáneo', modelsUsed: ['SMPL-X Library'] },
                 timer: 0
             });
-            setEditableMeasurements(model.measurements);
-            if (model.betas) {
-                const b = [...model.betas];
+            if (newResult.measurements) setEditableMeasurements(newResult.measurements);
+            if (newResult.betas) {
+                const b = [...newResult.betas];
                 while (b.length < 12) b.push(0);
                 setBetas(b);
             }
-            // Persistir como perfil
-            localStorage.setItem('modavatar_active_body', JSON.stringify(newResult));
+            // NO guardar aún en localStorage/store - esperamos a que el usuario presione GUARDAR
+            console.log("📦 [Lab IA] Avatar cargado temporalmente (no guardado aún):", newResult.modelType);
         }
     }, [location.state]);
 
@@ -195,16 +198,20 @@ const LaboratorioIA = () => {
     // ... handleSaveMeasurements ...
     const handleRecalculate = async (newBetas) => {
         setRecalculating(true);
+        const betasToSubmit = newBetas || (betas.length > 0 ? betas : [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
         try {
-            const res = await iotApi.recalculateAvatar(newBetas || betas, 'neutral');
+            const res = await iotApi.recalculateAvatar(betasToSubmit, 'neutral');
             if (res.ok) {
-                const finalResult = { ...bodyState.result, ...res, meshUrl: getFullUrl(res.meshUrl), betas: newBetas || betas };
+                const finalResult = { ...bodyState.result, ...res, meshUrl: getFullUrl(res.meshUrl), betas: betasToSubmit };
                 setBodyState(prev => ({
                     ...prev,
                     result: finalResult
                 }));
                 if (res.measurements) setEditableMeasurements(res.measurements);
+                // ✅ GUARDAR COMO AVATAR POR DEFECTO en localStorage Y en el store global
+                console.log("💾 [Lab IA] Avatar GUARDADO como por defecto:", finalResult.modelType);
                 localStorage.setItem('modavatar_active_body', JSON.stringify(finalResult));
+                setAvatar(finalResult); // ← Sincronizar con store global
             }
         } catch (e) {
             console.error("Error recalibrando malla:", e);
