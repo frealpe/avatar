@@ -91,12 +91,15 @@ const setupWorker = (io) => {
       let prenda3DUrl = null;
       if (absoluteAvatarPath && absoluteSvgPath && fs.existsSync(absoluteAvatarPath) && fs.existsSync(absoluteSvgPath)) {
            const prendaOutputName = `prenda_${Date.now()}.glb`;
-           console.log(`[ENGINE] STATUS: Iniciando simulación 3D Blender...`);
+           // Determinar el tipo de tela en base a garmentParams si existe, de lo contrario 'cotton'
+           const fabricType = (garmentParams && garmentParams.fabricType) ? garmentParams.fabricType : 'cotton';
+           console.log(`[ENGINE] STATUS: Iniciando simulación 3D Blender con tela: ${fabricType}...`);
            try {
                const blenderResult = await generarPrenda3D({
                    avatarPath: absoluteAvatarPath,
                    svgPath: absoluteSvgPath,
-                   outputName: prendaOutputName
+                   outputName: prendaOutputName,
+                   fabricType: fabricType
                });
                if (blenderResult && blenderResult.glbPrendaUrl) {
                    prenda3DUrl = `http://localhost:${port}${blenderResult.glbPrendaUrl}`;
