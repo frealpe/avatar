@@ -60,6 +60,8 @@ const useStore = create((set) => ({
   asideShow: false,
   theme: 'light',
   avatarData: getStoredAvatar(), 
+  backgroundJobs: [],
+  simulationNotification: null,
   ...getStoredAuth(),
 
   // Equivalente al dispatch({ type: 'set', ...rest })

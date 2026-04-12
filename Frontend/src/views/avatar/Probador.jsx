@@ -119,6 +119,8 @@ const ProbadorAvatar = () => {
     const [focusPrenda, setFocusPrenda] = useState(null);
     const [targetScale, setTargetScale] = useState([1, 1, 1]);
     const [selectedCategoria, setSelectedCategoria] = useState(null);
+    const [isProbando, setIsProbando] = useState(false);
+    const [lastDressedUrl, setLastDressedUrl] = useState(null);
 
     useEffect(() => {
         if (!avatarData) {
@@ -147,7 +149,10 @@ const ProbadorAvatar = () => {
             } catch (e) { console.error(e); }
         };
         socket.on('avatar:preview', handlePreview);
-        return () => { socket.off('avatar:preview', handlePreview); };
+
+        return () => {
+            socket.off('avatar:preview', handlePreview);
+        };
     }, [socket]);
 
     useEffect(() => {
@@ -173,17 +178,24 @@ const ProbadorAvatar = () => {
     };
 
     const handleTryOn = async (prenda) => {
-        setWornClothId(prenda._id || prenda.id);
-        if (liveAvatar?._id) {
-            try {
-                const res = await iotApi.updateAvatar(liveAvatar._id, {
-                    prenda3D: prenda.prenda3D || null,
-                    $addToSet: { selectedGarments: prenda._id }
-                });
-                if (res.ok) setAvatar(res.avatar);
-            } catch (e) { console.error(e); }
+        setIsProbando(true);
+        try {
+            const avatarUrl = liveAvatar.meshUrl;
+            const garmentUrl = prenda.prenda3D;
+            const res = await iotApi.tryOnClothes(avatarUrl, garmentUrl);
+            if (res.ok) {
+                setLastDressedUrl(res.meshUrl);
+                setWornClothId(prenda._id || prenda.id);
+            } else {
+                alert(res.msg || "Error en el ajuste");
+            }
+        } catch (error) {
+            console.error("Error al probar prenda:", error);
+            alert("Error conectando con el motor de físicas.");
+        } finally {
+            setIsProbando(false);
+            setFocusPrenda(null);
         }
-        setFocusPrenda(null); // Cerrar tarjeta grande al vestir
     };
 
     return (
@@ -203,7 +215,9 @@ const ProbadorAvatar = () => {
                             <pointLight position={[10, 10, 10]} intensity={1} color="#00F2FF" />
                             <Suspense fallback={null}>
                                 <Stage environment="city" intensity={0.5} contactShadow={{ opacity: 0.2, blur: 2 }}>
-                                    {liveAvatar.meshUrl ? (
+                                    {lastDressedUrl ? (
+                                        <Model url={getFullUrl(lastDressedUrl)} />
+                                    ) : liveAvatar.meshUrl ? (
                                         <GLBErrorBoundary fallback={<AnnyHumanBody targetScale={targetScale} isTryingOn={wornClothId !== null} />}>
                                             <FittingRoom
                                                 avatarUrl={getFullUrl(liveAvatar.meshUrl)}
@@ -221,47 +235,15 @@ const ProbadorAvatar = () => {
                         </Canvas>
                     </div>
 
-                    {/* TARJETA GRANDE DE DRESSING (Focus Card) */}
-                    {focusPrenda && (
-                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[400px] animate-in fade-in zoom-in duration-300">
-                            <div className="relative bg-black/80 backdrop-blur-2xl border border-[#00f1fe]/30 rounded-[2.5rem] overflow-hidden shadow-[0_0_50px_rgba(0,241,254,0.15)] flex flex-col items-center p-8 text-center">
-                                {/* Decoración */}
-                                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#00f1fe] to-transparent" />
-
-                                <button
-                                    onClick={() => setFocusPrenda(null)}
-                                    className="absolute top-6 right-6 text-white/40 hover:text-white transition-colors"
-                                >
-                                    <span className="material-symbols-outlined">close</span>
-                                </button>
-
-                                <div className="w-48 h-48 bg-black/40 rounded-3xl mb-6 relative border border-white/5 shadow-inner">
-                                    <MiniModelPreview url={getFullUrl(focusPrenda.prenda3D)} />
-                                </div>
-
-                                <span className="text-[10px] text-[#00f1fe] font-black tracking-[0.3em] uppercase mb-2">New Selection</span>
-                                <h2 className="text-3xl font-black text-white uppercase tracking-tight mb-1">{focusPrenda.name}</h2>
-                                <p className="text-xs text-gray-400 uppercase tracking-widest mb-6">{focusPrenda.marca || 'Anny Exclusive'}</p>
-
-                                <div className="flex gap-4 mb-8 w-full px-4">
-                                    <div className="flex-1 p-4 bg-white/5 rounded-2xl border border-white/10">
-                                        <span className="block text-[8px] text-gray-500 uppercase font-black mb-1">Standard Size</span>
-                                        <span className="text-xl font-bold text-white">{liveAvatar.tallaSugerida || 'M'}</span>
-                                    </div>
-                                    <div className="flex-1 p-4 bg-white/5 rounded-2xl border border-white/10">
-                                        <span className="block text-[8px] text-gray-500 uppercase font-black mb-1">Fit Mode</span>
-                                        <span className="text-xl font-bold text-white">Skinning</span>
-                                    </div>
-                                </div>
-
-                                <button
-                                    onClick={() => handleTryOn(focusPrenda)}
-                                    className="w-full py-5 bg-[#00f1fe] text-black font-black uppercase tracking-[0.3em] text-sm rounded-2xl transition-all hover:scale-105 active:scale-95 shadow-[0_10px_30px_rgba(0,241,254,0.3)] flex items-center justify-center gap-3 group"
-                                >
-                                    <span className="material-symbols-outlined text-xl group-hover:animate-bounce">checkroom</span>
-                                    DRESS AVATAR NOW
-                                </button>
-                            </div>
+                    {/* TARJETA DE DRESSING MOVIDA AL LATERAL (AQUÍ SOLO SI NO HAY CATEGORÍA) */}
+                    {!selectedCategoria && focusPrenda && (
+                        <div className="absolute top-32 right-10 z-50 w-[350px] animate-in slide-in-from-right duration-500">
+                            <FocusGarmentCard
+                                prenda={focusPrenda}
+                                onClose={() => setFocusPrenda(null)}
+                                onTryOn={handleTryOn}
+                                liveAvatar={liveAvatar}
+                            />
                         </div>
                     )}
 
@@ -290,6 +272,17 @@ const ProbadorAvatar = () => {
                             <h3 className="text-lg font-black text-white uppercase tracking-wider">{selectedCategoria}</h3>
                             <button onClick={() => setSelectedCategoria(null)} className="p-1 hover:bg-white/10 rounded-lg transition-colors"><span className="material-symbols-outlined">close</span></button>
                         </div>
+                        {focusPrenda && (
+                            <div className="p-2 border-b border-white/10 bg-[#161a1e]/40 animate-in slide-in-from-top duration-500">
+                                <FocusGarmentCard
+                                    prenda={focusPrenda}
+                                    onClose={() => setFocusPrenda(null)}
+                                    onTryOn={handleTryOn}
+                                    liveAvatar={liveAvatar}
+                                    compact
+                                />
+                            </div>
+                        )}
                         <div className="flex-1 overflow-y-auto p-2 grid grid-cols-3 gap-2 content-start custom-scrollbar">
                             {prendas.filter(p => (p.categoria || 'Sin Categoría') === selectedCategoria).map(prenda => (
                                 <button
@@ -323,6 +316,43 @@ const ProbadorAvatar = () => {
                     ))}
                 </div>
             </footer>
+        </div>
+    );
+};
+
+const FocusGarmentCard = ({ prenda, onClose, onTryOn, liveAvatar, compact }) => {
+    return (
+        <div className={`relative bg-black/80 backdrop-blur-2xl border border-[#00f1fe]/30 rounded-[2rem] overflow-hidden shadow-2xl flex flex-col items-center ${compact ? 'p-4' : 'p-6'} text-center transition-all duration-500`}>
+            {!compact && <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#00f1fe] to-transparent" />}
+
+            <button onClick={onClose} className="absolute top-4 right-4 text-white/40 hover:text-white transition-colors">
+                <span className="material-symbols-outlined text-sm">close</span>
+            </button>
+
+            <div className={`${compact ? 'w-24 h-24' : 'w-40 h-40'} bg-black/40 rounded-2xl mb-4 relative border border-white/5`}>
+                <MiniModelPreview url={getFullUrl(prenda.prenda3D)} />
+            </div>
+
+            {!compact && <span className="text-[8px] text-[#00f1fe] font-black tracking-[0.3em] uppercase mb-1">New Selection</span>}
+            <h2 className={`${compact ? 'text-sm' : 'text-xl'} font-black text-white uppercase tracking-tight`}>{prenda.name}</h2>
+            <p className="text-[8px] text-gray-500 uppercase tracking-widest mb-4">{prenda.marca || 'Anny Exclusive'}</p>
+
+            <div className="flex gap-2 mb-4 w-full px-2">
+                <div className="flex-1 p-2 bg-white/5 rounded-xl border border-white/10">
+                    <span className="block text-[6px] text-gray-600 uppercase font-black">Size</span>
+                    <span className="text-[10px] font-bold text-white">{liveAvatar.tallaSugerida || 'M'}</span>
+                </div>
+                <div className="flex-1 p-2 bg-white/5 rounded-xl border border-white/10">
+                    <span className="block text-[6px] text-gray-600 uppercase font-black">Status</span>
+                    <span className={`text-[10px] font-bold ${prenda.isFitted ? 'text-[#00fe85]' : 'text-gray-400'}`}>{prenda.isFitted ? 'FITTED' : 'RAW'}</span>
+                </div>
+            </div>
+
+            <div className="flex flex-col gap-2 w-full">
+                <button onClick={() => onTryOn(prenda)} className="w-full py-3 bg-[#00f1fe] text-black font-black uppercase tracking-[0.2em] text-[10px] rounded-xl transition-all hover:scale-105 active:scale-95 shadow-lg flex items-center justify-center gap-2">
+                    <span className="material-symbols-outlined text-xs">checkroom</span> PROBAR PRENDA
+                </button>
+            </div>
         </div>
     );
 };

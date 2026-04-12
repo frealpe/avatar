@@ -10,7 +10,8 @@ const {
     tryOnClothes,
     recalculateAvatar,
     updateAvatar,
-    analyzeGarmentGlb
+    analyzeGarmentGlb,
+    approveGarment
 } = require('../controllers/avatar');
 const { validarJWT } = require('../middlewares/validar-jwt');
 
@@ -60,6 +61,7 @@ router.post('/try-on', [validarJWT], tryOnClothes);
 router.post('/tryon', [validarJWT], tryOnClothes);
 
 router.post('/analyze-garment', [validarJWT], analyzeGarmentGlb);
+router.post('/approve-garment', [validarJWT], approveGarment);
 
 /**
  * @route PATCH /api/avatar/:id

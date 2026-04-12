@@ -1,4 +1,5 @@
 const Avatar = require('../models/AvatarModel');
+const Prenda = require('../models/PrendaModel');
 const { avatarQueue } = require('../helpers/queue');
 const path = require('path');
 const fs = require('fs');
@@ -170,46 +171,86 @@ const uploadModel = async (req, res) => {
     res.status(200).json({ ok: true, msg: "Modelo subido correctamente." });
 };
 
-const getClothesCatalog = (req, res) => {
-    const catalogoMock = [
-        { 
-            _id: "saco_neo_2026", 
-            name: "Saco Neo-Refraction", 
-            categoria: "SACOS", 
-            marca: "MODAVATAR",
-            talla: "UNISEX",
-            prenda3D: "/clothes/sacos/Saco.glb",
-            image: "/clothes/sacos/Saco_preview.jpg",
-            price: 150,
-            normal: { x: 0, y: 0, z: 1 },
-            measurements: { ancho_cm: 85.8, largo_cm: 100.0, profundidad_cm: 39.2, brazo_cm: 34.3, pecho_cm: 68.7, cintura_cm: 64.4 }
-        },
-        { 
-            _id: "blusa_silk_01", 
-            name: "Bluza Silk-Cyber", 
-            categoria: "BLUZAS", 
-            marca: "ETHEREAL",
-            talla: "S",
-            prenda3D: "/clothes/bluzas/Blusa_Silk.glb",
-            image: "/clothes/bluzas/Blusa_Silk_preview.jpg",
-            price: 65,
-            normal: { x: 0, y: 0, z: 1 },
-            measurements: { ancho_cm: 45, largo_cm: 62, profundidad_cm: 18, pecho_cm: 92, cintura_cm: 74, brazo_cm: 58 }
-        },
-        { 
-            _id: "pant_cargo_01", 
-            name: "Pantalon Cargo T-800", 
-            categoria: "PANTALONES", 
-            marca: "INDUSTRIAL-WEAR",
-            talla: "M",
-            prenda3D: "/clothes/pantalones/Pantalon_Cargo.glb",
-            image: "/clothes/pantalones/Pantalon_Cargo_preview.jpg",
-            price: 95,
-            normal: { x: 0, y: 0, z: 1 },
-            measurements: { ancho_cm: 42, largo_cm: 104, profundidad_cm: 20, pecho_cm: 0, cintura_cm: 82, brazo_cm: 0 }
+const getClothesCatalog = async (req, res) => {
+    try {
+        let prendas = await Prenda.find().sort({ createdAt: -1 });
+
+        // Seed if empty
+        if (prendas.length === 0) {
+            const seed = [
+                { 
+                    name: "Saco Neo-Refraction", 
+                    categoria: "SACOS", 
+                    marca: "ANNY",
+                    talla: "M",
+                    prenda3D: "/clothes/sacos/Saco.glb",
+                    image: "/clothes/sacos/Saco_preview.jpg",
+                    price: 120,
+                    normal: { x: 0, y: 0, z: 1 },
+                    measurements: { ancho_cm: 52, largo_cm: 68, profundidad_cm: 22, pecho_cm: 104, cintura_cm: 88, brazo_cm: 64 }
+                },
+                { 
+                    name: "Blusa Silk Flow", 
+                    categoria: "BLUZAS", 
+                    marca: "ETHEREAL",
+                    talla: "S",
+                    prenda3D: "/clothes/bluzas/Blusa_Silk.glb",
+                    image: "/clothes/bluzas/Blusa_Silk_preview.jpg",
+                    price: 65,
+                    normal: { x: 0, y: 0, z: 1 },
+                    measurements: { ancho_cm: 45, largo_cm: 62, profundidad_cm: 18, pecho_cm: 92, cintura_cm: 74, brazo_cm: 58 }
+                },
+                { 
+                    name: "Pantalon Cargo T-800", 
+                    categoria: "PANTALONES", 
+                    marca: "INDUSTRIAL-WEAR",
+                    talla: "M",
+                    prenda3D: "/clothes/pantalones/Pantalon_Cargo.glb",
+                    image: "/clothes/pantalones/Pantalon_Cargo_preview.jpg",
+                    price: 95,
+                    normal: { x: 0, y: 0, z: 1 },
+                    measurements: { ancho_cm: 42, largo_cm: 104, profundidad_cm: 20, pecho_cm: 0, cintura_cm: 82, brazo_cm: 0 }
+                }
+            ];
+            await Prenda.insertMany(seed);
+            prendas = await Prenda.find().sort({ createdAt: -1 });
         }
-    ];
-    res.json({ ok: true, data: catalogoMock });
+
+        res.json({ ok: true, data: prendas });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ ok: false, msg: 'Error obteniendo catálogo' });
+    }
+};
+
+const approveGarment = async (req, res) => {
+    try {
+        const { prendaId, meshUrl } = req.body;
+
+        if (!prendaId || !meshUrl) {
+            return res.status(400).json({ ok: false, msg: 'Se requiere prendaId y meshUrl' });
+        }
+
+        // Si es una prenda mock id, no podemos actualizarla en DB real a menos que la creemos
+        // Pero ahora que tenemos DB real, buscaremos por ID
+        const prenda = await Prenda.findById(prendaId);
+        if (!prenda) return res.status(404).json({ ok: false, msg: 'Prenda no encontrada' });
+
+        // Actualizamos la prenda con el modelo ajustado
+        prenda.prenda3D = meshUrl;
+        prenda.isFitted = true;
+        await prenda.save();
+
+        res.json({
+            ok: true,
+            msg: "Prenda aprobada y guardada en la colección",
+            prenda
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ ok: false, msg: 'Error al aprobar prenda' });
+    }
 };
 
 const getAvatarById = async (req, res) => {
@@ -235,15 +276,113 @@ const getAvatarByUserId = async (req, res) => {
 };
 
 const tryOnClothes = async (req, res) => {
-    const { avatarId, prendaId } = req.body;
-    console.log(`👕 Solicitud de Try-On para el avatar [${avatarId}] usando prenda [${prendaId}]`);
-    setTimeout(() => {
-        res.json({
-            ok: true,
-            msg: "Simulación de ropa sobre malla completada",
-            resultConfig: { clothScale: 1.05, deformMatrix: "..." }
+    try {
+        const { avatarUrl, garmentUrl } = req.body;
+
+        if (!avatarUrl || !garmentUrl) {
+            return res.status(400).json({ ok: false, msg: 'Se requiere avatarUrl y garmentUrl' });
+        }
+
+        const jobId = v4();
+        const tempDir = path.join(process.cwd(), 'public', 'temp');
+        if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
+
+        const outputGlb = path.join(tempDir, `dress_${jobId}.glb`);
+        
+        // Resolve absolute paths
+        const resolvePath = (url) => {
+            if (url.startsWith('http')) {
+                // Remove base URL if present
+                const parts = url.split('/');
+                const filename = parts.slice(3).join('/'); // Skip http://host:port/
+                return path.join(process.cwd(), 'public', filename);
+            }
+            return path.join(process.cwd(), 'public', url.startsWith('/') ? url.slice(1) : url);
+        };
+
+        const absAvatarPath = resolvePath(avatarUrl);
+        const absGarmentPath = resolvePath(garmentUrl);
+
+        if (!fs.existsSync(absAvatarPath)) return res.status(404).json({ ok: false, msg: `Avatar no encontrado en: ${absAvatarPath}` });
+        if (!fs.existsSync(absGarmentPath)) return res.status(404).json({ ok: false, msg: `Prenda no encontrada en: ${absGarmentPath}` });
+
+        const blenderPath = "blender";
+        const scriptPath = path.join(process.cwd(), 'blender', 'auto_dress.py');
+
+        const args = [
+            '-b',
+            '-P', scriptPath,
+            '--',
+            absAvatarPath,
+            absGarmentPath,
+            outputGlb
+        ];
+
+        const io = req.app.get('io');
+
+        const { spawn } = require('child_process');
+        const child = spawn(blenderPath, args);
+
+        child.stdout.on('data', (data) => {
+            const output = data.toString();
+            console.log(`[BLENDER] ${output.trim()}`);
+
+            // Regex for matching progress (handles both old and new formats)
+            const match = output.match(/Simulation: (\d+)\/(\d+)/) || output.match(/Frame (\d+)\/(\d+)/);
+            if (match && io) {
+                const currentFrame = parseInt(match[1]);
+                const totalFrames = parseInt(match[2]);
+                const progress = Math.round((currentFrame / totalFrames) * 100);
+                
+                io.emit('dress:progress', {
+                    jobId,
+                    progress,
+                    frame: currentFrame,
+                    total: totalFrames
+                });
+            }
         });
-    }, 2500);
+
+        child.stderr.on('data', (data) => {
+            console.error(`[BLENDER-ERR] ${data.toString()}`);
+        });
+
+        child.on('error', (err) => {
+            console.error(`❌ [TRY-ON] Fallo al iniciar proceso: ${err.message}`);
+            if (!res.headersSent) {
+                return res.status(500).json({ ok: false, msg: 'No se pudo iniciar el motor de vestimenta.', detail: err.message });
+            }
+        });
+
+        // Immediate Response
+        res.json({ ok: true, jobId, msg: 'Simulación iniciada en segundo plano' });
+
+        child.on('close', (code) => {
+            console.log(`[BLENDER] Proceso finalizado con código: ${code}`);
+            if (code === 0) {
+                if (io) {
+                    io.emit('dress:completed', { 
+                        jobId, 
+                        meshUrl: `/temp/dress_${jobId}.glb`, 
+                        msg: 'Simulación completada con éxito' 
+                    });
+                }
+            } else {
+                if (io) {
+                    io.emit('dress:error', { 
+                        jobId, 
+                        msg: 'Error en el motor de físicas de Blender' 
+                    });
+                }
+            }
+        });
+
+    } catch (err) {
+        console.error('❌ [TRY-ON] Error crítico:', err);
+        if (!res.headersSent) {
+            return res.status(500).json({ ok: false, msg: 'Fallo interno en simulación de vestimenta.' });
+        }
+    }
 };
 
 const Usuario = require('../models/UsuarioModel');
@@ -402,5 +541,6 @@ module.exports = {
     getAvatarByUserId,
     tryOnClothes,
     updateAvatar,
-    analyzeGarmentGlb
+    analyzeGarmentGlb,
+    approveGarment
 };

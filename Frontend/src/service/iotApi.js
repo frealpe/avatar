@@ -94,9 +94,11 @@ const iotApi = {
         }
     },
 
-    tryOnClothes: async (avatarId, prendaId) => {
+    tryOnClothes: async (avatarUrl, garmentUrl) => {
         try {
-            const response = await axios.post(`${API_URL}/try-on`, { avatarId, prendaId });
+            const response = await axios.post(`${API_URL}/try-on`, { avatarUrl, garmentUrl }, {
+                timeout: 300000 // 5 minutes for physics simulation
+            });
             return response.data;
         } catch (error) {
             console.error('Error trying on clothes', error);
@@ -164,6 +166,19 @@ const iotApi = {
             return response.data;
         } catch (error) {
             console.error('Error analyzing garment GLB', error);
+            throw error;
+        }
+    },
+
+    approveGarment: async (prendaId, meshUrl) => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await axios.post(`${API_URL}/approve-garment`, { prendaId, meshUrl }, {
+                headers: { 'x-token': token }
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error approving garment', error);
             throw error;
         }
     }

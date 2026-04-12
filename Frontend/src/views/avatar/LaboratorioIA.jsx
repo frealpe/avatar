@@ -23,7 +23,7 @@ const LaboratorioIA = () => {
     const bodyInputRef = useRef(null);
     const garmentInputRef = useRef(null);
     const { socket } = React.useContext(SocketContext);
-    const { setAvatar, user } = useStore();
+    const { setAvatar, user, set, backgroundJobs, simulationNotification } = useStore();
 
     const [tab, setTab] = useState('BODY'); // 'BODY' or 'GARMENT'
     const [bodyState, setBodyState] = useState({ loading: false, result: null, telemetry: null, timer: 0 });
@@ -32,6 +32,10 @@ const LaboratorioIA = () => {
     const [editableMeasurements, setEditableMeasurements] = useState(null);
     const [betas, setBetas] = useState([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
     const [catalog, setCatalog] = useState([]);
+    const [dressedResult, setDressedResult] = useState(null);
+    const [isDressing, setIsDressing] = useState(false);
+    const [simulationProgress, setSimulationProgress] = useState(0);
+    const [simulationFrame, setSimulationFrame] = useState(0);
 
     // 0. Cargar catálogo de prendas
     useEffect(() => {
@@ -100,13 +104,22 @@ const LaboratorioIA = () => {
         }
     }, [location.state]);
 
-    // Timers
     useEffect(() => {
         let bodyInterval, garmentInterval;
         if (bodyState.loading) bodyInterval = setInterval(() => setBodyState(p => ({ ...p, timer: p.timer + 0.1 })), 100);
         if (garmentState.loading) garmentInterval = setInterval(() => setGarmentState(p => ({ ...p, timer: p.timer + 0.1 })), 100);
         return () => { clearInterval(bodyInterval); clearInterval(garmentInterval); };
     }, [bodyState.loading, garmentState.loading]);
+
+    // Listener para resultados desde el Header
+    useEffect(() => {
+        const handleResultAvailable = (e) => {
+            setDressedResult(e.detail);
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        };
+        window.addEventListener('load-simulation-result', handleResultAvailable);
+        return () => window.removeEventListener('load-simulation-result', handleResultAvailable);
+    }, []);
 
     // Socket Listener
     useEffect(() => {
@@ -133,9 +146,38 @@ const LaboratorioIA = () => {
             setBodyState(p => ({ ...p, loading: false }));
             setGarmentState(p => ({ ...p, loading: false }));
         });
+
+        const handleProgress = (data) => {
+            setSimulationProgress(data.progress || 0);
+            setSimulationFrame(data.frame || 0);
+        };
+        socket.on('dress:progress', handleProgress);
+
+        const handleDressCompleted = (data) => {
+            set({
+                simulationNotification: { type: 'success', msg: '¡Ajuste Neural completado!', result: data.meshUrl },
+                backgroundJobs: backgroundJobs.filter(job => job.jobId !== data.jobId)
+            });
+            setIsDressing(false);
+            setDressedResult(data.meshUrl);
+        };
+        socket.on('dress:completed', handleDressCompleted);
+
+        const handleDressError = (data) => {
+            set({
+                simulationNotification: { type: 'error', msg: 'Error en la simulación.' },
+                backgroundJobs: backgroundJobs.filter(job => job.jobId !== data.jobId)
+            });
+            setIsDressing(false);
+        };
+        socket.on('dress:error', handleDressError);
+
         return () => {
             socket.off('avatar:completed', handleAvatarCompleted);
             socket.off('avatar:error');
+            socket.off('dress:progress', handleProgress);
+            socket.off('dress:completed', handleDressCompleted);
+            socket.off('dress:error', handleDressError);
         };
     }, [socket]);
 
@@ -241,6 +283,54 @@ const LaboratorioIA = () => {
         if (socket) socket.emit('avatar:preview', { betas: next });
     };
 
+    const handleTryOn = async () => {
+        if (!bodyState.result?.meshUrl || !garmentState.result?.prenda3D) {
+            alert("Asegúrate de tener un avatar y una prenda seleccionada.");
+            return;
+        }
+
+        setIsDressing(true);
+        setSimulationProgress(0);
+        setSimulationFrame(0);
+        try {
+            const res = await iotApi.tryOnClothes(bodyState.result.meshUrl, garmentState.result.prenda3D);
+            if (res.ok && res.jobId) {
+                set({ backgroundJobs: [...backgroundJobs, { jobId: res.jobId, name: garmentState.result.name || 'Prenda' }] });
+                set({ simulationNotification: { type: 'info', msg: 'Simulación iniciada en segundo plano...' } });
+            } else {
+                alert(res.msg || "Error en la simulación");
+                setIsDressing(false);
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Error conectando con el motor de vestimenta.");
+            setIsDressing(false);
+        }
+    };
+
+    const handleApproveGarment = async () => {
+        if (!garmentState.result?._id || !dressedResult) {
+            alert("No hay prenda o resultado de simulación para aprobar.");
+            return;
+        }
+
+        try {
+            const res = await iotApi.approveGarment(garmentState.result._id, dressedResult);
+            if (res.ok) {
+                alert("¡Prenda aprobada y guardada en tu colección!");
+                // Recargar catálogo
+                const catRes = await iotApi.getClothesCatalog();
+                if (catRes.ok) setCatalog(catRes.data);
+
+                // Limpiar estado de simulación
+                setDressedResult(null);
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Error al guardar en colección.");
+        }
+    };
+
     return (
         <div className="p-4 md:p-8 text-white min-h-screen bg-[#080a0c] font-['Inter']">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-6">
@@ -272,13 +362,13 @@ const LaboratorioIA = () => {
                     <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
                         <div className="lg:col-span-3">
                             <Panel title="" icon="visibility" state={bodyState} inputRef={bodyInputRef} onUpload={(e) => handleUpload(e, 'body')} color="#00f1fe">
-                                {bodyState.result?.meshUrl ? (
+                                {dressedResult || bodyState.result?.meshUrl ? (
                                     <ModelErrorBoundary>
                                         <Canvas shadows dpr={[1, 2]}>
                                             <PerspectiveCamera makeDefault position={[0, 1, 4]} fov={45} />
                                             <Suspense fallback={null}>
                                                 <Stage environment="city" intensity={0.5} contactShadow={{ opacity: 0.2, blur: 2 }}>
-                                                    <Model key={getFullUrl(bodyState.result.meshUrl)} url={getFullUrl(bodyState.result.meshUrl)} />
+                                                    <Model key={dressedResult || getFullUrl(bodyState.result.meshUrl)} url={getFullUrl(dressedResult || bodyState.result.meshUrl)} />
                                                 </Stage>
                                             </Suspense>
                                             <OrbitControls makeDefault />
@@ -448,15 +538,73 @@ const LaboratorioIA = () => {
                                                 </div>
                                             ) : <div className="h-full flex flex-col items-center justify-center opacity-30 text-center px-10"><span className="material-symbols-outlined text-4xl mb-2">schema</span><p className="text-[10px] uppercase font-black tracking-widest">Esperando Telemetría...</p></div>}
                                         </div>
-                                        <div className="p-3 bg-[#0d1014] border-t border-white/5">
-                                            <button onClick={() => alert('Patrón Exportado')} className="w-full py-2 bg-[#facd2e] text-black font-black text-[8px] uppercase tracking-[0.2em] rounded-lg hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2">
-                                                <span className="material-symbols-outlined text-[10px]">download</span> Descargar Patrón
-                                            </button>
+                                        <div className="p-3 bg-[#0d1014] border-t border-white/5 flex flex-col gap-2">
+                                            {isDressing ? (
+                                                <div className="px-4 py-2 bg-black/40 rounded-xl border border-[#d800ff]/30">
+                                                    <div className="flex justify-between text-[8px] text-[#d800ff] font-black uppercase mb-1">
+                                                        <span>Simulación Neural</span>
+                                                        <span>{simulationProgress}%</span>
+                                                    </div>
+                                                    <div className="w-full h-1 bg-white/10 rounded-full overflow-hidden mb-1">
+                                                        <div className="h-full bg-[#d800ff] shadow-[0_0_10px_#d800ff]" style={{ width: `${simulationProgress}%` }} />
+                                                    </div>
+                                                    <span className="text-[6px] text-gray-500 font-bold uppercase tracking-widest text-center block">Frame {simulationFrame} / 50</span>
+                                                </div>
+                                            ) : dressedResult ? (
+                                                <div className="flex gap-2">
+                                                    <button onClick={handleApproveGarment} className="flex-1 py-2 bg-[#00fe85] text-black font-black text-[10px] uppercase tracking-[0.15em] rounded-lg hover:scale-105 transition-all flex items-center justify-center gap-2">
+                                                        <span className="material-symbols-outlined text-sm">verified</span> Aprobar y Guardar
+                                                    </button>
+                                                    <button onClick={() => setDressedResult(null)} className="px-4 py-2 bg-white/5 text-gray-400 font-black text-[8px] uppercase tracking-widest rounded-lg hover:bg-white/10 transition-all">
+                                                        Descartar
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <div className="flex gap-2">
+                                                    <button onClick={handleTryOn} disabled={!bodyState.result} className={`flex-1 py-2 font-black text-[10px] uppercase tracking-[0.15em] rounded-lg transition-all flex items-center justify-center gap-2 ${bodyState.result ? 'bg-[#d800ff] text-white hover:scale-105 shadow-[0_0_15px_rgba(216,0,255,0.3)]' : 'bg-gray-800 text-gray-500 cursor-not-allowed'}`}>
+                                                        <span className="material-symbols-outlined text-sm">auto_fix</span> Neural Fitting
+                                                    </button>
+                                                    <button onClick={() => alert('Patrón Exportado')} className="px-4 py-2 bg-white/5 text-white font-black text-[8px] uppercase tracking-widest rounded-lg border border-white/10 hover:bg-white/10 transition-all flex items-center gap-2">
+                                                        <span className="material-symbols-outlined text-[12px]">download</span> SVG
+                                                    </button>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 </Panel>
                             </div>
                         </div>
+
+                        {/* VISTA PREVIA DEL AJUSTE (Si existe resultado) */}
+                        {dressedResult && (
+                            <div className="mt-6 p-6 bg-[#161a1e] border border-[#d800ff]/30 rounded-3xl animate-in fade-in slide-in-from-bottom duration-500">
+                                <div className="flex items-center gap-4 mb-4">
+                                    <div className="w-10 h-10 rounded-2xl bg-[#d800ff]/20 flex items-center justify-center border border-[#d800ff]/30">
+                                        <span className="material-symbols-outlined text-[#d800ff]">checkroom</span>
+                                    </div>
+                                    <div>
+                                        <h3 className="text-sm font-black uppercase tracking-widest text-white">Pre visualización de Ajuste Neural</h3>
+                                        <p className="text-[9px] text-gray-500 uppercase font-bold tracking-widest">Este es el resultado que se guardará en tu colección</p>
+                                    </div>
+                                </div>
+                                <div className="w-full h-[400px] bg-black/40 rounded-2xl overflow-hidden relative border border-white/5">
+                                    <ModelErrorBoundary>
+                                        <Canvas shadows dpr={[1, 2]}>
+                                            <PerspectiveCamera makeDefault position={[0, 1, 3]} fov={45} />
+                                            <Suspense fallback={null}>
+                                                <Stage environment="city" intensity={0.5} contactShadow={{ opacity: 0.2, blur: 2 }}>
+                                                    <Model key={getFullUrl(dressedResult)} url={getFullUrl(dressedResult)} />
+                                                </Stage>
+                                            </Suspense>
+                                            <OrbitControls makeDefault />
+                                        </Canvas>
+                                    </ModelErrorBoundary>
+                                    <div className="absolute top-4 right-4 px-3 py-1 bg-[#00fe85]/20 border border-[#00fe85]/40 rounded-lg backdrop-blur-md">
+                                        <span className="text-[8px] font-black text-[#00fe85] uppercase tracking-wider">Ajuste Optimizado</span>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
 
                         <div className="lg:col-span-full mt-6">
                             <GarmentCarousel
