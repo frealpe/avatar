@@ -9,9 +9,10 @@ const fs = require('fs');
  * @param {string} params.avatarPath - Absolute path to the avatar .glb
  * @param {string} params.svgPath - Absolute path to the pattern .svg
  * @param {string} params.outputName - Desired name for the output .glb (e.g., 'prenda_final.glb')
+ * @param {string} params.fabricType - Optional fabric type ('cotton', 'silk', 'denim')
  * @returns {Promise<{glbPrendaUrl: string}>}
  */
-async function generarPrenda3D({ avatarPath, svgPath, outputName }) {
+async function generarPrenda3D({ avatarPath, svgPath, outputName, fabricType = 'cotton' }) {
     return new Promise((resolve, reject) => {
         try {
             const publicPatternsDir = path.join(process.cwd(), 'public', 'patterns');
@@ -24,8 +25,8 @@ async function generarPrenda3D({ avatarPath, svgPath, outputName }) {
             const outputPath = path.join(publicPatternsDir, outputName);
             const scriptPath = path.join(process.cwd(), 'blender', 'script.py');
 
-            // blender -b -P blender/script.py -- avatar.glb pattern.svg output.glb
-            const command = `blender -b -P "${scriptPath}" -- "${avatarPath}" "${svgPath}" "${outputPath}"`;
+            // blender -b -P blender/script.py -- avatar.glb pattern.svg output.glb [fabric_type]
+            const command = `blender -b -P "${scriptPath}" -- "${avatarPath}" "${svgPath}" "${outputPath}" "${fabricType}"`;
 
             console.log(`[BLENDER ENGINE] Starting headless simulation: ${command}`);
 

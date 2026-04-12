@@ -15,7 +15,7 @@ def clean_scene():
     for block in bpy.data.meshes: bpy.data.meshes.remove(block)
     for block in bpy.data.curves: bpy.data.curves.remove(block)
 
-def setup_cloth_simulation(avatar_path, svg_path, output_path):
+def setup_cloth_simulation(avatar_path, svg_path, output_path, fabric_type='cotton'):
     print("\n[ENGINE] ===============================================", flush=True)
     print("[ENGINE] STARTING INDUSTRIAL 3D SIMULATION PIPELINE", flush=True)
     print("[ENGINE] ===============================================\n", flush=True)
@@ -82,7 +82,8 @@ def setup_cloth_simulation(avatar_path, svg_path, output_path):
         bm.from_mesh(curve_obj.data)
         
         # Removal of duplicate/overlapping vertices from Seamly2D export
-        bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=0.001)
+        # Cierre de Costuras: Usar un umbral de proximidad para fusionar vértices en las uniones
+        bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=0.005)
         
         # Face Validation & Hole Filling
         if len(bm.faces) == 0:
@@ -112,8 +113,16 @@ def setup_cloth_simulation(avatar_path, svg_path, output_path):
         
         # 3.5 Industrial Thickness (Solidify)
         bpy.ops.object.modifier_add(type='SOLIDIFY')
-        curve_obj.modifiers["Solidify"].thickness = 0.002
+        thickness_val = 0.002
+        if fabric_type == 'silk':
+            thickness_val = 0.001
+        elif fabric_type == 'denim':
+            thickness_val = 0.003
+
+        curve_obj.modifiers["Solidify"].thickness = thickness_val
         curve_obj.modifiers["Solidify"].offset = 0.0
+        # Normales y Orientación: Ensure high quality normals
+        curve_obj.modifiers["Solidify"].use_quality_normals = True
         
         # 3.6 Automated Positioning (Torso Alignment)
         if avatar_obj:
@@ -142,6 +151,12 @@ def setup_cloth_simulation(avatar_path, svg_path, output_path):
         curve_obj.modifiers["Cloth"].collision_settings.use_self_collision = True
         curve_obj.modifiers["Cloth"].collision_settings.collision_quality = 5
         curve_obj.modifiers["Cloth"].collision_settings.self_distance_min = 0.005
+        # Margen de Piel: Garantizar distancia de colisión mínima con el avatar de Anny
+        curve_obj.modifiers["Cloth"].collision_settings.distance_min = 0.005
+
+        # 3.8 Self-Intersection Repair (Smooth Modifier)
+        bpy.ops.object.modifier_add(type='SMOOTH')
+        curve_obj.modifiers["Smooth"].iterations = 5
         
         garment_mesh_objects.append(curve_obj)
 
@@ -193,10 +208,14 @@ if __name__ == "__main__":
             
         args = argv[argv.index("--") + 1:]
         if len(args) < 3:
-            print("[ENGINE] ERROR: Missing arguments. Required: <avatar> <svg> <output>")
+            print("[ENGINE] ERROR: Missing arguments. Required: <avatar> <svg> <output> [<fabric_type>]")
             sys.exit(1)
             
-        setup_cloth_simulation(args[0], args[1], args[2])
+        fabric_t = 'cotton'
+        if len(args) >= 4:
+            fabric_t = args[3]
+
+        setup_cloth_simulation(args[0], args[1], args[2], fabric_t)
         
     except Exception as e:
         print(f"\n[ENGINE] CRITICAL FAILURE IN PIPELINE: {str(e)}")
