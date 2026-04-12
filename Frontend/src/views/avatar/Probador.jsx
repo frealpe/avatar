@@ -29,13 +29,33 @@ const TALLA_SCALES = {
     'A Medida': 1.0
 };
 
+function GarmentModel({ url, avatarNodes, avatarRef, scaleBase }) {
+    const garment = useGLTF(url);
+    const garmentRef = useRef();
+    const { nodes: garmentNodes } = useGraph(garment.scene);
+
+    useFrame(() => {
+        if (garmentRef.current && avatarRef.current && garmentNodes) {
+            garmentRef.current.position.copy(avatarRef.current.position);
+            garmentRef.current.scale.x = avatarRef.current.scale.x * scaleBase;
+            garmentRef.current.scale.y = avatarRef.current.scale.y * scaleBase;
+            garmentRef.current.scale.z = avatarRef.current.scale.z * scaleBase;
+
+            Object.keys(avatarNodes).forEach(nodeName => {
+                if (avatarNodes[nodeName] && avatarNodes[nodeName].isBone && garmentNodes[nodeName]) {
+                    garmentNodes[nodeName].quaternion.copy(avatarNodes[nodeName].quaternion);
+                }
+            });
+        }
+    });
+
+    return <primitive ref={garmentRef} object={garment.scene} position={[0, -1, 0]} />;
+}
+
 function FittingRoom({ avatarUrl, garmentUrl, targetScale = [1, 1, 1], prendaTalla = 'M' }) {
     const avatar = useGLTF(avatarUrl);
-    const garment = garmentUrl ? useGLTF(garmentUrl) : null;
     const avatarRef = useRef();
-    const garmentRef = useRef();
     const { nodes: avatarNodes } = useGraph(avatar.scene);
-    const garmentNodes = garment ? useGraph(garment.scene).nodes : null;
 
     useFrame((state) => {
         if (!avatarRef.current) return;
@@ -44,25 +64,21 @@ function FittingRoom({ avatarUrl, garmentUrl, targetScale = [1, 1, 1], prendaTal
         avatarRef.current.scale.x += (targetScale[0] - avatarRef.current.scale.x) * lerpFactor;
         avatarRef.current.scale.y += (targetScale[1] - avatarRef.current.scale.y) * lerpFactor;
         avatarRef.current.scale.z += (targetScale[2] - avatarRef.current.scale.z) * lerpFactor;
-
-        if (garmentRef.current && garmentNodes) {
-            garmentRef.current.position.copy(avatarRef.current.position);
-            const gScaleBase = TALLA_SCALES[prendaTalla] || 1.0;
-            garmentRef.current.scale.x = avatarRef.current.scale.x * gScaleBase;
-            garmentRef.current.scale.y = avatarRef.current.scale.y * gScaleBase;
-            garmentRef.current.scale.z = avatarRef.current.scale.z * gScaleBase;
-            Object.keys(avatarNodes).forEach(nodeName => {
-                if (avatarNodes[nodeName].isBone && garmentNodes[nodeName]) {
-                    garmentNodes[nodeName].quaternion.copy(avatarNodes[nodeName].quaternion);
-                }
-            });
-        }
     });
+
+    const gScaleBase = TALLA_SCALES[prendaTalla] || 1.0;
 
     return (
         <group>
             <primitive ref={avatarRef} object={avatar.scene} position={[0, -1, 0]} />
-            {garment && <primitive ref={garmentRef} object={garment.scene} position={[0, -1, 0]} />}
+            {garmentUrl && (
+                <GarmentModel
+                    url={garmentUrl}
+                    avatarNodes={avatarNodes}
+                    avatarRef={avatarRef}
+                    scaleBase={gScaleBase}
+                />
+            )}
         </group>
     );
 }
@@ -143,7 +159,11 @@ const ProbadorAvatar = () => {
                 const heightBeta = betas[0] || 0;
                 const chestBeta = betas[2] || 0;
                 const shoulderBeta = betas[3] || 0;
-                setTargetScale([clamp(1 + (chestBeta * 0.03) + (shoulderBeta * 0.01)), clamp(1 + (heightBeta * 0.07)), clamp(1 + (chestBeta * 0.03) + (shoulderBeta * 0.01))]);
+
+                const widthScale = clamp(1 + (chestBeta * 0.03) + (shoulderBeta * 0.01));
+                const heightScale = clamp(1 + (heightBeta * 0.07));
+
+                setTargetScale([widthScale, heightScale, widthScale]);
             } catch (e) { console.error(e); }
         };
         socket.on('avatar:preview', handlePreview);
@@ -173,14 +193,29 @@ const ProbadorAvatar = () => {
     };
 
     const handleTryOn = async (prenda) => {
-        setWornClothId(prenda._id || prenda.id);
+        const prendaId = prenda._id || prenda.id;
+        setWornClothId(prendaId);
+
+        // Optimistic UI update
+        const updatedAvatar = {
+            ...liveAvatar,
+            prenda3D: prenda.prenda3D || null,
+            selectedGarments: liveAvatar.selectedGarments ? [...new Set([...liveAvatar.selectedGarments, prendaId])] : [prendaId]
+        };
+
+        setLiveAvatar(updatedAvatar);
+        setAvatar(updatedAvatar);
+
         if (liveAvatar?._id) {
             try {
                 const res = await iotApi.updateAvatar(liveAvatar._id, {
                     prenda3D: prenda.prenda3D || null,
-                    $addToSet: { selectedGarments: prenda._id }
+                    $addToSet: { selectedGarments: prendaId }
                 });
-                if (res.ok) setAvatar(res.avatar);
+                if (res.ok && res.avatar) {
+                    setAvatar(res.avatar);
+                    setLiveAvatar(prev => ({ ...prev, ...res.avatar }));
+                }
             } catch (e) { console.error(e); }
         }
         setFocusPrenda(null); // Cerrar tarjeta grande al vestir
