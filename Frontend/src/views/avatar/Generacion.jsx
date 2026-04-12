@@ -11,6 +11,7 @@ const GeneracionAvatar = () => {
     const location = useLocation();
     const { socket } = React.useContext(SocketContext);
     const setStoreAvatar = useStore((state) => state.setAvatar);
+    const user = useStore((state) => state.user);
     const [loading, setLoading] = useState(true);
     const [statusText, setStatusText] = useState('Encolando procesamiento en el servidor...');
     const [avatarData, setAvatarData] = useState(null);
@@ -52,7 +53,8 @@ const GeneracionAvatar = () => {
             try {
                 const imageBase64 = location.state?.imageBase64 || 'web_session_dummy';
                 console.log("🚀 Enviando imagen para procesamiento asíncrono...");
-                const data = await iotApi.generateAvatar(imageBase64, 'web_user');
+                const userId = user?.uid || user?._id || 'guest_user';
+                const data = await iotApi.generateAvatar(imageBase64, userId);
 
                 if (data.ok) {
                     setStatusText("Tarea encolada. Procesando anatomía y patrones (SAM 3D + Seamly)...");

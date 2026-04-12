@@ -34,6 +34,14 @@ const UsuarioSchema = Schema({
     google: {
         type: Boolean,
         default: false
+    },
+    proyectos: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Proyecto'
+    }],
+    avatar: {
+        type: Schema.Types.ObjectId,
+        ref: 'Avatar'
     }
 });
 

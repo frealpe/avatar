@@ -32,6 +32,12 @@ class Server {
         this.port = process.env.PORT;
 
         /**
+         * Ruta base para autenticación.
+         * @type {string}
+         */
+        this.authPath = '/api/auth';
+
+        /**
          * Ruta base para las APIs relacionadas con usuarios.
          * @type {string}
          */
@@ -84,9 +90,14 @@ class Server {
      * Define las rutas de la aplicación vinculando los endpoints con sus archivos de rutas.
      */
     routes() {
+        this.app.use( this.authPath, require('../routes/auth'));
         this.app.use( this.usuariosPath, require('../routes/usuarios'));
         this.app.use( '/api/avatar', require('../routes/avatar'));
         this.app.use( '/api/pose', require('../routes/pose'));
+        this.app.use( '/api/proyectos', require('../routes/proyectos'));
+        this.app.use( '/api/operadores', require('../routes/operadores'));
+        this.app.use( '/api/municipios', require('../routes/municipios'));
+        this.app.use( '/api/departamentos', require('../routes/departamentos'));
         this.app.use( this.patternsPath, require('../routes/patterns'));
     }
 

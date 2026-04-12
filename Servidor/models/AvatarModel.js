@@ -2,9 +2,9 @@ const { Schema, model } = require('mongoose');
 
 const AvatarSchema = Schema({
     userId: {
-        type: String,
-        required: true,
-        default: 'guest_user'
+        type: Schema.Types.ObjectId,
+        ref: 'Usuario',
+        required: true
     },
     modelType: {
         type: String,
@@ -40,9 +40,13 @@ const AvatarSchema = Schema({
         default: {}
     },
     prenda3D: {
-        type: String,
+        type: String, // Main garment GLB
         default: null
     },
+    selectedGarments: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Clothes' // Assuming a Clothes model exists or will exist accurately
+    }],
     // Pose limits / calibración inicial
     poseParams: {
         type: [Number],

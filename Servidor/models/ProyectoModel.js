@@ -11,7 +11,7 @@ const ProyectoSchema = Schema({
     },
     operador: {
         type: Schema.Types.ObjectId,
-        ref: 'Usuario'
+        ref: 'Operador'
     },
     departamento: {
         type: Schema.Types.ObjectId,

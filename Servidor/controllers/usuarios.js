@@ -1,88 +1,108 @@
 const { response, request } = require('express');
+const bcryptjs = require('bcryptjs');
+const Usuario = require('../models/UsuarioModel');
 
-/**
- * Maneja las peticiones GET para obtener usuarios.
- * Extrae parámetros de consulta como q, nombre, apikey, page y limit.
- * 
- * @param {request} req - Objeto de petición de Express.
- * @param {response} res - Objeto de respuesta de Express.
- */
-const usuariosGet = (req = request, res = response) => {
+const usuariosGet = async (req = request, res = response) => {
+    try {
+        const { limite = 50, desde = 0 } = req.query;
+        const query = { estado: true };
 
-    const { q, nombre = 'No name', apikey, page = 1, limit } = req.query;
+        const [ total, usuarios ] = await Promise.all([
+            Usuario.countDocuments(query),
+            Usuario.find(query)
+                .populate('proyectos', 'nombre')
+                .populate('avatar')
+                .skip( Number( desde ) )
+                .limit( Number( limite ) )
+        ]);
 
-    res.json({
-        msg: 'get API - controlador',
-        q,
-        nombre,
-        apikey,
-        page, 
-        limit
-    });
+        res.json({
+            ok: true,
+            total,
+            usuarios
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            ok: false,
+            msg: 'Error al obtener usuarios'
+        });
+    }
 }
 
-/**
- * Maneja las peticiones POST para crear un nuevo usuario.
- * Extrae nombre y edad del cuerpo de la petición.
- * 
- * @param {request} req - Objeto de petición de Express con el body del usuario.
- * @param {response} res - Objeto de respuesta de Express.
- */
-const usuariosPost = (req, res = response) => {
+const usuariosPost = async (req, res = response) => {
+    try {
+        const { nombre, dni, correo, password, rol, celular, proyectos } = req.body;
+        const usuario = new Usuario({ nombre, dni, correo, password, rol, celular, proyectos });
 
-    const { nombre, edad } = req.body;
+        // Encriptar la contraseña
+        const salt = bcryptjs.genSaltSync();
+        usuario.password = bcryptjs.hashSync( password, salt );
 
-    res.json({
-        msg: 'post API - usuariosPost',
-        nombre, 
-        edad
-    });
+        // Guardar en BD
+        await usuario.save();
+
+        res.json({
+            ok: true,
+            usuario
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            ok: false,
+            msg: 'Error al crear usuario'
+        });
+    }
 }
 
-/**
- * Maneja las peticiones PUT para actualizar un usuario por su ID.
- * 
- * @param {request} req - Objeto de petición de Express que contiene el ID en los params.
- * @param {response} res - Objeto de respuesta de Express.
- */
-const usuariosPut = (req, res = response) => {
+const usuariosPut = async (req, res = response) => {
+    try {
+        const { id } = req.params;
+        const { _id, password, google, correo, ...resto } = req.body;
 
-    const { id } = req.params;
+        if ( password ) {
+            // Encriptar la contraseña
+            const salt = bcryptjs.genSaltSync();
+            resto.password = bcryptjs.hashSync( password, salt );
+        }
 
-    res.json({
-        msg: 'put API - usuariosPut',
-        id
-    });
+        const usuario = await Usuario.findByIdAndUpdate( id, resto, { new: true } );
+
+        res.json({
+            ok: true,
+            usuario
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            ok: false,
+            msg: 'Error al actualizar usuario'
+        });
+    }
 }
 
-/**
- * Maneja las peticiones PATCH para actualizaciones parciales.
- * 
- * @param {request} req - Objeto de petición de Express.
- * @param {response} res - Objeto de respuesta de Express.
- */
-const usuariosPatch = (req, res = response) => {
-    res.json({
-        msg: 'patch API - usuariosPatch'
-    });
-}
+const usuariosDelete = async (req, res = response) => {
+    try {
+        const { id } = req.params;
+        // Borrado lógico
+        const usuario = await Usuario.findByIdAndUpdate( id, { estado: false }, { new: true } );
 
-/**
- * Maneja las peticiones DELETE para eliminar un usuario.
- * 
- * @param {request} req - Objeto de petición de Express.
- * @param {response} res - Objeto de respuesta de Express.
- */
-const usuariosDelete = (req, res = response) => {
-    res.json({
-        msg: 'delete API - usuariosDelete'
-    });
+        res.json({
+            ok: true,
+            usuario
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            ok: false,
+            msg: 'Error al eliminar usuario'
+        });
+    }
 }
 
 module.exports = {
     usuariosGet,
     usuariosPost,
     usuariosPut,
-    usuariosPatch,
     usuariosDelete,
 }

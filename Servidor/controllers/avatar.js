@@ -15,7 +15,7 @@ const normalizeAvatarPayload = (payload = {}) => {
             : [];
 
     return {
-        userId: payload.userId || 'guest_user',
+        userId: payload.userId || null,
     modelType: payload.modelType || payload.name || 'SAM3D_Standard',
         meshUrl: payload.meshUrl || null,
         measurements: {
@@ -32,6 +32,7 @@ const normalizeAvatarPayload = (payload = {}) => {
         patternUrl: payload.patternUrl || null,
         garmentParams: payload.garmentParams || {},
         prenda3D: payload.prenda3D || null,
+        selectedGarments: Array.isArray(payload.selectedGarments) ? payload.selectedGarments : [],
         status: payload.status || 'READY'
     };
 };
@@ -226,31 +227,36 @@ const tryOnClothes = async (req, res) => {
     }, 2500);
 };
 
+const Usuario = require('../models/UsuarioModel');
+
 const ensureAvatar = async (req, res) => {
     try {
         const incomingAvatar = req.body || {};
+        let avatar;
 
         if (incomingAvatar._id && Types.ObjectId.isValid(incomingAvatar._id)) {
             const existingAvatar = await Avatar.findById(incomingAvatar._id);
             if (existingAvatar) {
                 const updatedData = normalizeAvatarPayload({ ...existingAvatar.toObject(), ...incomingAvatar });
-                const avatar = await Avatar.findByIdAndUpdate(existingAvatar._id, updatedData, {
+                avatar = await Avatar.findByIdAndUpdate(existingAvatar._id, updatedData, {
                     new: true,
                     runValidators: true
-                });
-
-                return res.json({
-                    ok: true,
-                    avatar: {
-                        ...avatar.toObject(),
-                        betas: incomingAvatar.betas || avatar.shapeParams || []
-                    }
                 });
             }
         }
 
-        const avatarData = normalizeAvatarPayload(incomingAvatar);
-        const avatar = await Avatar.create(avatarData);
+        if (!avatar) {
+            const avatarData = normalizeAvatarPayload(incomingAvatar);
+            // Ensure userId is valid ObjectId if it's present
+            if (avatarData.userId === 'guest_user') avatarData.userId = null; 
+            
+            avatar = await Avatar.create(avatarData);
+        }
+
+        // Vincular al usuario si userId es valido
+        if (avatar.userId && Types.ObjectId.isValid(avatar.userId)) {
+            await Usuario.findByIdAndUpdate(avatar.userId, { avatar: avatar._id });
+        }
 
         res.status(201).json({
             ok: true,

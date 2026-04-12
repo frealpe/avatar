@@ -1,10 +1,12 @@
 import React, { useContext } from 'react'
 import useStore from '../store'
 import { SocketContext } from '../context/SocketContext'
+import { AuthContext } from '../context/AuthContext'
 
 const AppHeader = () => {
     const sidebarShow = useStore((state) => state.sidebarShow)
     const set = useStore((state) => state.set)
+    const { logout } = useContext(AuthContext)
     const { online } = useContext(SocketContext)
 
     return (
@@ -23,6 +25,13 @@ const AppHeader = () => {
                     <div className={`w-1.5 h-1.5 rounded-full ${online ? 'bg-[#22c55e] animate-pulse' : 'bg-[#ff716c]'}`}></div>
                     <span className="text-[9px] font-bold text-white tracking-[0.1em] uppercase">ETHEREAL Server {online ? 'Online' : 'Offline'}</span>
                 </div>
+                <span 
+                    className="material-symbols-outlined text-[#ff716c] cursor-pointer hover:scale-110 transition-transform hover:text-[#ff4a44]"
+                    onClick={() => logout()}
+                    title="Cerrar Sesión"
+                >
+                    logout
+                </span>
                 <button className="px-8 py-2.5 bg-[#00f1fe] text-[#005f64] text-[11px] font-black tracking-widest rounded-lg shadow-[0_0_20px_rgba(0,241,254,0.4)] hover:shadow-[0_0_40px_rgba(0,241,254,0.6)] transition-all uppercase">
                     Guardar Cambios
                 </button>

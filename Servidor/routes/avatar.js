@@ -10,6 +10,7 @@ const {
     recalculateAvatar,
     updateAvatar
 } = require('../controllers/avatar');
+const { validarJWT } = require('../middlewares/validar-jwt');
 
 const router = Router();
 
@@ -20,20 +21,20 @@ router.get('/predefined', getPredefinedAvatars);
  * Recibe una imagen.
  * Pasa la imagen al pipeline Anny IA y guarda los shape params en Mongo.
  */
-router.post('/generate', generateAvatar);
+router.post('/generate', [validarJWT], generateAvatar);
 
 /**
  * @route POST /api/avatar/recalculate
  * Recalcula los parámetros del avatar.
  */
-router.post('/recalculate', recalculateAvatar);
-router.post('/ensure', ensureAvatar);
+router.post('/recalculate', [validarJWT], recalculateAvatar);
+router.post('/ensure', [validarJWT], ensureAvatar);
 
 /**
  * @route POST /api/avatar/upload
  * Sube un archivo de modelo 3D.
  */
-router.post('/upload', uploadModel);
+router.post('/upload', [validarJWT], uploadModel);
 
 /**
  * @route GET /api/avatar/clothes
@@ -46,19 +47,19 @@ router.get('/catalog', getClothesCatalog);
  * @route GET /api/avatar/:id
  * Devuelve un avatar por ID.
  */
-router.get('/:id', getAvatarById);
+router.get('/:id', [validarJWT], getAvatarById);
 
 /**
  * @route POST /api/avatar/try-on
  * Interpola las mallas (Virtual Try On) con Anny.
  */
-router.post('/try-on', tryOnClothes);
-router.post('/tryon', tryOnClothes);
+router.post('/try-on', [validarJWT], tryOnClothes);
+router.post('/tryon', [validarJWT], tryOnClothes);
 
 /**
  * @route PATCH /api/avatar/:id
  * Actualiza cualquier campo del avatar.
  */
-router.patch('/:id', updateAvatar);
+router.patch('/:id', [validarJWT], updateAvatar);
 
 module.exports = router;

@@ -242,13 +242,28 @@ const ProbadorAvatar = () => {
         fetchCatalog();
     }, []);
 
-    const handleTryOn = (itemId) => {
+    const handleTryOn = async (itemId) => {
         setWornClothId(itemId);
         const selectedPrenda = prendas.find(p => p._id === itemId || p.id === itemId);
         const updatedAvatar = { ...liveAvatar, prenda3D: selectedPrenda?.prenda3D || null };
         setLiveAvatar(updatedAvatar);
-        // 👕 Mostrar prenda temporalmente (PREVIEW), pero NO guardar en store/localStorage
-        // La ropa es solo visual en Probador, no debe persistir en el avatar guardado
+
+        // 👕 Persistir selección en DB si hay un avatar activo
+        if (liveAvatar?._id) {
+            try {
+                const res = await iotApi.updateAvatar(liveAvatar._id, {
+                    prenda3D: selectedPrenda?.prenda3D || null,
+                    // Si queremos persistir el array de prendas, podríamos agregarlo aquí
+                    $addToSet: { selectedGarments: selectedPrenda?._id }
+                });
+                if (res.ok) {
+                    setAvatar(res.avatar);
+                    console.log("💾 [Probador] Selección de prenda persistida en DB");
+                }
+            } catch (e) {
+                console.error("Error persistiendo prenda:", e);
+            }
+        }
     };
 
     return (

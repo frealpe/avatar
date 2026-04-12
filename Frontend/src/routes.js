@@ -9,12 +9,40 @@ const ProbadorAvatar = React.lazy(() => import('./views/avatar/Probador'))
 const LaboratorioIA = React.lazy(() => import('./views/avatar/LaboratorioIA'))
 const AjustesPose = React.lazy(() => import('./views/avatar/AjustesPose'))
 const ColeccionAvatar = React.lazy(() => import('./views/avatar/Coleccion'))
+const Usuarios = React.lazy(() => import('./views/admin/Usuarios'))
+const Proyectos = React.lazy(() => import('./views/admin/Proyectos'))
+const Clientes = React.lazy(() => import('./views/admin/Clientes'))
+const Operadores = React.lazy(() => import('./views/admin/Operadores'))
 
 const routes = [
   {
     path: '/',
     name: 'Home',
     element: ProbadorAvatar,
+    exact: true,
+  },
+  {
+    path: '/admin/usuarios',
+    name: 'Gestión de Usuarios',
+    element: Usuarios,
+    exact: true,
+  },
+  {
+    path: '/admin/proyectos',
+    name: 'Gestión de Proyectos',
+    element: Proyectos,
+    exact: true,
+  },
+  {
+    path: '/admin/clientes',
+    name: 'Cartera de Clientes',
+    element: Clientes,
+    exact: true,
+  },
+  {
+    path: '/admin/operadores',
+    name: 'Gestión de Operadores',
+    element: Operadores,
     exact: true,
   },
   {
@@ -32,6 +60,5 @@ const routes = [
   { path: '/avatar/laboratorio', name: 'Laboratorio de IA Integrado', element: LaboratorioIA, exact: true },
   { path: '/avatar/ajustes', name: 'Ajustes de Pose', element: AjustesPose, exact: true }
 ]
-
 
 export default routes

@@ -4,8 +4,7 @@ const { Router } = require('express');
 const { usuariosGet,
         usuariosPut,
         usuariosPost,
-        usuariosDelete,
-        usuariosPatch } = require('../controllers/usuarios');
+        usuariosDelete } = require('../controllers/usuarios');
 
 const router = Router();
 
@@ -28,15 +27,9 @@ router.put('/:id', usuariosPut );
 router.post('/', usuariosPost );
 
 /**
- * @route DELETE /
+ * @route DELETE /:id
  * Elimina un usuario.
  */
-router.delete('/', usuariosDelete );
-
-/**
- * @route PATCH /
- * Realiza una actualización parcial de un usuario.
- */
-router.patch('/', usuariosPatch );
+router.delete('/:id', usuariosDelete );
 
 module.exports = router;
