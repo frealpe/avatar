@@ -31,6 +31,18 @@ const LaboratorioIA = () => {
     const [garmentView, setGarmentView] = useState('2D'); // '2D' or '3D'
     const [editableMeasurements, setEditableMeasurements] = useState(null);
     const [betas, setBetas] = useState([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+    const [catalog, setCatalog] = useState([]);
+
+    // 0. Cargar catálogo de prendas
+    useEffect(() => {
+        const fetchCatalog = async () => {
+            try {
+                const res = await iotApi.getClothesCatalog();
+                if (res.ok) setCatalog(res.data);
+            } catch (err) { console.error("Error fetching catalog:", err); }
+        };
+        fetchCatalog();
+    }, []);
 
     // 1. Cargar desde localStorage al montar si no hay datos en location
     useEffect(() => {
@@ -75,8 +87,8 @@ const LaboratorioIA = () => {
             };
             setBodyState({
                 loading: false,
-                result: newResult,
-                telemetry: { totalExecutionTime: 'Instantáneo', modelsUsed: ['SMPL-X Library'] },
+                result: { ...newResult, gender: model.gender || 'neutral' },
+                telemetry: { totalExecutionTime: 'Instantáneo', modelsUsed: ['Anny Library'] },
                 timer: 0
             });
             if (newResult.measurements) setEditableMeasurements(newResult.measurements);
@@ -130,17 +142,70 @@ const LaboratorioIA = () => {
     const handleUpload = async (e, target) => {
         const file = e.target.files[0];
         if (!file) return;
+
+        const isGlb = file.name.toLowerCase().endsWith('.glb');
         const stateSetter = target === 'body' ? setBodyState : setGarmentState;
         stateSetter(prev => ({ ...prev, loading: true, result: null, timer: 0 }));
+
         const reader = new FileReader();
         reader.onloadend = async () => {
             try {
                 const userId = user?.uid || user?._id || 'guest_user';
-                const data = await iotApi.generateAvatar(reader.result, userId, target);
-                if (!data.ok) stateSetter(prev => ({ ...prev, loading: false }));
-            } catch (err) { stateSetter(prev => ({ ...prev, loading: false })); }
+                let data;
+
+                if (isGlb && target === 'garment') {
+                    // Carga y análisis directo de GLB
+                    data = await iotApi.analyzeGarmentGlb(reader.result, userId);
+                    if (data.ok) {
+                        stateSetter(prev => ({
+                            ...prev,
+                            loading: false,
+                            result: {
+                                ...data,
+                                prenda3D: data.meshUrl,
+                                garmentParams: data.garmentParams
+                            }
+                        }));
+                        setGarmentView('3D');
+                    }
+                } else {
+                    // Pipeline de IA basado en imagen
+                    data = await iotApi.generateAvatar(reader.result, userId, target);
+                }
+
+                if (data && !data.ok) stateSetter(prev => ({ ...prev, loading: false }));
+            } catch (err) {
+                console.error("Upload error:", err);
+                stateSetter(prev => ({ ...prev, loading: false }));
+            }
         };
         reader.readAsDataURL(file);
+    };
+
+    const handleSelectGarment = (item) => {
+        const measurements = item.measurements || {
+            ancho_cm: item.ancho_cm || 0,
+            largo_cm: item.largo_cm || 0,
+            profundidad_cm: item.profundidad_cm || 0,
+            pecho_cm: item.pecho_cm || 0,
+            cintura_cm: item.cintura_cm || 0,
+            brazo_cm: item.brazo_cm || 0
+        };
+
+        setGarmentState({
+            loading: false,
+            result: {
+                _id: item._id,
+                ok: true,
+                prenda3D: item.prenda3D,
+                garmentParams: measurements
+            },
+            telemetry: { totalExecutionTime: 'Carga Directa', modelsUsed: ['Biblioteca Local'] },
+            timer: 0
+        });
+        setGarmentView('3D');
+        // También actualizar los valores editables para que se vean de inmediato
+        setEditableMeasurements(measurements);
     };
 
     const [recalculating, setRecalculating] = useState(false);
@@ -157,7 +222,8 @@ const LaboratorioIA = () => {
         setRecalculating(true);
         const betasToSubmit = newBetas || betas;
         try {
-            const res = await iotApi.recalculateAvatar(betasToSubmit, 'neutral');
+            const genderToUse = bodyState.result?.gender || 'neutral';
+            const res = await iotApi.recalculateAvatar(betasToSubmit, genderToUse);
             if (res.ok) {
                 const finalResult = { ...bodyState.result, ...res, meshUrl: getFullUrl(res.meshUrl), betas: betasToSubmit };
                 setBodyState(prev => ({ ...prev, result: finalResult }));
@@ -309,79 +375,172 @@ const LaboratorioIA = () => {
                 )}
 
                 {tab === 'GARMENT' && (
-                    <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-                        <div className="lg:col-span-3">
-                            <Panel title="" icon="apparel" state={garmentState} inputRef={garmentInputRef} onUpload={(e) => handleUpload(e, 'garment')} color="#d800ff"
-                                extraHeader={garmentState.result?.prenda3D && (
-                                    <div className="flex bg-black/40 p-1 rounded-lg border border-white/10 ml-4">
-                                        <button onClick={() => setGarmentView('2D')} className={`px-3 py-1 rounded-md text-[8px] font-black uppercase transition-all ${garmentView === '2D' ? 'bg-[#d800ff] text-white' : 'text-gray-500'}`}>2D</button>
-                                        <button onClick={() => setGarmentView('3D')} className={`px-3 py-1 rounded-md text-[8px] font-black uppercase transition-all ${garmentView === '3D' ? 'bg-[#d800ff] text-white' : 'text-gray-500'}`}>3D</button>
-                                    </div>
-                                )}>
-                                {garmentView === '3D' && garmentState.result?.prenda3D ? (
-                                    <ModelErrorBoundary>
-                                        <Canvas shadows dpr={[1, 2]}>
-                                            <PerspectiveCamera makeDefault position={[0, 0, 2]} fov={45} />
-                                            <Suspense fallback={null}>
-                                                <Stage environment="city" intensity={0.5} contactShadow={{ opacity: 0.2, blur: 2 }}>
-                                                    <Model key={getFullUrl(garmentState.result.prenda3D)} url={getFullUrl(garmentState.result.prenda3D)} />
-                                                </Stage>
-                                            </Suspense>
-                                            <OrbitControls makeDefault />
-                                        </Canvas>
-                                    </ModelErrorBoundary>
-                                ) : garmentState.result?.patternUrl ? (
-                                    <div className="flex-1 bg-white rounded-2xl overflow-hidden p-6 shadow-inner flex items-center justify-center">
-                                        <img src={garmentState.result.patternUrl} alt="SVG Pattern" className="max-w-full max-h-full object-contain mix-blend-multiply" />
-                                    </div>
-                                ) : <EmptyState message="Falta Escaneo de Prenda" icon="straighten" />}
-                            </Panel>
-                        </div>
+                    <>
+                        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                            <div className="lg:col-span-3">
+                                <Panel title="" icon="apparel" state={garmentState} inputRef={garmentInputRef} onUpload={(e) => handleUpload(e, 'garment')} color="#d800ff" accept={tab === 'GARMENT' ? ".glb,image/*" : "image/*"}
+                                    extraHeader={garmentState.result?.prenda3D && (
+                                        <div className="flex bg-black/40 p-1 rounded-lg border border-white/10 ml-4">
+                                            <button onClick={() => setGarmentView('2D')} className={`px-3 py-1 rounded-md text-[8px] font-black uppercase transition-all ${garmentView === '2D' ? 'bg-[#d800ff] text-white' : 'text-gray-500'}`}>2D</button>
+                                            <button onClick={() => setGarmentView('3D')} className={`px-3 py-1 rounded-md text-[8px] font-black uppercase transition-all ${garmentView === '3D' ? 'bg-[#d800ff] text-white' : 'text-gray-500'}`}>3D</button>
+                                        </div>
+                                    )}>
+                                    {garmentView === '3D' && garmentState.result?.prenda3D ? (
+                                        <ModelErrorBoundary>
+                                            <Canvas shadows dpr={[1, 2]}>
+                                                <PerspectiveCamera makeDefault position={[0, 0, 2]} fov={45} />
+                                                <Suspense fallback={null}>
+                                                    <Stage environment="city" intensity={0.5} contactShadow={{ opacity: 0.2, blur: 2 }}>
+                                                        <Model key={getFullUrl(garmentState.result.prenda3D)} url={getFullUrl(garmentState.result.prenda3D)} />
+                                                    </Stage>
+                                                </Suspense>
+                                                <OrbitControls makeDefault />
+                                            </Canvas>
+                                        </ModelErrorBoundary>
+                                    ) : garmentState.result?.patternUrl ? (
+                                        <div className="flex-1 bg-white rounded-2xl overflow-hidden p-6 shadow-inner flex items-center justify-center">
+                                            <img src={garmentState.result.patternUrl} alt="SVG Pattern" className="max-w-full max-h-full object-contain mix-blend-multiply" />
+                                        </div>
+                                    ) : <EmptyState message="Falta Escaneo de Prenda" icon="straighten" />}
+                                </Panel>
+                            </div>
 
-                        <div className="lg:col-span-2">
-                            <Panel title="" icon="analytics" color="#facd2e" hideUpload={true}>
-                                <div className="flex flex-col h-full overflow-hidden">
-                                    <div className="flex bg-[#0d1014]/50 border-b border-white/5 p-3 rounded-t-xl -mt-4 -mx-4">
-                                        <h4 className="text-[10px] font-black uppercase tracking-widest text-[#facd2e] w-full text-center">Parámetros de Prenda</h4>
-                                    </div>
-                                    <div className="flex-1 overflow-y-auto p-4 custom-scrollbar space-y-4 mt-2">
-                                        {garmentState.result?.garmentParams ? (
-                                            <div className="grid grid-cols-1 gap-3">
-                                                {Object.entries(garmentState.result.garmentParams).map(([k, v]) => (
-                                                    <div key={k} className="bg-black/40 p-4 rounded-2xl border border-white/5 flex justify-between items-center group hover:border-[#facd2e]/30 transition-all">
-                                                        <div className="flex flex-col">
-                                                            <span className="text-[9px] font-black uppercase text-gray-500 tracking-widest">{k.replace('_cm', '').replace('_', ' ')}</span>
-                                                            <div className="flex items-baseline gap-1">
-                                                                <span className="text-xl font-bold text-[#facd2e]">{v}</span>
-                                                                <span className="text-[10px] text-gray-600 font-black">CM</span>
+                            <div className="lg:col-span-2">
+                                <Panel title="" icon="analytics" color="#facd2e" hideUpload={true}>
+                                    <div className="flex flex-col h-full overflow-hidden">
+                                        <div className="flex bg-[#0d1014]/50 border-b border-white/5 p-3 rounded-t-xl -mt-4 -mx-4">
+                                            <h4 className="text-[10px] font-black uppercase tracking-widest text-[#facd2e] w-full text-center">Parámetros de Prenda</h4>
+                                        </div>
+                                        <div className="flex-1 overflow-y-auto p-4 custom-scrollbar space-y-4 mt-2">
+                                            {garmentState.result?.garmentParams ? (
+                                                <div className="grid grid-cols-1 gap-3">
+                                                    {Object.entries(garmentState.result.garmentParams).map(([k, v]) => (
+                                                        <div key={k} className="bg-black/40 p-4 rounded-2xl border border-white/5 flex justify-between items-center group hover:border-[#facd2e]/30 transition-all">
+                                                            <div className="flex flex-col">
+                                                                <span className="text-[9px] font-black uppercase text-gray-500 tracking-widest">{k.replace('_cm', '').replace('_', ' ')}</span>
+                                                                <div className="flex items-baseline gap-1">
+                                                                    <input
+                                                                        type="number"
+                                                                        value={v}
+                                                                        onChange={(e) => {
+                                                                            const val = parseFloat(e.target.value) || 0;
+                                                                            setGarmentState(prev => ({
+                                                                                ...prev,
+                                                                                result: {
+                                                                                    ...prev.result,
+                                                                                    garmentParams: {
+                                                                                        ...prev.result.garmentParams,
+                                                                                        [k]: val
+                                                                                    }
+                                                                                }
+                                                                            }));
+                                                                        }}
+                                                                        className="bg-transparent border-none text-xl font-bold text-[#facd2e] w-20 outline-none focus:ring-0"
+                                                                    />
+                                                                    <span className="text-[10px] text-gray-600 font-black">CM</span>
+                                                                </div>
+                                                            </div>
+                                                            <div className="w-12 h-1 bg-white/5 rounded-full overflow-hidden">
+                                                                <div className="h-full bg-[#facd2e] opacity-40 shadow-[0_0_10px_#facd2e]" style={{ width: `${Math.min((v / 100) * 100, 100)}%` }}></div>
                                                             </div>
                                                         </div>
-                                                        <div className="w-12 h-1 bg-white/5 rounded-full overflow-hidden">
-                                                            <div className="h-full bg-[#facd2e] opacity-40 shadow-[0_0_10px_#facd2e]" style={{ width: `${Math.min((v / 100) * 100, 100)}%` }}></div>
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        ) : <div className="h-full flex flex-col items-center justify-center opacity-30 text-center px-10"><span className="material-symbols-outlined text-4xl mb-2">schema</span><p className="text-[10px] uppercase font-black tracking-widest">Esperando Telemetría...</p></div>}
+                                                    ))}
+                                                </div>
+                                            ) : <div className="h-full flex flex-col items-center justify-center opacity-30 text-center px-10"><span className="material-symbols-outlined text-4xl mb-2">schema</span><p className="text-[10px] uppercase font-black tracking-widest">Esperando Telemetría...</p></div>}
+                                        </div>
+                                        <div className="p-3 bg-[#0d1014] border-t border-white/5">
+                                            <button onClick={() => alert('Patrón Exportado')} className="w-full py-2 bg-[#facd2e] text-black font-black text-[8px] uppercase tracking-[0.2em] rounded-lg hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2">
+                                                <span className="material-symbols-outlined text-[10px]">download</span> Descargar Patrón
+                                            </button>
+                                        </div>
                                     </div>
-                                    <div className="p-3 bg-[#0d1014] border-t border-white/5">
-                                        <button onClick={() => alert('Patrón Exportado')} className="w-full py-2 bg-[#facd2e] text-black font-black text-[8px] uppercase tracking-[0.2em] rounded-lg hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2">
-                                            <span className="material-symbols-outlined text-[10px]">download</span> Descargar Patrón
-                                        </button>
-                                    </div>
-                                </div>
-                            </Panel>
+                                </Panel>
+                            </div>
                         </div>
-                    </div>
+
+                        <div className="lg:col-span-full mt-6">
+                            <GarmentCarousel
+                                items={catalog}
+                                onSelect={handleSelectGarment}
+                                activeId={garmentState.result?._id}
+                            />
+                        </div>
+                    </>
                 )}
             </div>
         </div>
     );
 };
 
+const GarmentCarousel = ({ items, onSelect, activeId }) => (
+    <div className="relative group/carousel">
+        <div className="flex items-center justify-between mb-4 px-4">
+            <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl bg-[#d800ff]/10 flex items-center justify-center border border-[#d800ff]/20">
+                    <span className="material-symbols-outlined text-base text-[#d800ff]">grid_view</span>
+                </div>
+                <div>
+                    <h4 className="text-[9px] font-black uppercase tracking-[0.2em] text-white">Catálogo de Alta Costura</h4>
+                    <p className="text-[7px] text-gray-500 font-bold uppercase tracking-widest mt-0.5">Selección exclusiva</p>
+                </div>
+            </div>
+            <div className="flex gap-2">
+                <div className="px-2 py-0.5 bg-white/5 rounded-full border border-white/10 text-[7px] font-black text-gray-500 uppercase tracking-widest">
+                    {items.length} ITEMS
+                </div>
+            </div>
+        </div>
+
+        <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar snap-x px-4 -mx-4">
+            {items.map(item => (
+                <button
+                    key={item._id}
+                    onClick={() => onSelect(item)}
+                    className={`flex-shrink-0 w-32 group transition-all duration-500 snap-start ${activeId === item._id ? 'scale-105' : 'hover:scale-105'}`}
+                >
+                    <div className={`relative aspect-[3/4] rounded-[1.8rem] overflow-hidden border-2 transition-all duration-700 ${activeId === item._id
+                        ? 'border-[#d800ff] shadow-[0_0_30px_rgba(216,0,255,0.4)] ring-2 ring-[#d800ff]/10'
+                        : 'border-white/5 bg-gradient-to-br from-white/5 to-transparent group-hover:border-white/20'
+                        }`}>
+                        <img
+                            src={getFullUrl(item.image)}
+                            alt={item.name}
+                            className={`w-full h-full object-cover transition-all duration-1000 ${activeId === item._id ? 'scale-110' : 'group-hover:scale-110 grayscale-[0.3] group-hover:grayscale-0'
+                                }`}
+                        />
+
+                        {/* Overlay Gradient */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
+
+                        {/* Selection Indicator */}
+                        {activeId === item._id && (
+                            <div className="absolute top-4 right-4 w-6 h-6 rounded-full bg-[#d800ff] flex items-center justify-center shadow-lg animate-pulse">
+                                <span className="material-symbols-outlined text-[14px] text-white font-black">check</span>
+                            </div>
+                        )}
+
+                        {/* Label Overlay */}
+                        <div className="absolute bottom-6 left-0 right-0 px-4 text-center transform transition-transform duration-500 group-hover:-translate-y-1">
+                            <span className="text-[7px] font-black tracking-[0.3em] text-[#d800ff] uppercase mb-1 block opacity-0 group-hover:opacity-100 transition-opacity">Visualizar</span>
+                            <p className={`text-[10px] font-black uppercase tracking-widest leading-tight ${activeId === item._id ? 'text-white' : 'text-gray-300 group-hover:text-white'
+                                }`}>
+                                {item.name}
+                            </p>
+                        </div>
+                    </div>
+                </button>
+            ))}
+        </div>
+
+        {/* Glow effect backgrounds */}
+        <div className="absolute -left-20 top-1/2 -translate-y-1/2 w-64 h-64 bg-[#d800ff]/5 blur-[100px] pointer-events-none" />
+        <div className="absolute -right-20 top-1/2 -translate-y-1/2 w-48 h-48 bg-[#facd2e]/5 blur-[80px] pointer-events-none" />
+    </div>
+);
+
 // --- Sub-components ---
-const Panel = ({ title, icon, state, inputRef, onUpload, color, children, hideUpload, extraHeader }) => (
-    <div className="bg-[#111418] border border-[#45484c]/20 rounded-3xl p-4 flex flex-col gap-3 backdrop-blur-lg h-[720px] shadow-2xl transition-all relative">
+const Panel = ({ title, icon, state, inputRef, onUpload, color, children, hideUpload, extraHeader, accept }) => (
+    <div className="bg-[#111418] border border-[#45484c]/20 rounded-3xl p-4 flex flex-col gap-3 backdrop-blur-lg h-[540px] shadow-2xl transition-all relative">
         {(title || (!hideUpload && onUpload)) && (
             <div className="flex justify-between items-center shrink-0">
                 <div className="flex items-center gap-3">
@@ -391,7 +550,7 @@ const Panel = ({ title, icon, state, inputRef, onUpload, color, children, hideUp
                 </div>
                 {!hideUpload && state && onUpload && (
                     <div className="flex items-center gap-3">
-                        <input type="file" ref={inputRef} onChange={onUpload} accept="image/*" className="hidden" />
+                        <input type="file" ref={inputRef} onChange={onUpload} accept={accept || "image/*"} className="hidden" />
                         <button onClick={() => inputRef.current.click()} disabled={state.loading}
                             className={`flex items-center gap-2 px-3 py-1.5 rounded-xl font-bold text-[9px] uppercase tracking-widest transition-all ${state.loading ? 'bg-gray-800 text-gray-500' : 'bg-white/5 text-white border border-white/10 hover:bg-white/10'}`}>
                             <span className="material-symbols-outlined text-xs">{state.loading ? 'sync' : 'upload_file'}</span>

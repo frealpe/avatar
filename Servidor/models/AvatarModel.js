@@ -11,6 +11,11 @@ const AvatarSchema = Schema({
         required: true,
         default: 'Anny_01'
     },
+    gender: {
+        type: String,
+        enum: ['male', 'female', 'neutral'],
+        default: 'neutral'
+    },
     meshUrl: {
         type: String,
         default: null
@@ -24,6 +29,12 @@ const AvatarSchema = Schema({
         hips: { type: Number },
         shoulders: { type: Number },
         inseam: { type: Number }
+    },
+    // Clasificación de talla sugerida para el sistema colombiano
+    tallaSugerida: {
+        type: String,
+        enum: ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
+        default: 'M'
     },
     // Shape params que provienen de la inferencia simulada del modelo HMR
     shapeParams: {
@@ -43,10 +54,6 @@ const AvatarSchema = Schema({
         type: String, // Main garment GLB
         default: null
     },
-    selectedGarments: [{
-        type: Schema.Types.ObjectId,
-        ref: 'Clothes' // Assuming a Clothes model exists or will exist accurately
-    }],
     // Pose limits / calibración inicial
     poseParams: {
         type: [Number],

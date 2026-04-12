@@ -135,7 +135,7 @@ const EscaneoAvatar = () => {
                         onClick={() => setMode('CATALOG')}
                         className={`px-8 py-3 rounded-xl transition-all font-black text-[10px] tracking-[0.2em] uppercase ${mode === 'CATALOG' ? 'bg-[#d800ff] text-white shadow-[0_0_20px_rgba(216,0,255,0.4)]' : 'text-gray-500 hover:text-white'}`}
                     >
-                        Catálogo SMPL-X
+                        Catálogo Anny
                     </button>
                 </div>
 
@@ -194,7 +194,7 @@ const EscaneoAvatar = () => {
                         ) : (
                             <div className="p-8">
                                 <div className="text-center mb-10">
-                                    <h5 className="font-['Space_Grotesk'] text-[#d800ff] font-black tracking-tight uppercase">Modelos SMPL-X Predefinidos</h5>
+                                    <h5 className="font-['Space_Grotesk'] text-[#d800ff] font-black tracking-tight uppercase">Modelos Anny Predefinidos</h5>
                                     <p className="text-[10px] text-gray-500 uppercase font-black tracking-widest">Selección Estándar de Biometría Humana</p>
                                 </div>
 

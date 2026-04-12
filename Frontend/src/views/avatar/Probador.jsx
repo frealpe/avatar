@@ -1,11 +1,10 @@
-import React, { useState, useEffect, useRef, useContext, Suspense } from 'react';
+import React, { useState, useEffect, useRef, useContext, Suspense, useMemo } from 'react';
 import useStore from '../../store';
-import { Canvas, useFrame } from '@react-three/fiber';
+import { Canvas, useFrame, useGraph } from '@react-three/fiber';
 import { OrbitControls, useGLTF, PerspectiveCamera, Stage } from '@react-three/drei';
 import iotApi from '../../service/iotApi';
 import { SocketContext } from '../../context/SocketContext';
 import * as THREE from 'three';
-import { useMemo } from 'react';
 
 // --- Helpers ---
 const getFullUrl = (url) => {
@@ -19,100 +18,64 @@ const getFullUrl = (url) => {
     return `${base}${cleanUrl.startsWith('/') ? '' : '/'}${cleanUrl}`;
 };
 
-// --- Componentes 3D ---
+// --- Componentes 3D Con Sincronización ---
+const TALLA_SCALES = {
+    'XS': 0.85,
+    'S': 0.92,
+    'M': 1.0,
+    'L': 1.08,
+    'XL': 1.16,
+    'XXL': 1.25,
+    'A Medida': 1.0
+};
 
-function AvatarRealGLB({ url, targetScale = [1, 1, 1] }) {
-    const group = useRef();
-    // Validate url early
-    if (!url) return null;
+function FittingRoom({ avatarUrl, garmentUrl, targetScale = [1, 1, 1], prendaTalla = 'M' }) {
+    const avatar = useGLTF(avatarUrl);
+    const garment = garmentUrl ? useGLTF(garmentUrl) : null;
+    const avatarRef = useRef();
+    const garmentRef = useRef();
+    const { nodes: avatarNodes } = useGraph(avatar.scene);
+    const garmentNodes = garment ? useGraph(garment.scene).nodes : null;
 
-    // Preload to improve UX
-    try {
-        useGLTF.preload(url);
-    } catch (e) {
-        // ignore preload errors
-    }
+    useFrame((state) => {
+        if (!avatarRef.current) return;
+        avatarRef.current.position.y = -1 + Math.sin(state.clock.elapsedTime * 1.5) * 0.01;
+        const lerpFactor = 0.1;
+        avatarRef.current.scale.x += (targetScale[0] - avatarRef.current.scale.x) * lerpFactor;
+        avatarRef.current.scale.y += (targetScale[1] - avatarRef.current.scale.y) * lerpFactor;
+        avatarRef.current.scale.z += (targetScale[2] - avatarRef.current.scale.z) * lerpFactor;
 
-    const Inner = () => {
-        const { scene } = useGLTF(url);
-        useFrame((state) => {
-            if (group.current) {
-                group.current.position.y = -1 + Math.sin(state.clock.elapsedTime * 1.5) * 0.01;
-                const lerpFactor = 0.1;
-                group.current.scale.x += (targetScale[0] - group.current.scale.x) * lerpFactor;
-                group.current.scale.y += (targetScale[1] - group.current.scale.y) * lerpFactor;
-                group.current.scale.z += (targetScale[2] - group.current.scale.z) * lerpFactor;
-            }
-        });
-        // El GLB en disco ya viene corregido; no aplicar rotación en runtime.
-        return (<group ref={group} position={[0, -1, 0]} rotation={[0, 0, 0]}><primitive object={scene} /></group>);
-    };
-
-    return (
-        <Suspense fallback={null}>
-            <Inner />
-        </Suspense>
-    );
-}
-
-function GarmentRealGLB({ url, targetScale = [1, 1, 1] }) {
-    const group = useRef();
-    if (!url) return null;
-    try { useGLTF.preload(url); } catch (e) { }
-
-    const Inner = () => {
-        const { scene } = useGLTF(url);
-        useFrame((state) => {
-            if (group.current) {
-                group.current.position.y = -1 + Math.sin(state.clock.elapsedTime * 1.5) * 0.01;
-                const lerpFactor = 0.1;
-                group.current.scale.x += (targetScale[0] - group.current.scale.x) * lerpFactor;
-                group.current.scale.y += (targetScale[1] - group.current.scale.y) * lerpFactor;
-                group.current.scale.z += (targetScale[2] - group.current.scale.z) * lerpFactor;
-            }
-        });
-        // El GLB en disco ya viene corregido; no aplicar rotación en runtime.
-        return (<group ref={group} position={[0, -1, 0]} rotation={[0, 0, 0]}><primitive object={scene} /></group>);
-    };
-
-    return (
-        <Suspense fallback={null}>
-            <Inner />
-        </Suspense>
-    );
-}
-
-// Small Error Boundary to catch loader errors and avoid crashing the whole app
-class GLBErrorBoundary extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = { hasError: false, error: null };
-    }
-    static getDerivedStateFromError(error) {
-        return { hasError: true, error };
-    }
-    componentDidCatch(error, info) {
-        console.error('GLB load error:', error, info);
-    }
-    render() {
-        if (this.state.hasError) {
-            return this.props.fallback || null;
+        if (garmentRef.current && garmentNodes) {
+            garmentRef.current.position.copy(avatarRef.current.position);
+            const gScaleBase = TALLA_SCALES[prendaTalla] || 1.0;
+            garmentRef.current.scale.x = avatarRef.current.scale.x * gScaleBase;
+            garmentRef.current.scale.y = avatarRef.current.scale.y * gScaleBase;
+            garmentRef.current.scale.z = avatarRef.current.scale.z * gScaleBase;
+            Object.keys(avatarNodes).forEach(nodeName => {
+                if (avatarNodes[nodeName].isBone && garmentNodes[nodeName]) {
+                    garmentNodes[nodeName].quaternion.copy(avatarNodes[nodeName].quaternion);
+                }
+            });
         }
-        return this.props.children;
-    }
+    });
+
+    return (
+        <group>
+            <primitive ref={avatarRef} object={avatar.scene} position={[0, -1, 0]} />
+            {garment && <primitive ref={garmentRef} object={garment.scene} position={[0, -1, 0]} />}
+        </group>
+    );
 }
 
-function AnnyHumanBody({ measurements, targetScale = [1, 1, 1], isTryingOn }) {
+function AnnyHumanBody({ targetScale = [1, 1, 1], isTryingOn }) {
     const group = useRef();
     const bodyColor = isTryingOn ? '#9D00FF' : '#00F2FF';
     useFrame((state) => {
         if (group.current) {
-            const lerpFactor = 0.1;
             group.current.scale.set(...targetScale);
             if (!isTryingOn) group.current.position.y = (-1 * group.current.scale.y) + Math.sin(state.clock.elapsedTime * 2) * 0.05;
         }
     });
-
     return (
         <group ref={group} position={[0, -1, 0]}>
             <mesh position={[0, 1.5, 0]}><boxGeometry args={[1.2, 2.5, 0.6]} /><meshStandardMaterial color={bodyColor} wireframe={!isTryingOn} opacity={0.6} transparent /></mesh>
@@ -128,9 +91,7 @@ function MiniModelPreview({ url }) {
             <ambientLight intensity={0.5} />
             <pointLight position={[5, 5, 5]} intensity={1} />
             <Suspense fallback={null}>
-                <Stage environment="city" intensity={0.5} contactShadow={false}>
-                    <Model url={url} />
-                </Stage>
+                <Stage environment="city" intensity={0.5} contactShadow={false}><Model url={url} /></Stage>
             </Suspense>
             <OrbitControls enableZoom={false} autoRotate autoRotateSpeed={4} />
         </Canvas>
@@ -142,20 +103,23 @@ function Model({ url }) {
     return <primitive object={scene} />;
 }
 
+class GLBErrorBoundary extends React.Component {
+    constructor(props) { super(props); this.state = { hasError: false }; }
+    static getDerivedStateFromError() { return { hasError: true }; }
+    render() { if (this.state.hasError) return this.props.fallback || null; return this.props.children; }
+}
 
-// --- Componente Principal Probador ---
 const ProbadorAvatar = () => {
     const avatarData = useStore(state => state.avatarData);
     const setAvatar = useStore(state => state.setAvatar);
     const { socket } = useContext(SocketContext);
-
-    const [liveAvatar, setLiveAvatar] = useState(avatarData || { meshUrl: null, measurements: null });
+    const [liveAvatar, setLiveAvatar] = useState(avatarData || { meshUrl: null });
     const [prendas, setPrendas] = useState([]);
     const [wornClothId, setWornClothId] = useState(null);
+    const [focusPrenda, setFocusPrenda] = useState(null);
     const [targetScale, setTargetScale] = useState([1, 1, 1]);
     const [selectedCategoria, setSelectedCategoria] = useState(null);
 
-    // 1. Cargar desde localStorage si el store está vacío (Persistencia)
     useEffect(() => {
         if (!avatarData) {
             const savedBody = localStorage.getItem('modavatar_active_body');
@@ -163,74 +127,28 @@ const ProbadorAvatar = () => {
                 try {
                     const parsed = JSON.parse(savedBody);
                     setAvatar(parsed);
-                    setLiveAvatar(parsed);
-                    console.log("🧬 [Probador] Avatar recuperado de localStorage");
-                } catch (e) { console.error("Error parsing saved body:", e); }
+                } catch (e) { console.error(e); }
             }
         }
     }, [avatarData, setAvatar]);
 
-    // 2. Sincronizar con el store (por si venimos de Ajustes con una nueva pose)
-    useEffect(() => {
-        if (avatarData) setLiveAvatar(prev => ({ ...prev, ...avatarData }));
-    }, [avatarData]);
+    useEffect(() => { if (avatarData) setLiveAvatar(prev => ({ ...prev, ...avatarData })); }, [avatarData]);
 
-    // Listener para previsualizaciones en tiempo real desde el Laboratorio (betas)
     useEffect(() => {
         if (!socket) return;
-
         const clamp = (v, a = 0.75, b = 1.35) => Math.max(a, Math.min(b, v));
-
         const handlePreview = (data) => {
             try {
                 const betas = Array.isArray(data?.betas) ? data.betas : [];
-
-                // METRIC CONFIG similar al Laboratorio: base + beta*delta
-                const METRIC_CONFIG = {
-                    0: { base: 170.0, delta: 7.0 }, // Estatura
-                    1: { base: 72.0, delta: 6.0 },  // Peso
-                    2: { base: 95.0, delta: 5.0 },  // Músculo (Pecho)
-                    3: { base: 42.0, delta: 2.5 },  // Hombros
-                    4: { base: 100.0, delta: 6.0 }, // Cadera
-                };
-
-                const measurements = {};
-                for (let i = 0; i <= 4; i++) {
-                    const b = betas[i] || 0;
-                    if (METRIC_CONFIG[i]) measurements[['height', 'weight', 'chest', 'shoulders', 'hips'][i]] = parseFloat((METRIC_CONFIG[i].base + b * METRIC_CONFIG[i].delta).toFixed(1));
-                }
-
-                // Mapear betas a escalas para el render 3D (x, y, z). Y controla rangos razonables.
                 const heightBeta = betas[0] || 0;
                 const chestBeta = betas[2] || 0;
                 const shoulderBeta = betas[3] || 0;
-
-                // scaleY varía con la altura; scaleX/Z con el pecho y hombros
-                const scaleY = clamp(1 + (heightBeta * 0.07), 0.8, 1.25);
-                const scaleXZ = clamp(1 + (chestBeta * 0.03) + (shoulderBeta * 0.01), 0.8, 1.25);
-
-                // Aplicar preview sin sobrescribir permanentemente el avatar guardado
-                setLiveAvatar(prev => ({ ...prev, measurements: { ...prev.measurements, ...measurements }, betas }));
-                setTargetScale([scaleXZ, scaleY, scaleXZ]);
-
-            } catch (e) {
-                console.error('Error procesando avatar:preview:', e);
-            }
+                setTargetScale([clamp(1 + (chestBeta * 0.03) + (shoulderBeta * 0.01)), clamp(1 + (heightBeta * 0.07)), clamp(1 + (chestBeta * 0.03) + (shoulderBeta * 0.01))]);
+            } catch (e) { console.error(e); }
         };
-
         socket.on('avatar:preview', handlePreview);
         return () => { socket.off('avatar:preview', handlePreview); };
     }, [socket]);
-
-
-
-
-    const collections = prendas.reduce((acc, current) => {
-        const cat = current.categoria || 'Sin Categoría';
-        if (!acc[cat]) acc[cat] = [];
-        acc[cat].push(current);
-        return acc;
-    }, {});
 
     useEffect(() => {
         const fetchCatalog = async () => {
@@ -242,38 +160,40 @@ const ProbadorAvatar = () => {
         fetchCatalog();
     }, []);
 
-    const handleTryOn = async (itemId) => {
-        setWornClothId(itemId);
-        const selectedPrenda = prendas.find(p => p._id === itemId || p.id === itemId);
-        const updatedAvatar = { ...liveAvatar, prenda3D: selectedPrenda?.prenda3D || null };
-        setLiveAvatar(updatedAvatar);
+    const collections = prendas.reduce((acc, current) => {
+        const cat = current.categoria || 'Sin Categoría';
+        if (!acc[cat]) acc[cat] = [];
+        acc[cat].push(current);
+        return acc;
+    }, {});
 
-        // 👕 Persistir selección en DB si hay un avatar activo
+    const handleSelectForFocus = (itemId) => {
+        const prenda = prendas.find(p => p._id === itemId || p.id === itemId);
+        setFocusPrenda(prenda);
+    };
+
+    const handleTryOn = async (prenda) => {
+        setWornClothId(prenda._id || prenda.id);
         if (liveAvatar?._id) {
             try {
                 const res = await iotApi.updateAvatar(liveAvatar._id, {
-                    prenda3D: selectedPrenda?.prenda3D || null,
-                    // Si queremos persistir el array de prendas, podríamos agregarlo aquí
-                    $addToSet: { selectedGarments: selectedPrenda?._id }
+                    prenda3D: prenda.prenda3D || null,
+                    $addToSet: { selectedGarments: prenda._id }
                 });
-                if (res.ok) {
-                    setAvatar(res.avatar);
-                    console.log("💾 [Probador] Selección de prenda persistida en DB");
-                }
-            } catch (e) {
-                console.error("Error persistiendo prenda:", e);
-            }
+                if (res.ok) setAvatar(res.avatar);
+            } catch (e) { console.error(e); }
         }
+        setFocusPrenda(null); // Cerrar tarjeta grande al vestir
     };
 
     return (
         <div className="flex-1 flex flex-col h-full bg-[#0b0e11] relative overflow-hidden font-['Inter']">
             <div className="flex-1 flex overflow-hidden relative">
-                {/* Canvas Avatar - Izquierda */}
-                <section className={`relative blueprint-grid transition-all duration-300 ${selectedCategoria ? 'w-2/3' : 'flex-1'}`}>
+                {/* Canvas Avatar - Izquierda/Centro */}
+                <section className={`relative blueprint-grid transition-all duration-500 ${selectedCategoria ? 'w-2/3' : 'flex-1'}`}>
                     <div className="absolute top-10 left-10 z-20">
-                        <span className="text-[8px] text-[#00f1fe] uppercase tracking-[0.4em] font-black">Virtual Fitting Room / Probador</span>
-                        <h2 className="text-4xl font-black text-white/10 tracking-tighter uppercase mt-2">{liveAvatar.modelType || 'Avatar_Anny'}</h2>
+                        <span className="text-[8px] text-[#00f1fe] uppercase tracking-[0.4em] font-black">Virtual Fitting Room / Workspace</span>
+                        <h2 className="text-4xl font-black text-white/10 tracking-tighter uppercase mt-2">{liveAvatar.modelType || 'Anny_Model'}</h2>
                     </div>
 
                     <div className="absolute inset-0 z-0">
@@ -284,12 +204,16 @@ const ProbadorAvatar = () => {
                             <Suspense fallback={null}>
                                 <Stage environment="city" intensity={0.5} contactShadow={{ opacity: 0.2, blur: 2 }}>
                                     {liveAvatar.meshUrl ? (
-                                        <GLBErrorBoundary fallback={<AnnyHumanBody measurements={liveAvatar.measurements} targetScale={targetScale} isTryingOn={wornClothId !== null} />}>
-                                            <AvatarRealGLB url={getFullUrl(liveAvatar.meshUrl)} targetScale={targetScale} />
-                                            {liveAvatar.prenda3D && <GarmentRealGLB url={getFullUrl(liveAvatar.prenda3D)} targetScale={targetScale} />}
+                                        <GLBErrorBoundary fallback={<AnnyHumanBody targetScale={targetScale} isTryingOn={wornClothId !== null} />}>
+                                            <FittingRoom
+                                                avatarUrl={getFullUrl(liveAvatar.meshUrl)}
+                                                garmentUrl={liveAvatar.prenda3D ? getFullUrl(liveAvatar.prenda3D) : null}
+                                                targetScale={targetScale}
+                                                prendaTalla={liveAvatar.prendaTalla || 'M'}
+                                            />
                                         </GLBErrorBoundary>
                                     ) : (
-                                        <AnnyHumanBody measurements={liveAvatar.measurements} targetScale={targetScale} isTryingOn={wornClothId !== null} />
+                                        <AnnyHumanBody targetScale={targetScale} isTryingOn={wornClothId !== null} />
                                     )}
                                 </Stage>
                             </Suspense>
@@ -297,153 +221,101 @@ const ProbadorAvatar = () => {
                         </Canvas>
                     </div>
 
-                    {/* HUD de Orientación y Alineación */}
-                    <div className="absolute top-32 left-10 z-20 flex flex-col gap-2">
-                        {(() => {
-                            const selectedPrenda = prendas.find(p => p._id === wornClothId || p.id === wornClothId);
-                            if (!selectedPrenda && !liveAvatar.normal) return null;
+                    {/* TARJETA GRANDE DE DRESSING (Focus Card) */}
+                    {focusPrenda && (
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[400px] animate-in fade-in zoom-in duration-300">
+                            <div className="relative bg-black/80 backdrop-blur-2xl border border-[#00f1fe]/30 rounded-[2.5rem] overflow-hidden shadow-[0_0_50px_rgba(0,241,254,0.15)] flex flex-col items-center p-8 text-center">
+                                {/* Decoración */}
+                                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#00f1fe] to-transparent" />
 
-                            const vAv = new THREE.Vector3(
-                                liveAvatar.normal?.x ?? 0,
-                                liveAvatar.normal?.y ?? 0,
-                                liveAvatar.normal?.z ?? 1
-                            ).normalize();
+                                <button
+                                    onClick={() => setFocusPrenda(null)}
+                                    className="absolute top-6 right-6 text-white/40 hover:text-white transition-colors"
+                                >
+                                    <span className="material-symbols-outlined">close</span>
+                                </button>
 
-                            const vPr = new THREE.Vector3(
-                                selectedPrenda?.normal?.x ?? 0,
-                                selectedPrenda?.normal?.y ?? 0,
-                                selectedPrenda?.normal?.z ?? 1
-                            ).normalize();
+                                <div className="w-48 h-48 bg-black/40 rounded-3xl mb-6 relative border border-white/5 shadow-inner">
+                                    <MiniModelPreview url={getFullUrl(focusPrenda.prenda3D)} />
+                                </div>
 
-                            const dot = vAv.dot(vPr);
-                            const angleRad = Math.acos(THREE.MathUtils.clamp(dot, -1, 1));
-                            const angleDeg = (angleRad * 180) / Math.PI;
+                                <span className="text-[10px] text-[#00f1fe] font-black tracking-[0.3em] uppercase mb-2">New Selection</span>
+                                <h2 className="text-3xl font-black text-white uppercase tracking-tight mb-1">{focusPrenda.name}</h2>
+                                <p className="text-xs text-gray-400 uppercase tracking-widest mb-6">{focusPrenda.marca || 'Anny Exclusive'}</p>
 
-                            return (
-                                <div className="bg-black/40 backdrop-blur-md border border-white/10 p-4 rounded-2xl flex flex-col gap-1 min-w-[180px]">
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-[8px] text-white/40 font-bold uppercase tracking-widest">Alignment / Normal</span>
-                                        <div className={`w-2 h-2 rounded-full ${Math.abs(dot - 1) < 0.01 ? 'bg-green-500 shadow-[0_0_10px_#22c55e]' : 'bg-yellow-500'}`} />
+                                <div className="flex gap-4 mb-8 w-full px-4">
+                                    <div className="flex-1 p-4 bg-white/5 rounded-2xl border border-white/10">
+                                        <span className="block text-[8px] text-gray-500 uppercase font-black mb-1">Standard Size</span>
+                                        <span className="text-xl font-bold text-white">{liveAvatar.tallaSugerida || 'M'}</span>
                                     </div>
-                                    <div className="flex items-end justify-between mt-1">
-                                        <div className="flex flex-col">
-                                            <span className="text-[12px] font-black text-white leading-none">{(dot).toFixed(4)}</span>
-                                            <span className="text-[6px] text-[#00f1fe] font-bold uppercase">Dot Product</span>
-                                        </div>
-                                        <div className="flex flex-col items-end">
-                                            <span className="text-[12px] font-black text-white leading-none">{angleDeg.toFixed(1)}°</span>
-                                            <span className="text-[6px] text-[#00f1fe] font-bold uppercase">Angle Offset</span>
-                                        </div>
-                                    </div>
-                                    <div className="w-full bg-white/5 h-1 rounded-full mt-2 overflow-hidden">
-                                        <div
-                                            className="h-full bg-[#00f1fe] transition-all duration-500"
-                                            style={{ width: `${(dot * 100).toFixed(0)}%` }}
-                                        />
+                                    <div className="flex-1 p-4 bg-white/5 rounded-2xl border border-white/10">
+                                        <span className="block text-[8px] text-gray-500 uppercase font-black mb-1">Fit Mode</span>
+                                        <span className="text-xl font-bold text-white">Skinning</span>
                                     </div>
                                 </div>
-                            );
-                        })()}
+
+                                <button
+                                    onClick={() => handleTryOn(focusPrenda)}
+                                    className="w-full py-5 bg-[#00f1fe] text-black font-black uppercase tracking-[0.3em] text-sm rounded-2xl transition-all hover:scale-105 active:scale-95 shadow-[0_10px_30px_rgba(0,241,254,0.3)] flex items-center justify-center gap-3 group"
+                                >
+                                    <span className="material-symbols-outlined text-xl group-hover:animate-bounce">checkroom</span>
+                                    DRESS AVATAR NOW
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* HUD Alineación */}
+                    <div className="absolute top-32 left-10 z-20 flex flex-col gap-2">
+                        <div className="bg-black/40 backdrop-blur-md border border-white/10 p-4 rounded-2xl flex flex-col gap-1 min-w-[180px]">
+                            <span className="text-[8px] text-white/40 font-bold uppercase tracking-widest">Active System</span>
+                            <div className="flex items-end justify-between mt-1">
+                                <div className="flex flex-col">
+                                    <span className="text-[12px] font-black text-white leading-none">SYNCED</span>
+                                    <span className="text-[6px] text-[#00f1fe] font-bold uppercase">Pose Engine</span>
+                                </div>
+                                <div className="flex flex-col items-end">
+                                    <span className="text-[12px] font-black text-white leading-none">{liveAvatar.prendaTalla || 'M'}</span>
+                                    <span className="text-[6px] text-[#00f1fe] font-bold uppercase">Garment Size</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </section>
 
-                {/* Panel Lateral de Prendas - Derecha */}
+                {/* Panel Lateral de Prendas */}
                 {selectedCategoria && (
-                    <aside className="w-1/3 h-full bg-black/40 border-l border-white/5 flex flex-col overflow-hidden">
-                        {/* Header */}
-                        <div className="p-4 border-b border-white/5 bg-black/20">
-                            <div className="flex items-center justify-between mb-2">
-                                <h3 className="text-lg font-black text-white uppercase tracking-wider">
-                                    {selectedCategoria}
-                                </h3>
-                                <button
-                                    onClick={() => setSelectedCategoria(null)}
-                                    className="p-1 hover:bg-white/10 rounded-lg transition-colors"
-                                >
-                                    <span className="material-symbols-outlined text-xl">close</span>
-                                </button>
-                            </div>
-                            <p className="text-[10px] text-gray-400 uppercase tracking-widest">
-                                {prendas.filter(p => (p.categoria || 'Sin Categoría') === selectedCategoria).length} prendas
-                            </p>
+                    <aside className="w-1/3 h-full bg-black/40 border-l border-white/5 flex flex-col overflow-hidden animate-in slide-in-from-right duration-300">
+                        <div className="p-4 border-b border-white/5 bg-black/20 flex items-center justify-between">
+                            <h3 className="text-lg font-black text-white uppercase tracking-wider">{selectedCategoria}</h3>
+                            <button onClick={() => setSelectedCategoria(null)} className="p-1 hover:bg-white/10 rounded-lg transition-colors"><span className="material-symbols-outlined">close</span></button>
                         </div>
-
-                        {/* Grid de Prendas */}
-                        <div className="flex-1 overflow-y-auto custom-scrollbar p-4">
-                            <div className="grid grid-cols-2 gap-3">
-                                {prendas
-                                    .filter(p => (p.categoria || 'Sin Categoría') === selectedCategoria)
-                                    .map(prenda => (
-                                        <button
-                                            key={prenda._id || prenda.id}
-                                            onClick={() => handleTryOn(prenda._id || prenda.id)}
-                                            className={`group relative overflow-hidden rounded-lg border transition-all ${wornClothId === (prenda._id || prenda.id)
-                                                ? 'border-[#00f1fe] bg-[#00f1fe]/10'
-                                                : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10'
-                                                }`}
-                                        >
-                                            {/* Vista 3D / Imagen */}
-                                            <div className="w-full h-24 bg-black/60 overflow-hidden relative">
-                                                {prenda.prenda3D ? (
-                                                    <MiniModelPreview url={getFullUrl(prenda.prenda3D)} />
-                                                ) : prenda.image ? (
-                                                    <img
-                                                        src={getFullUrl(prenda.image)}
-                                                        alt={prenda.name}
-                                                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                                                        onError={(e) => {
-                                                            e.target.style.display = 'none';
-                                                        }}
-                                                    />
-                                                ) : (
-                                                    <div className="w-full h-full flex items-center justify-center">
-                                                        <span className="material-symbols-outlined text-2xl text-gray-600">
-                                                            image
-                                                        </span>
-                                                    </div>
-                                                )}
-                                            </div>
-
-                                            {/* Info */}
-                                            <div className="p-2">
-                                                <h4 className="font-bold text-white text-xs truncate">
-                                                    {prenda.name}
-                                                </h4>
-                                                <p className="text-[9px] text-gray-400 truncate">
-                                                    {prenda.marca || 'S/M'}
-                                                </p>
-                                                {prenda.price && (
-                                                    <p className="text-xs font-bold text-[#00f1fe] mt-1">
-                                                        ${prenda.price}
-                                                    </p>
-                                                )}
-                                            </div>
-
-                                            {/* Indicator */}
-                                            {wornClothId === (prenda._id || prenda.id) && (
-                                                <div className="absolute top-1 right-1 w-2 h-2 bg-[#00f1fe] rounded-full shadow-[0_0_8px_#00f1fe]" />
-                                            )}
-                                        </button>
-                                    ))}
-                            </div>
+                        <div className="flex-1 overflow-y-auto p-2 grid grid-cols-3 gap-2 content-start custom-scrollbar">
+                            {prendas.filter(p => (p.categoria || 'Sin Categoría') === selectedCategoria).map(prenda => (
+                                <button
+                                    key={prenda._id || prenda.id}
+                                    onClick={() => handleSelectForFocus(prenda._id || prenda.id)}
+                                    className={`group relative overflow-hidden rounded-lg border h-fit transition-all ${wornClothId === (prenda._id || prenda.id) ? 'border-[#00f1fe] bg-[#00f1fe]/10 shadow-[0_0_10px_#00f1fe20]' : 'border-white/10 bg-white/5 hover:border-white/20'}`}
+                                >
+                                    <div className="w-full aspect-square bg-black/60 relative">
+                                        {prenda.prenda3D ? <MiniModelPreview url={getFullUrl(prenda.prenda3D)} /> : <div className="w-full h-full flex items-center justify-center"><span className="material-symbols-outlined text-sm text-gray-700">image</span></div>}
+                                    </div>
+                                    <div className="p-1 text-center bg-black/40">
+                                        <h4 className="font-bold text-white text-[7px] truncate uppercase leading-tight">{prenda.name}</h4>
+                                    </div>
+                                    {wornClothId === (prenda._id || prenda.id) && <div className="absolute top-0.5 right-0.5 w-1.5 h-1.5 bg-[#00f1fe] rounded-full shadow-[0_0_5px_#00f1fe]" />}
+                                </button>
+                            ))}
                         </div>
                     </aside>
                 )}
             </div>
 
-            {/* Footer con Categorías */}
-            <footer className="h-44 bg-black/60 border-t border-white/5 p-8 z-40 backdrop-blur-xl">
-                <div className="flex gap-6 overflow-x-auto pb-4 no-scrollbar px-4">
+            <footer className="h-44 bg-black/60 border-t border-white/5 p-8 backdrop-blur-3xl">
+                <div className="flex gap-6 overflow-x-auto pb-4 no-scrollbar px-4 h-full items-center">
                     {Object.keys(collections).map(catName => (
-                        <button
-                            key={catName}
-                            onClick={() => setSelectedCategoria(catName)}
-                            className={`flex-shrink-0 w-48 h-24 rounded-2xl relative overflow-hidden group cursor-pointer border transition-all duration-500 ${selectedCategoria === catName
-                                ? 'border-[#00f1fe] bg-[#00f1fe]/10'
-                                : 'border-white/5 bg-white/5 hover:border-white/20 hover:bg-white/10'
-                                }`}
-                        >
-                            <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
+                        <button key={catName} onClick={() => setSelectedCategoria(catName)} className={`flex-shrink-0 w-48 h-24 rounded-2xl relative overflow-hidden group border transition-all duration-500 ${selectedCategoria === catName ? 'border-[#00f1fe] bg-[#00f1fe]/10 scale-105 shadow-[0_0_30px_#00f1fe20]' : 'border-white/5 bg-white/5 hover:border-white/20'}`}>
+                            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40">
                                 <h5 className="text-[10px] font-black text-white uppercase tracking-widest">{catName}</h5>
                                 <span className="text-[7px] text-[#00f1fe] font-bold uppercase">{collections[catName].length} ITEMS</span>
                             </div>

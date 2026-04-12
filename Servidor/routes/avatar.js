@@ -6,15 +6,18 @@ const {
     getPredefinedAvatars,
     ensureAvatar,
     getAvatarById, 
+    getAvatarByUserId,
     tryOnClothes,
     recalculateAvatar,
-    updateAvatar
+    updateAvatar,
+    analyzeGarmentGlb
 } = require('../controllers/avatar');
 const { validarJWT } = require('../middlewares/validar-jwt');
 
 const router = Router();
 
 router.get('/predefined', getPredefinedAvatars);
+router.get('/user/:userId', [validarJWT], getAvatarByUserId);
 
 /**
  * @route POST /api/avatar/generate
@@ -55,6 +58,8 @@ router.get('/:id', [validarJWT], getAvatarById);
  */
 router.post('/try-on', [validarJWT], tryOnClothes);
 router.post('/tryon', [validarJWT], tryOnClothes);
+
+router.post('/analyze-garment', [validarJWT], analyzeGarmentGlb);
 
 /**
  * @route PATCH /api/avatar/:id

@@ -4,7 +4,7 @@ const path = require('path');
 
 /**
  * Implementación del pipeline de Machine Learning usando únicamente el modelo Anny (SAM3D/Gradio).
- * Se han eliminado fallbacks locales (SMPL-X) para asegurar que la inferencia dependa solo
+ * Se han eliminado fallbacks locales (Anny) para asegurar que la inferencia dependa solo
  * de la integración con la Space/endpoint configurado.
  */
 

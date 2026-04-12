@@ -345,8 +345,7 @@ const CameraPresets = ({ onSelect }) => (
 );
 
 const AjustesPose = () => {
-    const avatarData = useStore(state => state.avatarData);
-    const setAvatar = useStore(state => state.setAvatar);
+    const { avatarData, setAvatar, user } = useStore();
     const [liveAvatar, setLiveAvatar] = useState(avatarData || {});
     const [posedMeshUrl, setPosedMeshUrl] = useState(null);
     const lastPosedBetas = useRef(null);
@@ -368,17 +367,33 @@ const AjustesPose = () => {
     const [isSaving, setIsSaving] = useState(false);
 
     useEffect(() => {
+        const loadUserAvatar = async () => {
+            if (!avatarData && user?._id) {
+                try {
+                    const res = await iotApi.getAvatarByUser(user._id);
+                    if (res.ok && res.avatar) {
+                        setAvatar(res.avatar);
+                    }
+                } catch (e) {
+                    console.error('Error loading user avatar:', e);
+                }
+            }
+        };
+
         if (!avatarData && typeof window !== 'undefined') {
             try {
                 const savedBody = window.localStorage.getItem('modavatar_active_body');
                 if (savedBody) {
                     setAvatar(JSON.parse(savedBody));
+                } else {
+                    loadUserAvatar();
                 }
             } catch (e) {
                 console.error('Error restoring avatar in pose settings:', e);
+                loadUserAvatar();
             }
         }
-    }, [avatarData, setAvatar]);
+    }, [avatarData, user, setAvatar]);
 
     const ensureAvatarRecord = useCallback(async () => {
         const sourceAvatar = avatarData || liveAvatar;
@@ -515,6 +530,7 @@ const AjustesPose = () => {
         <div className="flex-1 flex bg-black relative overflow-hidden font-['Inter']">
             {/* Viewport Principal */}
             <div className="w-2/3 h-full relative blueprint-grid border-r border-white/5">
+                <CameraPresets onSelect={setCameraTarget} />
                 <div className="absolute top-8 left-8 z-10 pointer-events-none">
                     <span className="text-[10px] text-[#00f1fe] font-black uppercase tracking-[0.4em]">Motor IK / Ajuste de Pose</span>
                     <h2 className="text-5xl font-black text-white/5 tracking-tighter uppercase mt-2">Rig Profesional</h2>
@@ -526,6 +542,7 @@ const AjustesPose = () => {
                     <axesHelper args={[2]} />
                     <Suspense fallback={null}>
                         {posedMeshUrl && <AvatarModelWithPose url={posedMeshUrl} poseData={poseData} />}
+                        <IKSkeleton poseData={poseData} selectedJoint={selectedJoint} onSelectJoint={(j) => { setSelectedJoint(j); setIkMode(j.startsWith('hand')); }} />
                         <Stage environment="city" intensity={0.5} contactShadow={false} />
                     </Suspense>
                     <GizmoHelper alignment="top-right" margin={[80, 80]}><GizmoViewport /></GizmoHelper>
@@ -692,7 +709,7 @@ const AjustesPose = () => {
                                                                     await iotApi.setDefaultPose(p._id);
                                                                     fetchPoses();
                                                                 } catch (e) { console.error(e); }
-                                                                }}
+                                                            }}
                                                             className="text-[6px] font-black px-1.5 py-0.5 rounded bg-[#39ff14]/10 text-[#39ff14] hover:bg-[#39ff14] hover:text-black transition-all"
                                                         >
                                                             DEF

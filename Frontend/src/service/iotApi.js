@@ -9,7 +9,6 @@ const API_URL = `${API_BASE}/api/avatar`;
 const iotApi = {
     API_BASE,
     generateAvatar: async (imageBase64, userId, target = 'both') => {
-
         try {
             const response = await axios.post(`${API_URL}/generate`, { imageBase64, userId, target });
             return response.data;
@@ -55,6 +54,16 @@ const iotApi = {
         }
     },
 
+    getAvatarByUser: async (userId) => {
+        try {
+            const response = await axios.get(`${API_URL}/user/${userId}`);
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching avatar by User ID', error);
+            throw error;
+        }
+    },
+
     ensureAvatar: async (avatarData) => {
         try {
             const response = await axios.post(`${API_URL}/ensure`, avatarData);
@@ -64,6 +73,7 @@ const iotApi = {
             throw error;
         }
     },
+
     updateAvatar: async (id, data) => {
         try {
             const response = await axios.patch(`${API_URL}/${id}`, data);
@@ -93,6 +103,7 @@ const iotApi = {
             throw error;
         }
     },
+
     getPredefinedAvatars: async () => {
         try {
             const response = await axios.get(`${API_URL}/predefined`);
@@ -113,6 +124,7 @@ const iotApi = {
             throw error;
         }
     },
+
     getPosesByAvatar: async (avatarId) => {
         try {
             const response = await axios.get(`${API_BASE}/api/pose/avatar/${avatarId}`);
@@ -122,21 +134,36 @@ const iotApi = {
             throw error;
         }
     },
+
     deletePose: async (id) => {
         try {
             const response = await axios.delete(`${API_BASE}/api/pose/${id}`);
             return response.data;
         } catch (error) {
-            console.error('Error deleting pose', error);
+            console.error('Error deleting its pose', error);
             throw error;
         }
     },
+
     setDefaultPose: async (id) => {
         try {
             const response = await axios.patch(`${API_BASE}/api/pose/default/${id}`);
             return response.data;
         } catch (error) {
             console.error('Error setting default pose', error);
+            throw error;
+        }
+    },
+
+    analyzeGarmentGlb: async (glbBase64, userId) => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await axios.post(`${API_URL}/analyze-garment`, { glbBase64, userId }, {
+                headers: { 'x-token': token }
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error analyzing garment GLB', error);
             throw error;
         }
     }

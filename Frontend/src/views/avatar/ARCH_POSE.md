@@ -32,7 +32,7 @@ graph TD
 ### B. Consola de Mando (Skeleton HUD)
 *   **Tecnología**: `@react-three/drei` (`PivotControls`, `Stage`).
 *   **Lógica IK**: Utiliza controles de pivote en los ejes específicos (Shoulder: Z-axis, Elbow: Y-axis).
-*   **Mapping**: Traduce matrices de rotación 3D del mundo a ángulos de Euler locales compatibles con los parámetros de pose de SMPL-X.
+*   **Mapping**: Traduce matrices de rotación 3D del mundo a ángulos de Euler locales compatibles con los parámetros de pose de Anny.
 
 ## 3. Gestión de Estado
 

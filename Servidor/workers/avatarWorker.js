@@ -75,7 +75,7 @@ const setupWorker = (io) => {
 
       // 4. Promesa C: Generación de Prenda 3D en Blender (Fallback Industrial)
       if (!absoluteAvatarPath || !fs.existsSync(absoluteAvatarPath)) {
-          // SMPL-X local removed: no buscamos archivos recalc_*.glb generados localmente.
+          // Anny local removed: no buscamos archivos recalc_*.glb generados localmente.
           // Simple fallback a los avatares estándar incluidos en el repo.
           console.log(`[STATUS] Avatar no disponible - usando avatar estándar como fallback.`);
           const standardCandidates = [

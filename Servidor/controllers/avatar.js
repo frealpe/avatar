@@ -5,6 +5,7 @@ const fs = require('fs');
 const { execFile } = require('child_process');
 const v4 = require('uuid').v4;
 const { Types } = require('mongoose');
+const { calcularTalla } = require('../helpers/sizing');
 
 const normalizeAvatarPayload = (payload = {}) => {
     const inputMeasurements = payload.measurements || {};
@@ -14,27 +15,39 @@ const normalizeAvatarPayload = (payload = {}) => {
             ? payload.shapeParams
             : [];
 
-    return {
+    const data = {
         userId: payload.userId || null,
-    modelType: payload.modelType || payload.name || 'SAM3D_Standard',
+        modelType: payload.modelType || payload.name || 'SAM3D_Standard',
+        gender: payload.gender || 'neutral',
         meshUrl: payload.meshUrl || null,
         measurements: {
             height: Number(inputMeasurements.height) || 170,
             weight: Number(inputMeasurements.weight) || 70,
-            chest: inputMeasurements.chest ?? null,
-            waist: inputMeasurements.waist ?? null,
-            hips: inputMeasurements.hips ?? null,
-            shoulders: inputMeasurements.shoulders ?? null,
-            inseam: inputMeasurements.inseam ?? null
+            chest: Number(inputMeasurements.chest) || 95,
+            waist: Number(inputMeasurements.waist) || 80,
+            hips: Number(inputMeasurements.hips) || 95,
+            shoulders: Number(inputMeasurements.shoulders) || 45,
+            inseam: Number(inputMeasurements.inseam) || 75
         },
         shapeParams: betas,
         poseParams: Array.isArray(payload.poseParams) ? payload.poseParams : [],
         patternUrl: payload.patternUrl || null,
         garmentParams: payload.garmentParams || {},
         prenda3D: payload.prenda3D || null,
+        prendaTalla: payload.prendaTalla || 'M',
         selectedGarments: Array.isArray(payload.selectedGarments) ? payload.selectedGarments : [],
         status: payload.status || 'READY'
     };
+
+    const { talla_letra } = calcularTalla(
+        data.gender,
+        data.measurements.chest,
+        data.measurements.waist,
+        data.measurements.hips
+    );
+    data.tallaSugerida = talla_letra;
+
+    return data;
 };
 
 const generateAvatar = async (req, res) => {
@@ -72,8 +85,6 @@ const generateAvatar = async (req, res) => {
         res.status(500).json({ ok: false, msg: 'Error interno del servidor encolando el procesamiento de Avatar.' });
     }
 };
-
-const AnnyPipeline = require('../services/annyPipeline');
 
 const recalculateAvatar = async (req, res) => {
     try {
@@ -115,8 +126,6 @@ const recalculateAvatar = async (req, res) => {
             }
 
             try {
-                // El script puede imprimir logs de inicialización de Warp/Anny.
-                // Buscamos la línea que empieza por '{' y termina por '}'
                 const lines = stdout.split('\n');
                 let pythonOutput = null;
                 
@@ -131,14 +140,12 @@ const recalculateAvatar = async (req, res) => {
                 }
 
                 if (!pythonOutput) {
-                    // Fallback al regex por si el JSON está en varias líneas
                     const jsonMatch = stdout.match(/\{.*\}/s);
                     if (jsonMatch) pythonOutput = JSON.parse(jsonMatch[0].trim());
                 }
 
                 if (!pythonOutput) throw new Error("No valid JSON found in output");
                 
-                // Url para el frontend
                 const meshUrl = `/temp/recalc_${jobId}.glb`;
 
                 return res.json({
@@ -174,7 +181,8 @@ const getClothesCatalog = (req, res) => {
             prenda3D: "/clothes/sacos/Saco.glb",
             image: "/clothes/sacos/Saco_preview.jpg",
             price: 150,
-            normal: { x: 0, y: 0, z: 1 }
+            normal: { x: 0, y: 0, z: 1 },
+            measurements: { ancho_cm: 85.8, largo_cm: 100.0, profundidad_cm: 39.2, brazo_cm: 34.3, pecho_cm: 68.7, cintura_cm: 64.4 }
         },
         { 
             _id: "blusa_silk_01", 
@@ -185,7 +193,8 @@ const getClothesCatalog = (req, res) => {
             prenda3D: "/clothes/bluzas/Blusa_Silk.glb",
             image: "/clothes/bluzas/Blusa_Silk_preview.jpg",
             price: 65,
-            normal: { x: 0, y: 0, z: 1 }
+            normal: { x: 0, y: 0, z: 1 },
+            measurements: { ancho_cm: 45, largo_cm: 62, profundidad_cm: 18, pecho_cm: 92, cintura_cm: 74, brazo_cm: 58 }
         },
         { 
             _id: "pant_cargo_01", 
@@ -196,13 +205,12 @@ const getClothesCatalog = (req, res) => {
             prenda3D: "/clothes/pantalones/Pantalon_Cargo.glb",
             image: "/clothes/pantalones/Pantalon_Cargo_preview.jpg",
             price: 95,
-            normal: { x: 0, y: 0, z: 1 }
+            normal: { x: 0, y: 0, z: 1 },
+            measurements: { ancho_cm: 42, largo_cm: 104, profundidad_cm: 20, pecho_cm: 0, cintura_cm: 82, brazo_cm: 0 }
         }
     ];
     res.json({ ok: true, data: catalogoMock });
 };
-
-
 
 const getAvatarById = async (req, res) => {
     try {
@@ -212,6 +220,17 @@ const getAvatarById = async (req, res) => {
         res.json({ ok: true, avatar });
     } catch (error) {
         res.status(500).json({ ok: false, msg: 'Error interno obteniendo avatar' });
+    }
+};
+
+const getAvatarByUserId = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const avatar = await Avatar.findOne({ userId }).sort({ createdAt: -1 });
+        if (!avatar) return res.status(404).json({ ok: false, msg: 'Avatar no encontrado para este usuario' });
+        res.json({ ok: true, avatar });
+    } catch (error) {
+        res.status(500).json({ ok: false, msg: 'Error interno obteniendo avatar por usuario' });
     }
 };
 
@@ -247,13 +266,11 @@ const ensureAvatar = async (req, res) => {
 
         if (!avatar) {
             const avatarData = normalizeAvatarPayload(incomingAvatar);
-            // Ensure userId is valid ObjectId if it's present
             if (avatarData.userId === 'guest_user') avatarData.userId = null; 
             
             avatar = await Avatar.create(avatarData);
         }
 
-        // Vincular al usuario si userId es valido
         if (avatar.userId && Types.ObjectId.isValid(avatar.userId)) {
             await Usuario.findByIdAndUpdate(avatar.userId, { avatar: avatar._id });
         }
@@ -276,6 +293,7 @@ const getPredefinedAvatars = (req, res) => {
         { 
             id: 'std_athletic', 
             name: 'hombre', 
+            gender: 'male',
             description: 'Perfil muscular hombros anchos',
             meshUrl: '/avatars/standard_male.glb', 
             betas: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -285,6 +303,7 @@ const getPredefinedAvatars = (req, res) => {
         { 
             id: 'std_slim', 
             name: 'mujer', 
+            gender: 'female',
             description: 'Perfil delgado y espigado',
             meshUrl: '/avatars/standard_female.glb', 
             betas: [0.5, -1, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -294,6 +313,7 @@ const getPredefinedAvatars = (req, res) => {
         { 
             id: 'std_curvy', 
             name: 'niño', 
+            gender: 'neutral',
             description: 'Perfil con curvas pronunciadas',
             meshUrl: '/avatars/standard_curvy.glb', 
             betas: [2.0, 0.5, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -322,6 +342,55 @@ const updateAvatar = async (req, res) => {
     }
 };
 
+const analyzeGarmentGlb = async (req, res) => {
+    try {
+        const { glbBase64, userId = 'guest_user' } = req.body;
+
+        if (!glbBase64) {
+            return res.status(400).json({ ok: false, msg: 'Falta el archivo GLB en formato base64' });
+        }
+
+        const jobId = v4();
+        const tempDir = path.join(process.cwd(), 'public', 'temp');
+        if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
+
+        const inputGlb = path.join(tempDir, `analyze_${jobId}.glb`);
+        const base64Data = glbBase64.replace(/^data:application\/\w+;base64,/, "").replace(/^data:model\/\w+;base64,/, "");
+        fs.writeFileSync(inputGlb, Buffer.from(base64Data, 'base64'));
+
+        const pythonPath = "/home/fabio/miniconda3/bin/python3";
+        const scriptPath = path.join(process.cwd(), 'helpers', 'garment_analyzer.py');
+
+        execFile(pythonPath, [scriptPath, '--input', inputGlb], (error, stdout, stderr) => {
+            if (error) {
+                console.error(`❌ [ANALYZE-GARMENT] Error: ${error.message}`);
+                return res.status(500).json({ ok: false, msg: 'Error analizando prenda GLB' });
+            }
+
+            try {
+                const result = JSON.parse(stdout.trim());
+                if (!result.ok) throw new Error(result.msg);
+
+                const meshUrl = `/temp/analyze_${jobId}.glb`;
+
+                res.json({
+                    ok: true,
+                    meshUrl,
+                    garmentParams: result.measurements,
+                    status: 'READY'
+                });
+            } catch (err) {
+                console.error(`❌ [ANALYZE-GARMENT] Parse error: ${stdout}`);
+                res.status(500).json({ ok: false, msg: 'Error procesando resultado del análisis' });
+            }
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ ok: false, msg: 'Error interno analizando prenda' });
+    }
+};
+
 module.exports = {
     generateAvatar,
     recalculateAvatar,
@@ -330,6 +399,8 @@ module.exports = {
     getPredefinedAvatars,
     ensureAvatar,
     getAvatarById,
+    getAvatarByUserId,
     tryOnClothes,
-    updateAvatar
+    updateAvatar,
+    analyzeGarmentGlb
 };
