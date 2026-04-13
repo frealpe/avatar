@@ -66,6 +66,44 @@ def bbox(obj):
     return min_v, max_v, max_v - min_v
 
 # =========================
+# HEAL MESH (SANACIÓN)
+# =========================
+def heal_mesh(obj):
+    print("[ENGINE] Sanando malla (Fusión + Sellado de Huecos + Normales)...", flush=True)
+    bpy.context.view_layer.objects.active = obj
+    
+    # 1. Asegurar que estamos en modo objeto para aplicar escala
+    bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+
+    # 2. Entrar en modo edición para operaciones de malla
+    bpy.ops.object.mode_set(mode='EDIT')
+    bpy.ops.mesh.select_all(action='SELECT')
+    
+    # Fusionar vértices muy cercanos (Weld)
+    bpy.ops.mesh.remove_doubles(threshold=0.001)
+    
+    # Sellar huecos (Fill Holes)
+    # sides=0 intenta sellar todos los huecos independientemente del número de lados
+    bpy.ops.mesh.fill_holes(sides=0)
+    
+    # Corregir normales (Hacia afuera)
+    bpy.ops.mesh.normals_make_consistent(inside=False)
+    
+    # 3. Volver a modo objeto
+    bpy.ops.object.mode_set(mode='OBJECT')
+    
+    # 4. Modificador de Suavizado (Smooth) para un acabado premium
+    mod_smooth = obj.modifiers.new("FinalSmooth", 'SMOOTH')
+    mod_smooth.iterations = 10
+    mod_smooth.factor = 0.5
+    bpy.ops.object.modifier_apply(modifier="FinalSmooth")
+    
+    # 5. Sombreado suave
+    bpy.ops.object.shade_smooth()
+    
+    print("[ENGINE] Sanación completada", flush=True)
+
+# =========================
 # SHAPE KEYS (PIPELINE HIBRIDO)
 # =========================
 def create_shape_keys(obj):
@@ -227,13 +265,17 @@ def run(av_path, cloth_path, out_path):
     bpy.context.view_layer.objects.active = cloth
     
     # Aplicar modificadores de arriba hacia abajo (excepto armature)
-    # Se usa una lista estática para evitar problemas al modificar la colección
     mod_names = [m.name for m in cloth.modifiers if m.type != 'ARMATURE']
     for name in mod_names:
         try:
             bpy.ops.object.modifier_apply(modifier=name)
         except:
             print(f"[ENGINE] Warning: Could not apply {name}")
+
+    # =========================
+    # HEAL & BEAUTIFY
+    # =========================
+    heal_mesh(cloth)
 
     # =========================
     # SHAPE KEYS (PIPELINE WEB)
@@ -253,12 +295,20 @@ def run(av_path, cloth_path, out_path):
     # =========================
     print("[ENGINE] Exportando...", flush=True)
 
+    # Draco conditional enable
+    draco_path = os.environ.get('BLENDER_EXTERN_DRACO_LIBRARY_PATH')
+    enable_draco = bool(draco_path and os.path.exists(draco_path))
+    if enable_draco:
+        print(f"[ENGINE] Draco habilitado (Path: {draco_path})", flush=True)
+    else:
+        print("[ENGINE] Draco deshabilitado (Path no configurado o inválido)", flush=True)
+
     bpy.ops.export_scene.gltf(
         filepath=out_path,
         export_format='GLB',
         export_apply=True,
-        # Draco disabled to avoid missing library issues (libextern_draco.so)
-        export_draco_mesh_compression_enable=False 
+        export_draco_mesh_compression_enable=enable_draco,
+        export_draco_mesh_compression_level=6
     )
 
     print("\n[ENGINE] ✅ PIPELINE COMPLETO\n", flush=True)

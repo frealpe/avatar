@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, useGLTF, Stage } from '@react-three/drei';
 import iotApi from '../../service/iotApi';
-import useStore from '../../store';
+import useStore from '../../store.js';
 
 function MiniModelPreview({ url }) {
     if (!url) return null;
@@ -233,8 +233,8 @@ const Coleccion = () => {
                                                         <button
                                                             onClick={() => setSelectedSizes(prev => ({ ...prev, [prenda._id || prenda.id]: t.id }))}
                                                             className={`w-full py-2 rounded-lg text-[9px] font-black transition-all border ${(selectedSizes[prenda._id || prenda.id] || avatarData?.tallaSugerida || 'M') === t.id
-                                                                    ? 'bg-[#00f1fe] text-black border-[#00f1fe] shadow-[0_0_15px_rgba(0,241,254,0.4)]'
-                                                                    : 'bg-white/5 text-gray-400 border-white/10 hover:border-white/20'
+                                                                ? 'bg-[#00f1fe] text-black border-[#00f1fe] shadow-[0_0_15px_rgba(0,241,254,0.4)]'
+                                                                : 'bg-white/5 text-gray-400 border-white/10 hover:border-white/20'
                                                                 }`}
                                                         >
                                                             {t.label}
@@ -250,8 +250,8 @@ const Coleccion = () => {
                                                 onClick={() => handleTryOn(prenda)}
                                                 disabled={saving}
                                                 className={`w-full py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 ${avatarData?.prenda3D === prenda.prenda3D
-                                                        ? 'bg-[#d800ff] text-white shadow-[0_0_20px_rgba(216,0,255,0.4)] hover:scale-[1.02]'
-                                                        : 'bg-white/10 text-white hover:bg-[#00f1fe] hover:text-black hover:scale-[1.02]'
+                                                    ? 'bg-[#d800ff] text-white shadow-[0_0_20px_rgba(216,0,255,0.4)] hover:scale-[1.02]'
+                                                    : 'bg-white/10 text-white hover:bg-[#00f1fe] hover:text-black hover:scale-[1.02]'
                                                     }`}
                                             >
                                                 {saving ? <span className="material-symbols-outlined animate-spin text-[12px]">sync</span> : avatarData?.prenda3D === prenda.prenda3D ? 'Prenda Seleccionada ✓' : 'Probar Ahora'}

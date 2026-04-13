@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Canvas } from '@react-three/fiber';
 import { useGLTF, Stage } from '@react-three/drei';
 import iotApi from '../../service/iotApi';
-import useStore from '../../store';
+import useStore from '../../store.js';
 
 const ModelPreview = ({ url }) => {
     const fullUrl = url.startsWith('http') ? url : `${iotApi.API_BASE}${url}`;

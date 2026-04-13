@@ -32,7 +32,7 @@ const calcularTalla = (gender, chest, waist, hips) => {
     for (const r of rangos) {
         const inChest = chest >= r.chest[0] && chest <= r.chest[1];
         const inWaist = waist >= r.waist[0] && waist <= r.waist[1];
-        const inHips = hips ? (hips >= r.hips[0] && hips <= r.hips[1]) : true;
+        const inHips = (hips && r.hips) ? (hips >= r.hips[0] && hips <= r.hips[1]) : true;
         
         // Si calza perfectamente
         if (inChest && inWaist && inHips) {

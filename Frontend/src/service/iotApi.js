@@ -6,11 +6,23 @@ const API_BASE = (typeof window !== 'undefined' && window.location.hostname !== 
 
 const API_URL = `${API_BASE}/api/avatar`;
 
+const getToken = () => {
+    try {
+        const auth = JSON.parse(localStorage.getItem('modavatar_auth') || '{}');
+        return auth.token || localStorage.getItem('token'); // Fallback to old key just in case
+    } catch (e) {
+        return null;
+    }
+};
+
 const iotApi = {
     API_BASE,
     generateAvatar: async (imageBase64, userId, target = 'both') => {
         try {
-            const response = await axios.post(`${API_URL}/generate`, { imageBase64, userId, target });
+            const token = getToken();
+            const response = await axios.post(`${API_URL}/generate`, { imageBase64, userId, target }, {
+                headers: { 'x-token': token }
+            });
             return response.data;
         } catch (error) {
             console.error('Error generating avatar', error);
@@ -30,11 +42,14 @@ const iotApi = {
 
     recalculateAvatar: async (betas, gender = 'neutral', poseType = 't-pose', poseParams = {}) => {
         try {
+            const token = getToken();
             const response = await axios.post(`${API_URL}/recalculate`, { 
                 betas, 
                 gender, 
                 poseType,
                 ...poseParams 
+            }, {
+                headers: { 'x-token': token }
             });
             return response.data;
 
@@ -66,7 +81,10 @@ const iotApi = {
 
     ensureAvatar: async (avatarData) => {
         try {
-            const response = await axios.post(`${API_URL}/ensure`, avatarData);
+            const token = getToken();
+            const response = await axios.post(`${API_URL}/ensure`, avatarData, {
+                headers: { 'x-token': token }
+            });
             return response.data;
         } catch (error) {
             console.error('Error ensuring avatar', error);
@@ -96,8 +114,10 @@ const iotApi = {
 
     tryOnClothes: async (avatarUrl, garmentUrl) => {
         try {
+            const token = getToken();
             const response = await axios.post(`${API_URL}/try-on`, { avatarUrl, garmentUrl }, {
-                timeout: 300000 // 5 minutes for physics simulation
+                timeout: 300000, // 5 minutes for physics simulation
+                headers: { 'x-token': token }
             });
             return response.data;
         } catch (error) {
@@ -159,7 +179,7 @@ const iotApi = {
 
     analyzeGarmentGlb: async (glbBase64, userId) => {
         try {
-            const token = localStorage.getItem('token');
+            const token = getToken();
             const response = await axios.post(`${API_URL}/analyze-garment`, { glbBase64, userId }, {
                 headers: { 'x-token': token }
             });
@@ -172,7 +192,7 @@ const iotApi = {
 
     approveGarment: async (prendaId, meshUrl) => {
         try {
-            const token = localStorage.getItem('token');
+            const token = getToken();
             const response = await axios.post(`${API_URL}/approve-garment`, { prendaId, meshUrl }, {
                 headers: { 'x-token': token }
             });

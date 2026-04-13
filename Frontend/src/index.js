@@ -3,7 +3,7 @@ import 'core-js'
 import 'cesium/Build/Cesium/Widgets/widgets.css';
 import App from './App'
 import axios from 'axios'
-import useStore from './store'
+import useStore from './store.js'
 import { SocketProvider } from './context/SocketContext';
 import { AuthProvider } from './context/AuthContext';
 //import { SocketProvider } from '../../context/SocketContext';

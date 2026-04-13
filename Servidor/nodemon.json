@@ -1,0 +1,16 @@
+{
+  "ignore": [
+    "public/*",
+    "blender/*.log",
+    "blender/out.log",
+    "node_modules"
+  ],
+  "watch": [
+    "controllers",
+    "models",
+    "routes",
+    "app.js",
+    ".env"
+  ],
+  "ext": "js,mjs,json"
+}

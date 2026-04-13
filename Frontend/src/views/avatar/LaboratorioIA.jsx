@@ -4,7 +4,7 @@ import { OrbitControls, useGLTF, PerspectiveCamera, Stage } from '@react-three/d
 import { useLocation } from 'react-router-dom'
 import iotApi from '../../service/iotApi'
 import { SocketContext } from '../../context/SocketContext'
-import useStore from '../../store'
+import useStore from '../../store.js'
 
 // --- Helpers ---
 const getFullUrl = (url) => {
@@ -23,7 +23,7 @@ const LaboratorioIA = () => {
     const bodyInputRef = useRef(null);
     const garmentInputRef = useRef(null);
     const { socket } = React.useContext(SocketContext);
-    const { setAvatar, user, set, backgroundJobs, simulationNotification } = useStore();
+    const { setAvatar, user, set, backgroundJobs, simulationNotification, avatarData } = useStore();
 
     const [tab, setTab] = useState('BODY'); // 'BODY' or 'GARMENT'
     const [bodyState, setBodyState] = useState({ loading: false, result: null, telemetry: null, timer: 0 });
@@ -103,6 +103,19 @@ const LaboratorioIA = () => {
             }
         }
     }, [location.state]);
+
+    // 3. Sincronizar con el store global si hay un avatar activo
+    useEffect(() => {
+        if (avatarData && !bodyState.result) {
+            setBodyState(prev => ({ ...prev, result: avatarData }));
+            if (avatarData.measurements) setEditableMeasurements(avatarData.measurements);
+            if (avatarData.betas) {
+                const b = [...avatarData.betas];
+                while (b.length < 12) b.push(0);
+                setBetas(b);
+            }
+        }
+    }, [avatarData, bodyState.result]);
 
     useEffect(() => {
         let bodyInterval, garmentInterval;
@@ -561,8 +574,16 @@ const LaboratorioIA = () => {
                                                 </div>
                                             ) : (
                                                 <div className="flex gap-2">
-                                                    <button onClick={handleTryOn} disabled={!bodyState.result} className={`flex-1 py-2 font-black text-[10px] uppercase tracking-[0.15em] rounded-lg transition-all flex items-center justify-center gap-2 ${bodyState.result ? 'bg-[#d800ff] text-white hover:scale-105 shadow-[0_0_15px_rgba(216,0,255,0.3)]' : 'bg-gray-800 text-gray-500 cursor-not-allowed'}`}>
-                                                        <span className="material-symbols-outlined text-sm">auto_fix</span> Neural Fitting
+                                                    <button
+                                                        onClick={handleTryOn}
+                                                        disabled={!bodyState.result || !garmentState.result?.prenda3D}
+                                                        className={`flex-1 py-2 font-black text-[10px] uppercase tracking-[0.15em] rounded-lg transition-all flex items-center justify-center gap-2 ${(bodyState.result && garmentState.result?.prenda3D)
+                                                            ? 'bg-[#d800ff] text-white hover:scale-105 shadow-[0_0_15px_rgba(216,0,255,0.3)]'
+                                                            : 'bg-gray-800 text-gray-500 cursor-not-allowed'
+                                                            }`}
+                                                    >
+                                                        <span className="material-symbols-outlined text-sm">auto_fix</span>
+                                                        {!bodyState.result ? 'Selecciona Avatar' : !garmentState.result?.prenda3D ? 'Selecciona Prenda' : 'Neural Fitting'}
                                                     </button>
                                                     <button onClick={() => alert('Patrón Exportado')} className="px-4 py-2 bg-white/5 text-white font-black text-[8px] uppercase tracking-widest rounded-lg border border-white/10 hover:bg-white/10 transition-all flex items-center gap-2">
                                                         <span className="material-symbols-outlined text-[12px]">download</span> SVG
@@ -592,10 +613,12 @@ const LaboratorioIA = () => {
                                         <Canvas shadows dpr={[1, 2]}>
                                             <PerspectiveCamera makeDefault position={[0, 1, 3]} fov={45} />
                                             <Suspense fallback={null}>
-                                                <Stage environment="city" intensity={0.5} contactShadow={{ opacity: 0.2, blur: 2 }}>
+                                                <Stage environment="city" intensity={1} contactShadow={{ opacity: 0.2, blur: 2 }}>
                                                     <Model key={getFullUrl(dressedResult)} url={getFullUrl(dressedResult)} />
                                                 </Stage>
                                             </Suspense>
+                                            <ambientLight intensity={0.5} />
+                                            <pointLight position={[10, 10, 10]} intensity={1} castShadow />
                                             <OrbitControls makeDefault />
                                         </Canvas>
                                     </ModelErrorBoundary>
@@ -745,6 +768,22 @@ class ModelErrorBoundary extends React.Component {
 
 function Model({ url }) {
     const { scene } = useGLTF(url);
+
+    // Optimizar materiales para web y corregir posibles negros por normales
+    React.useMemo(() => {
+        scene.traverse((obj) => {
+            if (obj.isMesh) {
+                obj.castShadow = true;
+                obj.receiveShadow = true;
+                if (obj.material) {
+                    obj.material.side = 2; // THREE.DoubleSide
+                    obj.material.roughness = 0.5;
+                    obj.material.metalness = 0.2;
+                }
+            }
+        });
+    }, [scene]);
+
     return <primitive object={scene} />;
 }
 

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { CCard, CCardBody, CCol, CRow, CButton, CSpinner } from '@coreui/react-pro';
 import { useNavigate, useLocation } from 'react-router-dom';
-import useStore from '../../store';
+import useStore from '../../store.js';
 import iotApi from '../../service/iotApi';
 
 import { SocketContext } from '../../context/SocketContext';

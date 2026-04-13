@@ -1,6 +1,5 @@
 import React from "react";
 import Markdown from "react-markdown";
-import VegaChart from "../graficos/VegaChart";
 import { CBadge, CCard, CCardBody, CRow, CCol } from "@coreui/react-pro";
 
 function GptMessage({ text, data }) {
@@ -27,15 +26,13 @@ function GptMessage({ text, data }) {
           {data && (typeof data === 'object') ? (
             <div className="agent-structured-response">
               {console.log("📌 [GptMessage] Data received:", data)}
-              {console.log("📌 [GptMessage] Visualization present:", !!data.visualization)}
 
-              {/* [NEW] Visualization from Data Scientist Agent */}
+              {/* [NEW] Visualization (Omitted Vega) */}
               {data.visualization && (
                 <div className="mb-3 border rounded p-2 bg-white">
                   <div className="fw-bold mb-2 text-primary" style={{ fontSize: '13px' }}>
-                    📊 Visualización Generada
+                    📊 Visualización (No disponible)
                   </div>
-                  <VegaChart spec={data.visualization} />
                 </div>
               )}
 
@@ -44,16 +41,6 @@ function GptMessage({ text, data }) {
                 <Markdown
                   components={{
                     code({ node, inline, className, children, ...props }) {
-                      const match = /language-(\w+)/.exec(className || "");
-                      const isJson = match && (match[1] === "json" || match[1] === "vega");
-                      if (!inline && isJson) {
-                        try {
-                          const json = JSON.parse(String(children).replace(/\n$/, ""));
-                          if (json.$schema && json.$schema.includes("vega-lite")) {
-                            return <VegaChart spec={json} />;
-                          }
-                        } catch (e) { }
-                      }
                       return <code className={className} {...props}>{children}</code>;
                     },
                   }}
@@ -79,31 +66,18 @@ function GptMessage({ text, data }) {
                 </CRow>
               )}
 
-              {/* Gráfica si viene por separado (legacy) */}
+              {/* Gráfica si viene por separado (legacy) - Omitted Vega */}
               {data.grafica && (
-                <div className="mb-3 border rounded p-2 bg-white">
-                  <VegaChart spec={data.grafica} />
+                <div className="mb-3 border rounded p-2 bg-white text-[10px] text-gray-400">
+                  Gráfico no disponible
                 </div>
               )}
 
 
-              {/* Gráficas Vega-Lite (nuevo formato charts array) */}
+              {/* Gráficas Vega-Lite (nuevo formato charts array) - Omitted Vega */}
               {data.charts && Array.isArray(data.charts) && data.charts.length > 0 && (
                 <div className="mb-3">
-                  {console.log("📊 [GptMessage] Rendering", data.charts.length, "charts")}
-                  {data.charts.map((chart, idx) => {
-                    console.log(`📊 [GptMessage] Chart ${idx}:`, chart);
-                    return (
-                      <div key={idx} className="mb-2 border rounded p-2 bg-white">
-                        {chart.title && (
-                          <div className="fw-bold mb-2 text-primary" style={{ fontSize: '13px' }}>
-                            📊 {chart.title}
-                          </div>
-                        )}
-                        <VegaChart spec={chart.spec} />
-                      </div>
-                    );
-                  })}
+                  <div className="text-[10px] text-gray-400">Visualizaciones discontinuadas</div>
                 </div>
               )}
 
@@ -121,19 +95,6 @@ function GptMessage({ text, data }) {
             <Markdown
               components={{
                 code({ node, inline, className, children, ...props }) {
-                  const match = /language-(\w+)/.exec(className || "");
-                  const isJson = match && (match[1] === "json" || match[1] === "vega");
-
-                  if (!inline && isJson) {
-                    try {
-                      const content = String(children).replace(/\n$/, "");
-                      const json = JSON.parse(content);
-                      if (json.$schema && json.$schema.includes("vega-lite")) {
-                        return <VegaChart spec={json} />;
-                      }
-                    } catch (e) { }
-                  }
-
                   return (
                     <code className={className} {...props}>
                       {children}

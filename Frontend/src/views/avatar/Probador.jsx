@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useContext, Suspense, useMemo } from 'react';
-import useStore from '../../store';
+import useStore from '../../store.js';
 import { Canvas, useFrame, useGraph } from '@react-three/fiber';
 import { OrbitControls, useGLTF, PerspectiveCamera, Stage } from '@react-three/drei';
 import iotApi from '../../service/iotApi';

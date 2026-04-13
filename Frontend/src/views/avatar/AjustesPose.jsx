@@ -11,7 +11,7 @@ import {
     useGLTF
 } from '@react-three/drei';
 import * as THREE from 'three';
-import useStore from '../../store';
+import useStore from '../../store.js';
 import iotApi from '../../service/iotApi';
 import { SocketContext } from '../../context/SocketContext';
 

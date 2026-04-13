@@ -1,5 +1,5 @@
 import React from 'react'
-import useStore from '../store'
+import useStore from '../store.js'
 import navigation from '../_nav'
 import { NavLink } from 'react-router-dom'
 

@@ -7,7 +7,7 @@ const generarJWT = ( uid = '' ) => {
         const payload = { uid };
 
         jwt.sign( payload, process.env.SECRETORPRIVATEKEY || 'ModAvatar_Secret_Key_2026', {
-            expiresIn: '4h'
+            expiresIn: '24h'
         }, ( err, token ) => {
 
             if ( err ) {

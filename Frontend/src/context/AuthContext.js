@@ -1,5 +1,5 @@
 import React, { createContext, useEffect, useState, useCallback } from 'react';
-import useStore from '../store';
+import useStore from '../store.js';
 
 export const AuthContext = createContext();
 

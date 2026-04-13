@@ -1,6 +1,6 @@
 import React, { Suspense, useEffect } from 'react'
 import { HashRouter, Route, Routes, Navigate } from 'react-router-dom'
-import useStore from './store'
+import useStore from './store.js'
 import { AuthContext } from './context/AuthContext'
 import { CSpinner, useColorModes } from '@coreui/react-pro'
 import './scss/style.scss'

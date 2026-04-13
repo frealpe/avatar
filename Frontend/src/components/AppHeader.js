@@ -1,5 +1,5 @@
 import React, { useContext } from 'react'
-import useStore from '../store'
+import useStore from '../store.js'
 import { SocketContext } from '../context/SocketContext'
 import { AuthContext } from '../context/AuthContext'
 
