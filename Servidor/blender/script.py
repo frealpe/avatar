@@ -8,6 +8,22 @@ import numpy as np
 if not hasattr(np, 'bool'):
     np.bool = bool
 
+def create_industrial_material(name="IndustrialFabric", color=(0.15, 0.15, 0.4, 1.0)):
+    """Creates a PBR material for the garment."""
+    mat = bpy.data.materials.new(name=name)
+    mat.use_nodes = True
+    nodes = mat.node_tree.nodes
+    nodes.clear()
+    
+    node_principled = nodes.new(type='ShaderNodeBsdfPrincipled')
+    node_principled.inputs['Base Color'].default_value = color
+    node_principled.inputs['Roughness'].default_value = 0.4
+    node_principled.inputs['Metallic'].default_value = 0.0
+    
+    node_output = nodes.new(type='ShaderNodeOutputMaterial')
+    mat.node_tree.links.new(node_principled.outputs['BSDF'], node_output.inputs['Surface'])
+    return mat
+
 def clean_scene():
     """Clears the entire scene for a clean simulation environment."""
     bpy.ops.wm.read_factory_settings(use_empty=True)
@@ -154,7 +170,14 @@ def setup_cloth_simulation(avatar_path, svg_path, output_path, fabric_type='cott
         # Margen de Piel: Garantizar distancia de colisión mínima con el avatar de Anny
         curve_obj.modifiers["Cloth"].collision_settings.distance_min = 0.005
 
-        # 3.8 Self-Intersection Repair (Smooth Modifier)
+        # 3.8 Material Assignment: Ensure the piece is not white
+        # Use slightly different shades if there are multiple pieces
+        shade = 0.1 + (len(garment_mesh_objects) * 0.05)
+        mat_color = (shade, shade, 0.3 + shade, 1.0) # Bluish range
+        piece_mat = create_industrial_material(f"Mat_{curve_obj.name}", color=mat_color)
+        curve_obj.data.materials.append(piece_mat)
+
+        # 3.9 Self-Intersection Repair (Smooth Modifier)
         bpy.ops.object.modifier_add(type='SMOOTH')
         curve_obj.modifiers["Smooth"].iterations = 5
         

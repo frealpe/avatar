@@ -68,9 +68,38 @@ def bbox(obj):
 # =========================
 # HEAL MESH (SANACIÓN)
 # =========================
+def create_premium_material(name="PremiumFabric", color=(0.1, 0.1, 0.2, 1.0)):
+    print(f"[ENGINE] Creando material premium: {name}", flush=True)
+    mat = bpy.data.materials.new(name=name)
+    mat.use_nodes = True
+    nodes = mat.node_tree.nodes
+    nodes.clear()
+    
+    node_principled = nodes.new(type='ShaderNodeBsdfPrincipled')
+    node_principled.inputs['Base Color'].default_value = color
+    node_principled.inputs['Roughness'].default_value = 0.4
+    node_principled.inputs['Metallic'].default_value = 0.0
+    
+    node_output = nodes.new(type='ShaderNodeOutputMaterial')
+    mat.node_tree.links.new(node_principled.outputs['BSDF'], node_output.inputs['Surface'])
+    return mat
+
 def heal_mesh(obj):
     print("[ENGINE] Sanando malla (Fusión + Sellado de Huecos + Normales)...", flush=True)
     bpy.context.view_layer.objects.active = obj
+    
+    # Asegurar que tenga al menos un material premium si está vacío o es el gris por defecto
+    if len(obj.data.materials) == 0:
+        obj.data.materials.append(create_premium_material())
+    else:
+        # Si el material es el gris muy claro por defecto, le damos un tono más interesante
+        for i, mat in enumerate(obj.data.materials):
+            if mat and mat.use_nodes:
+                node = mat.node_tree.nodes.get('Principled BSDF')
+                if node:
+                    c = node.inputs['Base Color'].default_value
+                    if c[0] > 0.7 and c[1] > 0.7 and c[2] > 0.7:
+                        node.inputs['Base Color'].default_value = (0.05, 0.05, 0.15, 1.0) # Deep Navy
     
     # 1. Asegurar que estamos en modo objeto para aplicar escala
     bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
@@ -354,12 +383,18 @@ def run(av_path, cloth_path, out_path):
     else:
         print("[ENGINE] Draco deshabilitado (Path no configurado o inválido)", flush=True)
 
+    # Seleccionar solo lo que queremos exportar (Avatar + Ropa)
+    bpy.ops.object.select_all(action='DESELECT')
+    avatar.select_set(True)
+    cloth.select_set(True)
+
     bpy.ops.export_scene.gltf(
         filepath=out_path,
         export_format='GLB',
         use_selection=True, # Only export the selected elements (Avatar, Rig, Garment)
         export_animations=True, # Ensure animations are preserved
         export_apply=True,
+        export_selected=True,
         export_draco_mesh_compression_enable=enable_draco,
         export_draco_mesh_compression_level=6
     )

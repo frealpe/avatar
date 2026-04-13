@@ -380,7 +380,7 @@ const LaboratorioIA = () => {
                                         <Canvas shadows dpr={[1, 2]}>
                                             <PerspectiveCamera makeDefault position={[0, 1, 4]} fov={45} />
                                             <Suspense fallback={null}>
-                                                <Stage environment="city" intensity={0.5} contactShadow={{ opacity: 0.2, blur: 2 }}>
+                                                <Stage environment="city" intensity={0.2} contactShadow={{ opacity: 0.1, blur: 3 }}>
                                                     <Model key={dressedResult || getFullUrl(bodyState.result.meshUrl)} url={getFullUrl(dressedResult || bodyState.result.meshUrl)} />
                                                 </Stage>
                                             </Suspense>
@@ -493,7 +493,7 @@ const LaboratorioIA = () => {
                                             <Canvas shadows dpr={[1, 2]}>
                                                 <PerspectiveCamera makeDefault position={[0, 0, 2]} fov={45} />
                                                 <Suspense fallback={null}>
-                                                    <Stage environment="city" intensity={0.5} contactShadow={{ opacity: 0.2, blur: 2 }}>
+                                                    <Stage environment="city" intensity={0.3} contactShadow={{ opacity: 0.1, blur: 3 }}>
                                                         <Model key={getFullUrl(garmentState.result.prenda3D)} url={getFullUrl(garmentState.result.prenda3D)} />
                                                     </Stage>
                                                 </Suspense>
@@ -613,7 +613,7 @@ const LaboratorioIA = () => {
                                         <Canvas shadows dpr={[1, 2]}>
                                             <PerspectiveCamera makeDefault position={[0, 1, 3]} fov={45} />
                                             <Suspense fallback={null}>
-                                                <Stage environment="city" intensity={1} contactShadow={{ opacity: 0.2, blur: 2 }}>
+                                                <Stage environment="city" intensity={0.4} contactShadow={{ opacity: 0.1, blur: 3 }}>
                                                     <Model key={getFullUrl(dressedResult)} url={getFullUrl(dressedResult)} />
                                                 </Stage>
                                             </Suspense>
@@ -777,8 +777,8 @@ function Model({ url }) {
                 obj.receiveShadow = true;
                 if (obj.material) {
                     obj.material.side = 2; // THREE.DoubleSide
-                    obj.material.roughness = 0.5;
-                    obj.material.metalness = 0.2;
+                    if (obj.material.roughness > 0.8) obj.material.roughness = 0.5;
+                    if (obj.material.metalness > 0.5) obj.material.metalness = 0.2;
                 }
             }
         });
