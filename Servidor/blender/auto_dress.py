@@ -535,7 +535,10 @@ def run(av_path, cloth_path, out_path):
             m.select_set(True)
         bpy.context.view_layer.objects.active = meshes[0]
         bpy.ops.object.join()
-    cloth = bpy.context.view_layer.objects.active or meshes[0]
+        cloth = bpy.context.view_layer.objects.active
+    else:
+        cloth = meshes[0]
+
     log(0, f"Garment mesh: {cloth.name} ({len(cloth.data.vertices)} verts)")
 
     # ══════════════════════════════════════
