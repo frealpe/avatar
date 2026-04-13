@@ -327,8 +327,8 @@ const tryOnClothes = async (req, res) => {
             const output = data.toString();
             console.log(`[BLENDER] ${output.trim()}`);
 
-            // Regex for matching progress (handles both old and new formats)
-            const match = output.match(/Simulation: (\d+)\/(\d+)/) || output.match(/Frame (\d+)\/(\d+)/);
+            // Regex for matching progress (handles v1 and v2 pipeline formats)
+            const match = output.match(/Frame (\d+)\/(\d+)/) || output.match(/Simulation: (\d+)\/(\d+)/) || output.match(/\[S6\].*Frame (\d+)\/(\d+)/);
             if (match && io) {
                 const currentFrame = parseInt(match[1]);
                 const totalFrames = parseInt(match[2]);
