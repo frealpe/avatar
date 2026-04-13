@@ -178,10 +178,35 @@ def run(av_path, cloth_path, out_path):
     bpy.ops.object.transform_apply(scale=True)
 
     # =========================
-    # POSITION
+    # POSITION (TORSO ALIGNMENT)
     # =========================
     cloth.location = avatar.location
+
+    # Align to torso based on bounding box
+    av_center_z = av_min.z + av_dim.z / 2.0
+    cloth_center_z = g_min.z + g_dim.z / 2.0 * scale
+    cloth.location.z += (av_center_z - cloth_center_z)
+
     bpy.ops.object.transform_apply(location=True)
+
+    # =========================
+    # SHRINKWRAP (FITTING)
+    # =========================
+    # Adapt garment closer to the avatar to prevent clipping and improve alignment
+    mod_shrink = cloth.modifiers.new("Shrinkwrap", 'SHRINKWRAP')
+    mod_shrink.target = avatar
+    mod_shrink.offset = 0.005 # 5mm offset to prevent clipping
+    mod_shrink.wrap_method = 'TARGET_PROJECT'
+    mod_shrink.wrap_mode = 'OUTSIDE'
+
+    # Pre-relax to improve shrinkwrap result
+    bpy.context.view_layer.objects.active = cloth
+    for i in range(2):
+        mod_sm_pre = cloth.modifiers.new(name=f"SmoothPre_{i}", type='SMOOTH')
+        mod_sm_pre.iterations = 3
+        bpy.ops.object.modifier_apply(modifier=mod_sm_pre.name)
+
+    bpy.ops.object.modifier_apply(modifier=mod_shrink.name)
 
     # =========================
     # SOLIDIFY
@@ -199,9 +224,28 @@ def run(av_path, cloth_path, out_path):
     bpy.ops.object.surfacedeform_bind(modifier=mod_sd.name)
 
     # =========================
-    # ARMATURE
+    # ARMATURE & RIGGING TRANSFER
     # =========================
     if armature:
+        # Transfer vertex weights if the garment doesn't have an armature already
+        # or if it needs to match the avatar's armature
+        print("[ENGINE] Transferring rigging weights...", flush=True)
+        bpy.context.view_layer.objects.active = cloth
+
+        # Add Data Transfer Modifier to transfer vertex groups
+        mod_data = cloth.modifiers.new(name="DataTransfer", type='DATA_TRANSFER')
+        mod_data.object = avatar
+        mod_data.use_vert_data = True
+        mod_data.data_types_verts = {'VGROUP_WEIGHTS'}
+        mod_data.vert_mapping = 'NEAREST'
+
+        # Crucial step: Generate the data layers (vertex groups) on the target mesh before applying
+        bpy.ops.object.datalayout_transfer(modifier=mod_data.name)
+
+        # Apply the Data Transfer modifier
+        bpy.ops.object.modifier_apply(modifier=mod_data.name)
+
+        # Set armature parent and modifier
         cloth.parent = armature
         mod_arm = cloth.modifiers.new("Armature", 'ARMATURE')
         mod_arm.object = armature
@@ -295,6 +339,13 @@ def run(av_path, cloth_path, out_path):
     # =========================
     print("[ENGINE] Exportando...", flush=True)
 
+    # Make sure we select the elements we want to export (Avatar + Rig + Cloth)
+    bpy.ops.object.select_all(action='DESELECT')
+    if armature:
+        armature.select_set(True)
+    avatar.select_set(True)
+    cloth.select_set(True)
+
     # Draco conditional enable
     draco_path = os.environ.get('BLENDER_EXTERN_DRACO_LIBRARY_PATH')
     enable_draco = bool(draco_path and os.path.exists(draco_path))
@@ -306,6 +357,8 @@ def run(av_path, cloth_path, out_path):
     bpy.ops.export_scene.gltf(
         filepath=out_path,
         export_format='GLB',
+        use_selection=True, # Only export the selected elements (Avatar, Rig, Garment)
+        export_animations=True, # Ensure animations are preserved
         export_apply=True,
         export_draco_mesh_compression_enable=enable_draco,
         export_draco_mesh_compression_level=6
