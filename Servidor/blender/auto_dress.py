@@ -92,6 +92,40 @@ def stage_1_normalize(obj, label="Object"):
 
 
 # ============================================================
+#  STAGE 1.5: MESH HEALING
+# ============================================================
+
+def stage_1_5_heal(obj):
+    """Aggressively close holes and repair topology using BMesh and Remesh."""
+    log(1.5, f"Healing mesh: '{obj.name}'")
+    ensure_active(obj)
+
+    # 1. BMesh hole filling
+    bm = bmesh.new()
+    bm.from_mesh(obj.data)
+    bmesh.ops.holes_fill(bm, edges=bm.edges, sides=4)
+    bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=0.001)
+    bm.to_mesh(obj.data)
+    bm.free()
+
+    # 2. Voxel Remesh to bridge gaps
+    mod_remesh = obj.modifiers.new("PipelineHealRemesh", 'REMESH')
+    mod_remesh.mode = 'VOXEL'
+    mod_remesh.voxel_size = 0.006 # Slightly coarser for speed in pipeline
+    mod_remesh.adaptivity = 0.02
+    
+    # 3. Smooth
+    mod_smooth = obj.modifiers.new("PipelineHealSmooth", 'SMOOTH')
+    mod_smooth.iterations = 10
+    mod_smooth.factor = 0.5
+    
+    apply_modifier_safe(obj, "PipelineHealRemesh")
+    apply_modifier_safe(obj, "PipelineHealSmooth")
+    
+    log(1.5, "  Mesh healed and watertight")
+
+
+# ============================================================
 #  STAGE 2: SEMANTIC DETECTION
 # ============================================================
 
@@ -364,7 +398,8 @@ def stage_7_optimize(cloth_obj, avatar_obj):
 
     ensure_active(cloth_obj)
 
-    # ── 7.1: Heal mesh topology ──
+    # ── 7.1: Final Heal mesh topology ──
+    ensure_active(cloth_obj)
     bpy.ops.object.mode_set(mode='EDIT')
     bpy.ops.mesh.select_all(action='SELECT')
     bpy.ops.mesh.remove_doubles(threshold=0.001)
@@ -547,6 +582,9 @@ def run(av_path, cloth_path, out_path):
 
     stage_1_normalize(avatar, "Avatar")
     stage_1_normalize(cloth, "Garment")
+
+    # Heal garment before alignment/fitting
+    stage_1_5_heal(cloth)
 
     landmarks = stage_2_detect(avatar)
 

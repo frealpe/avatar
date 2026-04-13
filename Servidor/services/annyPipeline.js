@@ -1,4 +1,5 @@
 const Gradio3DProcessor = require('../helpers/gradio3d_util');
+const HealingService = require('./healing_service');
 const fs = require('fs');
 const path = require('path');
 
@@ -49,6 +50,18 @@ class AnnyPipeline {
                 const result = await processor.generate3D(targetImagePath, "/reconstruct_body");
 
                 if (result && result.length > 0) {
+                    const originalPath = result[0].path; // Local path from Gradio download
+                    
+                    if (originalPath && fs.existsSync(originalPath)) {
+                        console.log(`🤖 [IA] Curando malla generada en: ${originalPath}...`);
+                        try {
+                            await HealingService.healMesh(originalPath);
+                            console.log('🤖 [IA] Malla curada exitosamente.');
+                        } catch (healErr) {
+                            console.error('⚠️ [IA] Error durante la curación de la malla:', healErr.message);
+                        }
+                    }
+
                     meshUrl = result[0].url;
                     isRealGeneration = true;
                     console.log('🤖 [IA] Reconstrucción Corporal Anny/SAM3D completada. GLB Url:', meshUrl);
